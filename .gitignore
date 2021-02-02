@@ -1,0 +1,5 @@
+# Ignore all Emacs backup files.
+*~
+
+# Ignore binary file, in case we generate it under this directory.
+evolve/evolve
