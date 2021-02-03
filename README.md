@@ -1,11 +1,20 @@
 # Introduction
 # Installation
-# Roadmap
+
+- `make install`
+
+To run the hello-world example:
+
+- `evolve tasks/hello-world.cx`
+
+# High priority tasks
 - [ ] Maze
 - [ ] Snake
 - [ ] Tic-Tac-Toe
 - [ ] Multi-armed bandit
 - [ ] Rock, paper & scissors
+
+# Low priority tasks
 - [ ] Time-series mean estimation
 - [ ] Time-series variance estimation
 - [ ] Time-series covariance estimation
