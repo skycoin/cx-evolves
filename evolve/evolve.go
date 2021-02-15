@@ -966,8 +966,8 @@ func OpEvolve(prgrm *cxcore.CXProgram) {
 		for i, _ := range pop {
 			errors[i] = evalInd(pop[i], solProt, inps, outs)
 			if errors[i] <= eps {
-				fmt.Printf("Found affSol. Bot #%d", i)
-				fmt.Printf("errors: %v\n", errors)
+				fmt.Printf("Found solution at #%d\n", i+1)
+				fmt.Printf("errors: \n%v\n", errors)
 				pop[i].PrintProgram()
 				return
 			}

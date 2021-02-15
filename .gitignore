@@ -3,3 +3,6 @@
 
 # Ignore binary file, in case we generate it under this directory.
 evolve/evolve
+
+# Ignore Emacs backup files.
+*~
