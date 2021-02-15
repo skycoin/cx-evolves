@@ -30,5 +30,5 @@ func parseFlags(options *flags, args []string) {
 }
 
 func printVersion() {
-	fmt.Println("Sequence Predictors v", VERSION)
+	fmt.Println("CX Evolve v", VERSION)
 }
