@@ -1,11 +1,9 @@
 # Introduction
 # Installation
 
-- `make install`
-
 To run the hello-world example:
 
-- `evolve tasks/hello-world.cx`
+- `go run main.go tasks/hello-world.cx`
 
 # High priority tasks
 - [ ] Maze

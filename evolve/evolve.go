@@ -1,26 +1,47 @@
-package main
+package evolve
 
 import (
 	"os"
 	"fmt"
+	"flag"
 	"strconv"
 	"math"
 	"math/rand"
 	"github.com/jinzhu/copier"
 
 	cxcore "github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx/cxgo/actions"
-	cxgo "github.com/skycoin/cx/cxgo/cxgo"
-	// "github.com/qdm12/reprint"
-	// "github.com/barkimedes/go-deepcopy"
-	// "github.com/getlantern/deepcopy"
-	
-	// "github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
 func Debug(args ...interface{}) {
 	fmt.Println(args...)
+}
+
+const VERSION = "1.0"
+
+type flags struct {
+	iterations        int
+	printVersion      bool
+}
+
+func DefaultCmdFlags() flags {
+	return flags{
+		iterations:        0,
+		printVersion:      false,
+	}
+}
+
+var CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+func ParseFlags(options *flags, args []string) {
+	CommandLine.IntVar(&options.iterations, "iterations", options.iterations, "Iterations")
+	CommandLine.BoolVar(&options.printVersion, "version", options.printVersion, "Version")
+
+	CommandLine.Parse(args)
+}
+
+func printVersion() {
+	fmt.Println("CX Evolve v", VERSION)
 }
 
 // TODOs:
@@ -774,7 +795,7 @@ func printData(data [][]byte, typ int) {
 	fmt.Printf("\n")
 }
 
-func opEvolve(prgrm *cxcore.CXProgram) {
+func OpEvolve(prgrm *cxcore.CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -974,27 +995,6 @@ func opEvolve(prgrm *cxcore.CXProgram) {
 		for _, err := range errors {
 			avg += err
 		}
-		fmt.Printf("avg. error: %v\n", float64(avg) / float64(len(errors)))
+		fmt.Printf("%v\n", float64(avg) / float64(len(errors)))
 	}
-}
-
-func main() {
-	// Registering this library as a CX library.
-	cxcore.RegisterPackage("evolve")
-	cxcore.Op(cxcore.GetOpCodeCount(), "evolve.evolve", opEvolve, cxcore.In(cxcore.Slice(cxcore.TYPE_AFF), cxcore.Slice(cxcore.TYPE_AFF), cxcore.Slice(cxcore.TYPE_AFF), cxcore.Slice(cxcore.TYPE_AFF), cxcore.Slice(cxcore.TYPE_AFF), cxcore.AI32, cxcore.AI32, cxcore.AI32, cxcore.AF64), nil)
-
-	// Creating a new CX program.
-	actions.PRGRM = cxcore.MakeProgram()
-
-	// Reading flags.
-	options := defaultCmdFlags()
-	parseFlags(&options, os.Args[1:])
-	args := commandLine.Args()
-
-	// Reading source code and parsing it to a valid CX program.
-	_, sourceCode, fileNames := cxcore.ParseArgsForCX(args, true)
-	cxgo.ParseSourceCode(sourceCode, fileNames)
-	cxgo.AddInitFunction(actions.PRGRM)
-
-	actions.PRGRM.RunCompiled(0, nil)
 }
