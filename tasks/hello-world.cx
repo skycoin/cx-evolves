@@ -11,13 +11,13 @@ func realFn(n f64) (out f64) {
 // The function to be evolved. It's empty because the evolutionary process will take care of everything.
 // If we wanted though, we could add some expressions to help CX (something like an assisted evolutionary algorithm or semi-supervised learning).
 // It can be named any way we want.
-func tradingBot(n1 f64, n2 f64) (out f64) {}
+func polynomialFitting(n1 f64, n2 f64) (out f64) {}
 
 // The inputs function returns values to be used by the trading bot.
 // A mechanism for controlling what inputs are generated needs to be implemented outside of this function (at least partially),
 // i.e. via global variables and/or other functions, as the inputs function does not accept any input parameters (ironic).
 // The number and types of the outputs of this function must match the number and types (in order) of the inputs defined
-// for the function to be evolved (target function; `tradingBot` function in this particular case).
+// for the function to be evolved (target function; `polynomialFitting` function in this particular case).
 func inputs() (inp1 [10]f64, inp2 [10]f64) {
 	// inp1 = f64.rand(0.0D, 10.0D)
 	// inp2 = f64.rand(0.0D, 10.0D)
@@ -72,7 +72,7 @@ func main() (out f64) {
 	// tell CX that this is the function to be used.
 	target := #{
 		pkg(main)
-		fn(tradingBot)
+		fn(polynomialFitting)
 	}
 
 	// The operators we'll be using to create expressions in the trading bots.
@@ -85,9 +85,9 @@ func main() (out f64) {
 		fn(f64.sub)
 	}
 
-	// This function will be generating inputs for the tradingBot function.
+	// This function will be generating inputs for the polynomialFitting function.
 	// The number of input parameters must be zero.
-	// The number of outputs must match the number of inputs for the target function (tradingBot, in this case).
+	// The number of outputs must match the number of inputs for the target function (polynomialFitting, in this case).
 	inputs := #{
 		pkg(main)
 		fn(inputs)
@@ -95,9 +95,9 @@ func main() (out f64) {
 
 	// This function returns outputs to be matched against the outputs from the evolved function.
 	// For example, we can return real stock market prices or we can return the result of a bot fighting against another bot.
-	// The number of input parameters must match the number of inputs for the target function (tradingBot, in this case),
+	// The number of input parameters must match the number of inputs for the target function (polynomialFitting, in this case),
 	/// which is the same number as the number of parameters for the `inputs` function above.
-	// The number of outputs must match the number of outputs for the target function (tradingBot, in this case).
+	// The number of outputs must match the number of outputs for the target function (polynomialFitting, in this case).
 	outputs := #{
 		pkg(main)
 		fn(outputs)
