@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var path = "/home/chris/go/src/github.com/jcromerohdz/skycoinDev/gomaze/maze/output.txt"
+var path = "<$YourPath>/maze/output.txt"
 
 // Maze cell configurations
 // The paths of the maze is represented in the binary representation.
@@ -160,8 +160,6 @@ func (maze *Maze) Solve() {
 		for _, direction := range Directions {
 			// Push the nearest points to the stack if not been visited yet
 			if maze.Directions[point.X][point.Y]&direction == direction {
-				//fmt.Println(direction)
-				//choice.direction = append(choice.direction, direction)
 				next := point.Advance(direction)
 				if maze.Directions[next.X][next.Y]&visited == 0 {
 					stack = append(stack, next)
@@ -189,10 +187,6 @@ func (maze *Maze) Solve() {
 					if next.X == temp.X && next.Y == temp.Y {
 						maze.Directions[point.X][point.Y] |= direction << SolutionOffset
 						maze.Directions[next.X][next.Y] |= Opposite[direction] << SolutionOffset
-						//fmt.Println(direction)
-						//AQUI
-						//save file here
-
 						break
 					}
 
@@ -201,9 +195,7 @@ func (maze *Maze) Solve() {
 		}
 	}
 	maze.Solved = true
-	//aqui
 	writeFile(choice.direction)
-	//writeFile(choice.allDirections)
 }
 
 // Clear the solution
@@ -227,9 +219,7 @@ func (maze *Maze) Move(direction int) {
 		maze.Directions[point.X][point.Y] ^= direction << VisitedOffset
 		maze.Directions[next.X][next.Y] ^= Opposite[direction] << VisitedOffset
 		maze.Cursor = next
-		//save file here
-
-		//choice.allDirections = append(choice.allDirections, direction)
+		choice.allDirections = append(choice.allDirections, direction)
 	}
 	// Save
 	maze.Started = true
@@ -439,8 +429,6 @@ func (maze *Maze) Write(writer chan string, format *Format) {
 			writer <- format.Path // The left margin
 			if maze.Start.X == x && maze.Start.Y == 0 && direction == Right {
 				writer <- startLeft
-				//fmt.Println(direction)
-				//fmt.Println("hello")
 			} else if maze.Goal.X == x && maze.Goal.Y == 0 && maze.Width > 1 && direction == Right {
 				writer <- goalLeft
 			} else {
@@ -480,9 +468,6 @@ func (maze *Maze) Write(writer chan string, format *Format) {
 					// Print the path cell, or the solution cell if solved or the visited cells if the user visited
 					if (directions>>SolutionOffset)&direction != 0 {
 						writer <- format.Solution
-						// CRHd
-						//fmt.Println(direction)
-						//choice.direction = append(choice.direction, direction)
 					} else if (directions>>VisitedOffset)&direction != 0 {
 						writer <- format.Visited
 					} else {
