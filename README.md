@@ -1,4 +1,14 @@
 # Introduction
+
+setup :
+install and setup go 1.13 and above
+
+install go dependecnies by running make sure go module is enable.
+$go get -u ./...
+$go mod verify 
+$go mod vendor
+
+
 # Installation
 
 To run the hello-world example:
