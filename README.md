@@ -1,5 +1,6 @@
-# Introduction
 # Installation
+
+`git pull` your CX repository so you have the latest CX version.
 
 To run the hello-world example:
 
