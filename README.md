@@ -1,18 +1,18 @@
 # Installation
 
-setup :
-install and setup go 1.13 and above
-
-install go dependecnies by running make sure go module is enable.
+- Install and setup go 1.13 and above.
+- Install CX (https://github.com/skycoin/cx).
+- `git pull` your CX repository so you have the latest CX version.
+- Make sure `go module` is enabled. Install go dependencies by running:
+```
 $go get -u ./...
 $go mod verify 
 $go mod vendor
-
-`git pull` your CX repository so you have the latest CX version.
+```
 
 To run the hello-world example:
 
-- `go run main.go tasks/hello-world.cx`
+- `go run main.go`
 
 # High priority tasks
 - [ ] Maze
