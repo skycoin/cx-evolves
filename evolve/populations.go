@@ -1,0 +1,106 @@
+package evolve
+
+import (
+	cxcore "github.com/skycoin/cx/cx"
+)
+
+type Population struct {
+	Individuals []*cxcore.CXProgram
+	PopulationSize int
+	ExpressionsCount int
+	Iterations int
+	TargetError float64
+	FunctionToEvolve *cxcore.CXFunction
+	FunctionSet []*cxcore.CXFunction
+	EvaluationMethod int
+	CrossoverMethod int
+	MutationMethod int
+	InputSignature []string
+	OutputSignature []string
+	Inputs [][]byte
+	Outputs [][]byte
+}
+
+// MakePopulation creates a `Population` with a number of `Individuals` equal to `populationSize`.
+func MakePopulation(populationSize int) *Population {
+	var pop Population
+	pop.PopulationSize = populationSize
+	pop.Individuals = make([]*cxcore.CXProgram, populationSize)
+	return &pop
+}
+
+// InitIndividuals initializes the `Individuals` in a `Population` using a `CXProgram` which works as a template. In the end, all the `Individuals` in `pop` will be exact copies of `initPrgrm` (but not pointers to the same object).
+func (pop *Population) InitIndividuals(initPrgrm *cxcore.CXProgram) {
+	// Serializing root CX program to create copies of it.
+	sPrgrm := cxcore.Serialize(initPrgrm, 0)
+
+	for i := 0; i < len(pop.Individuals); i++ {
+		pop.Individuals[i] = cxcore.Deserialize(sPrgrm)
+	}
+}
+
+// InitFunctionSet gathers the functions contained in `prgrm` named by `fnNames`.
+func (pop *Population) InitFunctionSet(fnNames []string) {
+	prgrm := pop.Individuals[0]
+	pop.FunctionSet = getFunctionSet(prgrm, fnNames)
+}
+
+// InitFunctionsToEvolve initializes the `FunctionToEvolve` in each of the individuals in a `Population`, so each individual has a `FunctionToEvolve` with a random set of expressions.
+func (pop *Population) InitFunctionsToEvolve(fnName string) {
+	prgrm := pop.Individuals[0]
+	fnToEvolve, err := prgrm.GetFunction(fnName, cxcore.MAIN_PKG)
+	if err != nil {
+		panic(err)
+	}
+	pop.FunctionToEvolve = fnToEvolve
+	
+	numExprs := pop.ExpressionsCount
+	fns := pop.FunctionSet
+	
+	for i := 0; i < len(pop.Individuals); i++ {
+		// Initialize solution with random expressions.
+		initSolution(pop.Individuals[i], fnToEvolve, fns, numExprs)
+		adaptSolution(pop.Individuals[i], fnToEvolve)
+		resetPrgrm(pop.Individuals[i])
+	}
+}
+
+// SetInputs sets the `Inputs` of a `Population` to `inputs`.
+func (pop *Population) SetInputs(inputs [][]byte) {
+	pop.Inputs = inputs
+}
+
+// SetOutputs sets the `Outputs` of a `Population` to `outputs`.
+func (pop *Population) SetOutputs(outputs [][]byte) {
+	pop.Outputs = outputs
+}
+
+// SetTargetError sets the `TargetError` of a `Population` to `targetError`.
+func (pop *Population) SetTargetError(targetError float64) {
+	pop.TargetError = targetError
+}
+
+// SetIterations sets the `Iterations` of a `Population` to `iter`.
+func (pop *Population) SetIterations(iter int) {
+	pop.Iterations = iter
+}
+
+// SetExpressionsCount sets the `ExpressionsCount` of a `Population` to `exprCount`.
+func (pop *Population) SetExpressionsCount(exprCount int) {
+	pop.ExpressionsCount = exprCount
+}
+
+// EvalFunctionsToEvolve evaluates every `FunctionToEvolve` in each of the `Individual`s in the `Population` `pop`. A slice of `float64`s is returned, which represents the errors between the real and the simulated data points.
+func (pop *Population) EvalFunctionsToEvolve() []float64 {
+	inputs := pop.Inputs
+	outputs := pop.Outputs
+	fnToEvolve := pop.FunctionToEvolve
+	errors := make([]float64, len(inputs))
+	
+	for i := 0; i < len(pop.Individuals); i++ {
+		// Evaluating solution.
+		errors[i] = perByteEvaluation(pop.Individuals[i], fnToEvolve, inputs, outputs)
+	}
+
+	return errors
+}
