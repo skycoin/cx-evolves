@@ -51,7 +51,6 @@ loop:
 				keydir := keyDirss[randomMove]
 				if keydir.key != 00 {
 					maze.Move(keydir.dir)
-					//fmt.Println(keydir.dir)
 
 					if maze.Finished {
 						maze.Solve()
