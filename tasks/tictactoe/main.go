@@ -3,8 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 )
 
 type Game struct {
@@ -92,10 +94,14 @@ func (game *Game) play(position int) error {
 }
 
 func askforplay() int {
-	var moveInt int
-	fmt.Println("Enter a position to play")
-	fmt.Scan(&moveInt)
-	return moveInt
+	rand.Seed(time.Now().Unix())
+	randomMove := rand.Intn(10)
+	if randomMove == 0 {
+		randomMove = 1
+	}
+	fmt.Println("Position to play")
+	fmt.Println(randomMove)
+	return randomMove
 }
 
 func main() {

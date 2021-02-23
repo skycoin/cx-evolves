@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var path = "<$YourPath>/maze/output.txt"
+var path = "~/maze-output.txt"
 
 // Maze cell configurations
 // The paths of the maze is represented in the binary representation.
