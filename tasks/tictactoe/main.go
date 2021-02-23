@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var path = "~/tictatoe-output.txt"
+
 type Game struct {
 	board      [9]string
 	player     string
@@ -102,6 +104,41 @@ func askforplay() int {
 	fmt.Println("Position to play")
 	fmt.Println(randomMove)
 	return randomMove
+}
+
+/* print errors*/
+func isError(err error) bool {
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return (err != nil)
+}
+
+/*writeFile write the data into file*/
+func writeFile(p []int) {
+
+	// open file using READ & WRITE permission
+	var file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+
+	if isError(err) {
+		return
+	}
+	defer file.Close()
+
+	// write into file
+	_, err = file.WriteString(fmt.Sprintln(p))
+	if isError(err) {
+		return
+	}
+
+	// save changes
+	err = file.Sync()
+	if isError(err) {
+		return
+	}
+
+	//fmt.Println("==> done writing to file")
 }
 
 func main() {
