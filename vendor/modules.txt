@@ -1,0 +1,21 @@
+# github.com/jinzhu/copier v0.2.4
+## explicit
+github.com/jinzhu/copier
+# github.com/satori/go.uuid v1.2.0
+github.com/satori/go.uuid
+# github.com/skycoin/cx v0.7.5
+## explicit
+github.com/skycoin/cx/cx
+github.com/skycoin/cx/cxgo/actions
+github.com/skycoin/cx/cxgo/cxgo
+github.com/skycoin/cx/cxgo/cxgo0
+github.com/skycoin/cx/cxgo/parser
+github.com/skycoin/cx/cxgo/profiling
+# github.com/skycoin/skycoin v0.27.1
+## explicit
+github.com/skycoin/skycoin/src/cipher/encoder
+# github.com/stretchr/testify v1.7.0
+## explicit
+# golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
+golang.org/x/mobile/asset
+golang.org/x/mobile/internal/mobileinit
