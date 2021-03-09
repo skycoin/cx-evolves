@@ -208,7 +208,7 @@ func (maze *Maze) ValidateMaze() {
 			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitUp) {
 				next := point.Advance(Up)
 				if maze.Contains(next) {
-					// Should be open down
+					// Up cell should be open down
 					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitDown) {
 						panic("cells did not match")
 					}
@@ -219,7 +219,7 @@ func (maze *Maze) ValidateMaze() {
 			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitDown) {
 				next := point.Advance(Down)
 				if maze.Contains(next) {
-					// Should be open Up
+					// Down cell should be open Up
 					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitUp) {
 						panic("cells did not match")
 					}
@@ -230,7 +230,7 @@ func (maze *Maze) ValidateMaze() {
 			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitLeft) {
 				next := point.Advance(Left)
 				if maze.Contains(next) {
-					// Should be open Right
+					// left cell should be open Right
 					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitRight) {
 						panic("cells did not match")
 					}
@@ -241,7 +241,7 @@ func (maze *Maze) ValidateMaze() {
 			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitRight) {
 				next := point.Advance(Right)
 				if maze.Contains(next) {
-					// Should be open Left
+					// right cell should be open Left
 					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitLeft) {
 						panic("cells did not match")
 					}
@@ -254,7 +254,7 @@ func (maze *Maze) ValidateMaze() {
 }
 
 func main() {
-	maze := NewMaze(15, 15)
+	maze := NewMaze(20, 20)
 	maze.Generate()
 	maze.ValidateMaze()
 	fmt.Printf("Starting Point (x,y)=(%v,%v)\n", maze.Start.X, maze.Start.Y)
