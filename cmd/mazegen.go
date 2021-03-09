@@ -3,7 +3,12 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 // Maze cell configurations
@@ -254,11 +259,54 @@ func (maze *Maze) ValidateMaze() {
 }
 
 func main() {
-	maze := NewMaze(20, 20)
+	var width string
+	var height string
+	var intWidth int
+	var intHeight int
+
+	mazeApp := &cli.App{
+		Name:    "Maze Generator",
+		Version: "1.0.0",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "width",
+				Value:       "",
+				Aliases:     []string{"W"},
+				Usage:       "width of the generated maze",
+				Destination: &width,
+			},
+			&cli.StringFlag{
+				Name:        "height",
+				Value:       "",
+				Aliases:     []string{"H"},
+				Usage:       "height of the generated maze",
+				Destination: &height,
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if width != "" && height != "" {
+				intWidth, _ = strconv.Atoi(width)
+				intHeight, _ = strconv.Atoi(height)
+				startMaze(intWidth, intHeight)
+			} else {
+				log.Error("No width and/or height specified")
+				os.Exit(1)
+			}
+			return nil
+		},
+	}
+
+	err := mazeApp.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func startMaze(width, height int) {
+	maze := NewMaze(height, width)
 	maze.Generate()
 	maze.ValidateMaze()
 	fmt.Printf("Starting Point (x,y)=(%v,%v)\n", maze.Start.X, maze.Start.Y)
 	fmt.Printf("Number of moves=%v\n", maze.CurrentMove)
 	maze.PrintMaze()
-
 }
