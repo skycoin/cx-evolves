@@ -37,11 +37,6 @@ type Point struct {
 	X, Y int
 }
 
-// Equal judges the equality of the two points
-func (point *Point) Equal(target *Point) bool {
-	return point.X == target.X && point.Y == target.Y
-}
-
 // Advance the point forward by the argument direction
 func (point *Point) Advance(direction int) *Point {
 	return &Point{point.X + dx[direction], point.Y + dy[direction]}
@@ -126,20 +121,6 @@ func (maze *Maze) Neighbors(point *Point) (neighbors []int) {
 		}
 	}
 	return neighbors
-}
-
-// Connected judges whether the two points is connected by a path on the maze
-func (maze *Maze) Connected(point *Point, target *Point) bool {
-	dir := maze.Cells[point.X+(point.Y*maze.Width)]
-	for _, direction := range Directions {
-		if dir&direction != 0 {
-			next := point.Advance(direction)
-			if next.X == target.X && next.Y == target.Y {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func (maze *Maze) PrintMaze() {
