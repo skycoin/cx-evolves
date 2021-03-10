@@ -3,6 +3,7 @@ module github.com/skycoin/cx-evolves
 go 1.15
 
 require (
+	github.com/RyanCarrier/dijkstra v1.0.0
 	github.com/jinzhu/copier v0.2.4
 	github.com/sirupsen/logrus v1.8.0
 	github.com/skycoin/cx v0.7.5
