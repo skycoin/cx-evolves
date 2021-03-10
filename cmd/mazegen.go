@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RyanCarrier/dijkstra"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -26,6 +27,12 @@ const (
 	bitDown
 	bitLeft
 	bitRight
+)
+
+// Distance between cells.
+// Used for Dijkstra's algo for finding farthest point from goal point.
+const (
+	distanceBetweenPoints = 1
 )
 
 // Directions is the set of all the directions
@@ -58,7 +65,8 @@ type Maze struct {
 	Start       *Point // Start Position random
 }
 
-// NewMaze creates a new maze
+// NewMaze creates a new maze.
+// The starting point is set randomly.
 func NewMaze(height int, width int) *Maze {
 	rand.Seed(time.Now().UnixNano())
 
@@ -76,6 +84,7 @@ func NewMaze(height int, width int) *Maze {
 	}
 }
 
+//  Generate generates a maze.
 func (maze *Maze) Generate() {
 	point := maze.Start
 	stack := []*Point{maze.Start}
@@ -108,13 +117,12 @@ func (maze *Maze) Next(point *Point) *Point {
 	next := point.Advance(direction)
 	maze.Cells[next.X+(next.Y*maze.Width)] |= Opposite[direction]
 
-	maze.CurrentMove += 1
 	return next
 }
 
 // Contains judges whether the argument point is inside the maze or not
 func (maze *Maze) Contains(point *Point) bool {
-	return 0 <= point.X && point.X < maze.Height && 0 <= point.Y && point.Y < maze.Width
+	return 0 <= point.X && point.X < maze.Width && 0 <= point.Y && point.Y < maze.Height
 }
 
 // Neighbors gathers the nearest undecided points
@@ -128,6 +136,7 @@ func (maze *Maze) Neighbors(point *Point) (neighbors []int) {
 	return neighbors
 }
 
+// PrintMaze prints the entire maze onto cli with +,-, *space*, and | characters.
 func (maze *Maze) PrintMaze() {
 	hWall := []byte("+---")
 	hOpen := []byte("+   ")
@@ -196,10 +205,16 @@ func (maze *Maze) PrintMaze() {
 	fmt.Print(string(b))
 }
 
+// IsBitSet checks if the bit in b located in pos is true.
 func IsBitSet(b byte, pos int) bool {
 	return (b & (1 << pos)) != 0
 }
 
+// Validates the maze.
+// If the cell is open to the NORTH, the cell on its NORTH must be open to the SOUTH,
+// if the cell is open to the SOUTH, the cell on its SOUTH must be open to the NORTH.
+// if the cell is open to the EAST, the cell on its EAST must be open to the WEST, and
+// if the cell is open to the WEST, the cell on its WEST must be open to the EAST,
 func (maze *Maze) ValidateMaze() {
 	fmt.Printf("Validating Maze...\n")
 	var point Point
@@ -258,6 +273,100 @@ func (maze *Maze) ValidateMaze() {
 	fmt.Printf("Maze is valid.\n")
 }
 
+// SetGoalPoint sets maze goal point by using djikstra's algorithm to find farthest
+// point from the starting point.
+func (maze *Maze) SetGoalPoint() {
+	graph := dijkstra.NewGraph()
+
+	// Make vertex for all indexes
+	for i := 0; i < maze.Height*maze.Width; i++ {
+		graph.AddVertex(i)
+	}
+
+	// Add arcs to all points
+	for h := 0; h < maze.Height; h++ {
+		for w := 0; w < maze.Width; w++ {
+			point := Point{
+				X: w,
+				Y: h,
+			}
+
+			// check up
+			up := point.Advance(Up)
+			if maze.Contains(up) {
+				err := graph.AddArc(maze.getIndex(point.X, point.Y), maze.getIndex(up.X, up.Y), distanceBetweenPoints)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			// check down
+			down := point.Advance(Down)
+			if maze.Contains(down) {
+				err := graph.AddArc(maze.getIndex(point.X, point.Y), maze.getIndex(down.X, down.Y), distanceBetweenPoints)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			// check right
+			right := point.Advance(Right)
+			if maze.Contains(right) {
+				err := graph.AddArc(maze.getIndex(point.X, point.Y), maze.getIndex(right.X, right.Y), distanceBetweenPoints)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			// check left
+			left := point.Advance(Left)
+			if maze.Contains(left) {
+				err := graph.AddArc(maze.getIndex(point.X, point.Y), maze.getIndex(left.X, left.Y), distanceBetweenPoints)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}
+
+	startPoint := maze.getIndex(maze.Start.X, maze.Start.Y)
+	var longestDistance int64
+	var farthestPoint Point
+	for h := 0; h < maze.Height; h++ {
+		for w := 0; w < maze.Width; w++ {
+			if startPoint != maze.getIndex(w, h) {
+				best, err := graph.Shortest(startPoint, maze.getIndex(w, h))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if best.Distance > longestDistance {
+					longestDistance = best.Distance
+					farthestPoint = Point{
+						X: w,
+						Y: h,
+					}
+				}
+			}
+
+		}
+	}
+	maze.Goal = &farthestPoint
+}
+
+func (maze *Maze) getIndex(x, y int) int {
+	return x + (y * maze.Width)
+}
+
+func startMaze(width, height int) {
+	maze := NewMaze(height, width)
+	maze.Generate()
+	maze.ValidateMaze()
+	maze.SetGoalPoint()
+	fmt.Printf("Start Point (x,y)=(%v,%v)\nGoal Point (x,y)=(%v,%v)\n", maze.Start.X, maze.Start.Y, maze.Goal.X, maze.Goal.Y)
+	maze.PrintMaze()
+}
+
 func main() {
 	var width string
 	var height string
@@ -300,13 +409,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func startMaze(width, height int) {
-	maze := NewMaze(height, width)
-	maze.Generate()
-	maze.ValidateMaze()
-	fmt.Printf("Starting Point (x,y)=(%v,%v)\n", maze.Start.X, maze.Start.Y)
-	fmt.Printf("Number of moves=%v\n", maze.CurrentMove)
-	maze.PrintMaze()
 }
