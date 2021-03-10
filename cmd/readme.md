@@ -10,6 +10,7 @@ This program generates, validates, and prints maze. The algorithm use in generat
 ### Example
    go run mazgen.go -W=20 -H=20
 
-1. If no arguments are specified, the program will return an error
+### Notes
+1. If no arguments are specified, the program will return an error.
 
-3. If width and height values are specified, the program will run.
+2. If width and height values are specified, the program will run.
