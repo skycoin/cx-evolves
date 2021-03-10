@@ -113,9 +113,9 @@ func (maze *Maze) Next(point *Point) *Point {
 		return nil
 	}
 	direction := neighbors[rand.Int()%len(neighbors)]
-	maze.Cells[point.X+(point.Y*maze.Width)] |= direction
+	maze.Cells[maze.getIndex(point.X, point.Y)] |= direction
 	next := point.Advance(direction)
-	maze.Cells[next.X+(next.Y*maze.Width)] |= Opposite[direction]
+	maze.Cells[maze.getIndex(next.X, next.Y)] |= Opposite[direction]
 
 	return next
 }
@@ -129,7 +129,7 @@ func (maze *Maze) Contains(point *Point) bool {
 func (maze *Maze) Neighbors(point *Point) (neighbors []int) {
 	for _, direction := range Directions {
 		next := point.Advance(direction)
-		if maze.Contains(next) && maze.Cells[next.X+(next.Y*maze.Width)] == 0 {
+		if maze.Contains(next) && maze.Cells[maze.getIndex(next.X, next.Y)] == 0 {
 			neighbors = append(neighbors, direction)
 		}
 	}
@@ -162,7 +162,7 @@ func (maze *Maze) PrintMaze() {
 					}
 
 					if y > 0 {
-						if !IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitUp) {
+						if !IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitUp) {
 							b = append(b, hWall...)
 						} else {
 							b = append(b, hOpen...)
@@ -179,7 +179,7 @@ func (maze *Maze) PrintMaze() {
 						b = append(b, vWall...)
 					}
 
-					if !IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitRight) {
+					if !IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitRight) {
 						// End of middle
 						if x == (maze.Width)-1 {
 							b = append(b, rightWall...)
@@ -225,44 +225,44 @@ func (maze *Maze) ValidateMaze() {
 				Y: y,
 			}
 			// If cell is open UP
-			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitUp) {
+			if IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitUp) {
 				next := point.Advance(Up)
 				if maze.Contains(next) {
 					// Up cell should be open down
-					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitDown) {
+					if !IsBitSet(byte(maze.Cells[maze.getIndex(next.X, next.Y)]), bitDown) {
 						panic("cells did not match")
 					}
 				}
 			}
 
 			// If cell is open DOWN
-			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitDown) {
+			if IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitDown) {
 				next := point.Advance(Down)
 				if maze.Contains(next) {
 					// Down cell should be open Up
-					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitUp) {
+					if !IsBitSet(byte(maze.Cells[maze.getIndex(next.X, next.Y)]), bitUp) {
 						panic("cells did not match")
 					}
 				}
 			}
 
 			// If cell is open LEFT
-			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitLeft) {
+			if IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitLeft) {
 				next := point.Advance(Left)
 				if maze.Contains(next) {
 					// left cell should be open Right
-					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitRight) {
+					if !IsBitSet(byte(maze.Cells[maze.getIndex(next.X, next.Y)]), bitRight) {
 						panic("cells did not match")
 					}
 				}
 			}
 
 			// If cell is open RIGHT
-			if IsBitSet(byte(maze.Cells[x+(y*maze.Width)]), bitRight) {
+			if IsBitSet(byte(maze.Cells[maze.getIndex(x, y)]), bitRight) {
 				next := point.Advance(Right)
 				if maze.Contains(next) {
 					// right cell should be open Left
-					if !IsBitSet(byte(maze.Cells[next.X+(next.Y*maze.Width)]), bitLeft) {
+					if !IsBitSet(byte(maze.Cells[maze.getIndex(next.X, next.Y)]), bitLeft) {
 						panic("cells did not match")
 					}
 				}
