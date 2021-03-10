@@ -1,6 +1,6 @@
 ### Summary
 
-This program generates, validates, and prints maze. The algorithm use in generating the maze is recursive backtracker that uses a stack.
+This program generates, validates, and prints maze. The algorithm use in generating the maze is recursive backtracker that uses a stack. The goal point is determined by using djikstra's algo to find the farthest point from the starting point.
 
 ### Usage
 
