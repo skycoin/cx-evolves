@@ -30,7 +30,9 @@ func (game *Game) Init(w, h int) {
 	game.maze = StartMaze(w, h)
 }
 
-func (game *Game) MazeGame(w, h, numberOfRuns int) {
+// TODO: have mazegame and random player func receive a function (RandomPlayer(gameMove *GameMove) AgentInput)
+// Callback function, to be used in evolve
+func (game *Game) MazeGame(w, h, numberOfRuns int, player func(gameMove *GameMove) AgentInput) {
 	var moves int
 	var reachTime time.Duration
 	var stopTime time.Duration
@@ -41,6 +43,9 @@ func (game *Game) MazeGame(w, h, numberOfRuns int) {
 
 	game.Init(w, h)
 	maxMoves := 1000 * game.maze.Width * game.maze.Height
+	if player == nil {
+		player = defaultRandomPlayer
+	}
 
 	for run := 0; run < numberOfRuns; run++ {
 		// Reset game data
@@ -66,7 +71,7 @@ func (game *Game) MazeGame(w, h, numberOfRuns int) {
 		startTime := time.Now()
 
 		for !reachedGoal {
-			agentInput = game.RandomPlayer(gameMove)
+			agentInput = InputCallback(player, gameMove)
 			movedToAWall = false
 			gameMove.ErrorCode = 0
 			gameMove.ErrorMsg = ""
