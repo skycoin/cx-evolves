@@ -30,8 +30,6 @@ func (game *Game) Init(w, h int) {
 	game.maze = StartMaze(w, h)
 }
 
-// TODO: have mazegame and random player func receive a function (RandomPlayer(gameMove *GameMove) AgentInput)
-// Callback function, to be used in evolve
 func (game *Game) MazeGame(w, h, numberOfRuns int, player func(gameMove *GameMove) AgentInput) {
 	var moves int
 	var reachTime time.Duration
