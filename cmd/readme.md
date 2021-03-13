@@ -3,7 +3,11 @@
 This program generates, validates, and prints a maze. The algorithm used in generating the maze is recursive backtracker that uses a stack. The goal point is determined by using djikstra's algo to find the farthest point from the starting point.
 
 ### Usage
-    go run main.go -W=[width of generated maze] -H=[height of generated maze] -player=[True if a random player will try to solve the maze] -runs=[# of runs the random player will try to solve the maze] -histogram=[true if you want to generate histogram for the result]
+    go run main.go -W=[width of generated maze] 
+    -H=[height of generated maze] 
+    -player=[True if a random player will try to solve the maze] 
+    -runs=[# of runs the random player will try to solve the maze] 
+    -histogram=[true if you want to generate histogram for the result]
     
     go run main.go help 
 
