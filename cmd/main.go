@@ -65,7 +65,8 @@ func main() {
 			case true:
 				game := maze.Game{}
 				game.PlotHistogram = plotHisto
-				game.MazeGame(width, height, numberOfRuns, nil)
+				game.Init(width, height)
+				game.MazeGame(numberOfRuns, nil)
 			case false:
 				maze.StartMaze(width, height)
 			}

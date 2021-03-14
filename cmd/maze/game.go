@@ -30,7 +30,7 @@ func (game *Game) Init(w, h int) {
 	game.maze = StartMaze(w, h)
 }
 
-func (game *Game) MazeGame(w, h, numberOfRuns int, player func(gameMove *GameMove) AgentInput) {
+func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) AgentInput) {
 	var moves int
 	var reachTime time.Duration
 	var stopTime time.Duration
@@ -39,7 +39,6 @@ func (game *Game) MazeGame(w, h, numberOfRuns int, player func(gameMove *GameMov
 	var agentInput AgentInput
 	var movedToAWall bool
 
-	game.Init(w, h)
 	maxMoves := 1000 * game.maze.Width * game.maze.Height
 	if player == nil {
 		player = defaultRandomPlayer
