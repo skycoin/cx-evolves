@@ -235,7 +235,7 @@ func getSaveDirectory(cfg *EvolveConfig) string {
 		mazeSize = "random"
 	}
 
-	return fmt.Sprintf("./%v-%v-%v/", time.Now().Unix(), "Maze", mazeSize)
+	return fmt.Sprintf("./Results/%v-%v-%v/", time.Now().Unix(), "Maze", mazeSize)
 }
 
 func setRandomMazeSize(cfg *EvolveConfig) {
