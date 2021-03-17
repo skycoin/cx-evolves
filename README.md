@@ -39,7 +39,7 @@ go run main.go help
 
 ```
 go run main.go -W=[width of the maze to solve] 
--H=[hwight of maze to solve]  
+-H=[height of maze to solve]  
 --random=[set true if generated maze for every N epochs will have random sizes (NxN 2,3,4,5,6,7, or 8)]
 --population=[Population size or number of programs generated per generation]
 --generations=[number of generations]
