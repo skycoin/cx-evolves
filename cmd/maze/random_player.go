@@ -14,7 +14,9 @@ type AgentInput struct {
 	AgentPositionEnabled     bool
 }
 
-var defaultRandomPlayer func(gameMove *GameMove) AgentInput = func(gameMove *GameMove) AgentInput {
+type Player func(gameMove *GameMove) AgentInput
+
+var defaultRandomPlayer Player = func(gameMove *GameMove) AgentInput {
 	var defaultRandomPlayerInside func(gameMove *GameMove) AgentInput
 
 	defaultRandomPlayerInside = func(gameMove *GameMove) AgentInput {
