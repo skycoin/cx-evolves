@@ -44,7 +44,7 @@ go run main.go -W=[width of the maze to solve]
 --population=[Population size or number of programs generated per generation]
 --generations=[number of generations]
 --expressions=[number fo expressions a generated program can have]
---epochs=[Maze changes for every N generation(Example. Epochs=5, maze changes every 5 generations)]
+--epoch-length=[Maze changes for every N generation(Example. Epochs=5, maze changes every 5 generations)]
 --name=[Name of generated program]
 --graphs=[Set true if average fitness and fittest per generation graphs will be saved] 
 --ast=[Set true if best ASTs per generation will be saved]
@@ -52,7 +52,7 @@ go run main.go -W=[width of the maze to solve]
 
 ### Example
 ```
-go run main.go -W=2 -H=2 --random=false --population=50 --generations=100 --expressions=30 --epochs=100 --name=MazeRunner --graphs=true --ast=false
+go run main.go -W=2 -H=2 --random=false --population=50 --generations=100 --expressions=30 --epoch-length=100 --name=MazeRunner --graphs=true --ast=false
 ```
 
 ### Notes

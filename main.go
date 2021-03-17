@@ -18,7 +18,7 @@ import (
 var (
 	mazeWidth      int
 	mazeHeight     int
-	epochsCount    int
+	epochLength    int
 	plotFitness    bool
 	saveAST        bool
 	randomMazeSize bool
@@ -163,11 +163,11 @@ func main() {
 				Destination: &expressionsCount,
 			},
 			&cli.IntFlag{
-				Name:        "Epochs",
-				Aliases:     []string{"epochs"},
+				Name:        "Epoch Length",
+				Aliases:     []string{"epoch-length"},
 				Usage:       "Maze changes for every N generations, if set 0 then maze changes every generations",
 				Value:       1,
-				Destination: &epochsCount,
+				Destination: &epochLength,
 			},
 			&cli.StringFlag{
 				Name:        "Generated Program Name",
@@ -239,7 +239,7 @@ func EvolveWithMaze() {
 	pop.Evolve(evolve.EvolveConfig{
 		MazeWidth:      mazeWidth,
 		MazeHeight:     mazeHeight,
-		Epochs:         epochsCount,
+		EpochLength:    epochLength,
 		PlotFitness:    plotFitness,
 		SaveAST:        saveAST,
 		RandomMazeSize: randomMazeSize,

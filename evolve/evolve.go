@@ -16,7 +16,7 @@ import (
 type EvolveConfig struct {
 	MazeHeight     int
 	MazeWidth      int
-	Epochs         int
+	EpochLength    int
 	PlotFitness    bool
 	SaveAST        bool
 	RandomMazeSize bool
@@ -109,8 +109,8 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	fnToEvolveName := solProt.Name
 	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0)
 
-	if cfg.Epochs == 0 {
-		cfg.Epochs = 1
+	if cfg.EpochLength == 0 {
+		cfg.EpochLength = 1
 	}
 
 	if cfg.PlotFitness || cfg.SaveAST {
@@ -127,7 +127,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	// Evolution process.
 	for c := 0; c < int(numIter); c++ {
 		// Maze Creation
-		if c%cfg.Epochs == 0 || c == 0 {
+		if c%cfg.EpochLength == 0 || c == 0 {
 			if cfg.RandomMazeSize {
 				setRandomMazeSize(&cfg)
 			}
