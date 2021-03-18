@@ -5,20 +5,20 @@ import (
 )
 
 type Population struct {
-	Individuals []*cxcore.CXProgram
-	PopulationSize int
+	Individuals      []*cxcore.CXProgram
+	PopulationSize   int
 	ExpressionsCount int
-	Iterations int
-	TargetError float64
+	Iterations       int
+	TargetError      float64
 	FunctionToEvolve *cxcore.CXFunction
-	FunctionSet []*cxcore.CXFunction
+	FunctionSet      []*cxcore.CXFunction
 	EvaluationMethod int
-	CrossoverMethod int
-	MutationMethod int
-	InputSignature []string
-	OutputSignature []string
-	Inputs [][]byte
-	Outputs [][]byte
+	CrossoverMethod  int
+	MutationMethod   int
+	InputSignature   []string
+	OutputSignature  []string
+	Inputs           [][]byte
+	Outputs          [][]byte
 }
 
 // MakePopulation creates a `Population` with a number of `Individuals` equal to `populationSize`.
@@ -53,10 +53,10 @@ func (pop *Population) InitFunctionsToEvolve(fnName string) {
 		panic(err)
 	}
 	pop.FunctionToEvolve = fnToEvolve
-	
+
 	numExprs := pop.ExpressionsCount
 	fns := pop.FunctionSet
-	
+
 	for i := 0; i < len(pop.Individuals); i++ {
 		// Initialize solution with random expressions.
 		initSolution(pop.Individuals[i], fnToEvolve, fns, numExprs)
@@ -91,16 +91,16 @@ func (pop *Population) SetExpressionsCount(exprCount int) {
 }
 
 // EvalFunctionsToEvolve evaluates every `FunctionToEvolve` in each of the `Individual`s in the `Population` `pop`. A slice of `float64`s is returned, which represents the errors between the real and the simulated data points.
-func (pop *Population) EvalFunctionsToEvolve() []float64 {
-	inputs := pop.Inputs
-	outputs := pop.Outputs
-	fnToEvolve := pop.FunctionToEvolve
-	errors := make([]float64, len(inputs))
-	
-	for i := 0; i < len(pop.Individuals); i++ {
-		// Evaluating solution.
-		errors[i] = perByteEvaluation(pop.Individuals[i], fnToEvolve, inputs, outputs)
-	}
+// func (pop *Population) EvalFunctionsToEvolve() []float64 {
+// 	inputs := pop.Inputs
+// 	outputs := pop.Outputs
+// 	fnToEvolve := pop.FunctionToEvolve
+// 	errors := make([]float64, len(inputs))
 
-	return errors
-}
+// 	for i := 0; i < len(pop.Individuals); i++ {
+// 		// Evaluating solution.
+// 		errors[i] = perByteEvaluation(pop.Individuals[i], fnToEvolve, inputs, outputs)
+// 	}
+
+// 	return errors
+// }

@@ -30,7 +30,7 @@ func (game *Game) Init(w, h int) {
 	game.maze = StartMaze(w, h)
 }
 
-func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) AgentInput) {
+func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) AgentInput) int {
 	var moves int
 	var reachTime time.Duration
 	var stopTime time.Duration
@@ -39,7 +39,7 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) Age
 	var agentInput AgentInput
 	var movedToAWall bool
 
-	maxMoves := 1000 * game.maze.Width * game.maze.Height
+	maxMoves := 100 * game.maze.Width * game.maze.Height
 	if player == nil {
 		player = defaultRandomPlayer
 	}
@@ -148,7 +148,7 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) Age
 			fmt.Println("-------------------------------------------")
 			fmt.Printf("Run Number: %v\n", run+1)
 			fmt.Printf("Sorry, you have not reached the goal\n")
-			fmt.Printf("Moves reached more than %v which is 1000 times greater than maze size\n", maxMoves)
+			fmt.Printf("Moves reached more than %v which is 100 times greater than maze size\n", maxMoves)
 			fmt.Printf("Moves you took: %v\n", moves)
 			fmt.Printf("Time you took: %v\n", stopTime)
 		}
@@ -160,6 +160,8 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) Age
 	if game.PlotHistogram {
 		histogramPlot(histoValues, "Number Of Moves The Random Player Took", histoSaveDirectory+"MovesHistogram-"+time.Now().Format(time.RFC3339)+".png")
 	}
+
+	return moves
 }
 
 func (game *Game) CountSquaresBeforeWall(currPos Point, direction int) int {
