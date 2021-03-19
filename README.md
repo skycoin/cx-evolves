@@ -75,7 +75,7 @@ go run main.go
 --lower-range=[lower range (int) for range benchmark]
 
 <!-- Set if benchmark is either constants, evens, odds, primes, composites, or range -->
---rounds=[Number of rounds per program for benchmarks constants, evens, odds, primes, and range]
+--rounds=[Number of rounds per program]
 
 ```
 
