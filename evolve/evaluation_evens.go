@@ -46,7 +46,7 @@ func perByteEvaluationEvens(ind *cxcore.CXProgram, solPrototype *cxcore.CXFuncti
 
 		data := binary.BigEndian.Uint32(simOuts[0])
 
-		// If not even, add 1 to toal points
+		// If not even, add 1 to total points
 		if int64(data)%2 != 0 {
 			points++
 		}
