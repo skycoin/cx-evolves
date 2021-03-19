@@ -6,18 +6,20 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 )
 
 var path = "~/tictatoe-output.txt"
 
 type Game struct {
-	board      [9]string
+	boards     [9]string
+	board      []string
 	player     string
 	turnNumber int
 }
 
-func PrintBoard(board [9]string) {
+func PrintBoard(board []string, size int) {
 	ClearScreen()
 	for i, v := range board {
 		if v == "" {
@@ -25,7 +27,7 @@ func PrintBoard(board [9]string) {
 		} else {
 			fmt.Printf(v)
 		}
-		if i > 0 && (i+1)%3 == 0 {
+		if i > 0 && (i+1)%size == 0 {
 			fmt.Printf("\n")
 		} else {
 			fmt.Printf("|")
@@ -39,13 +41,13 @@ func ClearScreen() {
 	c.Run()
 }
 
-func CheckForWinner(b [9]string, n int) (bool, string) {
+func CheckForWinner(b []string, n int, size int) (bool, string) {
 
 	test := false
 	i := 0
 
-	//horizantel test
-	for i < 9 {
+	//horizantal test
+	for i < size {
 		test = b[i] == b[i+1] && b[i+1] == b[i+2] && b[i] != ""
 		if !test {
 			i += 3
@@ -106,6 +108,13 @@ func askforplay() int {
 	return randomMove
 }
 
+func askforplaymanual() int {
+	var moveInt int
+	fmt.Println("Enter Pos to play: ")
+	fmt.Scan(&moveInt)
+	return moveInt
+}
+
 /* print errors*/
 func isError(err error) bool {
 	if err != nil {
@@ -148,20 +157,26 @@ func main() {
 	gameOver := false
 	var winner string
 
+	// get the parameter from the execution flag go run --
+	getSize := os.Args[1:]
+	size, _ := strconv.Atoi(getSize[0])
+	game.board = make([]string, (size * size))
+
 	for gameOver != true {
-		PrintBoard(game.board)
-		move := askforplay()
+		PrintBoard(game.board, size)
+		move := askforplaymanual()
 		err := game.play(move)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		gameOver, winner = CheckForWinner(game.board, game.turnNumber)
+		//gameOver, winner = CheckForWinner(game.board, game.turnNumber)
+		gameOver = false
 
 	}
 
-	PrintBoard(game.board)
+	//PrintBoard(game.board)
 
 	if winner == "" {
 		fmt.Println("it's a draw")
