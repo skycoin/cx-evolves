@@ -16,12 +16,27 @@ import (
 
 // Maze and Output Configuration
 var (
+	mazeBenchmark      bool
+	constantsBenchmark bool
+	evensBenchmark     bool
+	oddsBenchmark      bool
+	primesBenchmark    bool
+	rangeBenchmark     bool
+
+	// Maze Config
 	mazeWidth      int
 	mazeHeight     int
-	epochLength    int
-	plotFitness    bool
-	saveAST        bool
 	randomMazeSize bool
+
+	numberOfRounds int
+
+	upperRange int
+	lowerRange int
+
+	epochLength int
+	plotFitness bool
+	saveAST     bool
+	logFitness  bool
 )
 
 // Evolve Configuration
@@ -53,10 +68,10 @@ var (
 	evaluationFunction = evolve.EvaluationPerByte
 
 	// What's the input signature of the programs being evolved.
-	inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
+	inputSignature []string
 
 	// What's the output signature of the programs being evolved.
-	outputSignature = []string{"i32"}
+	outputSignature []string
 )
 
 func InitialProgram() *cxcore.CXProgram {
@@ -127,6 +142,62 @@ func main() {
 		Name:    "Evolve with Maze",
 		Version: "1.0.0",
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "maze benchmark",
+				Aliases:     []string{"m"},
+				Usage:       "set true if benchmark evolve with maze",
+				Destination: &mazeBenchmark,
+			},
+			&cli.BoolFlag{
+				Name:        "constants benchmark",
+				Aliases:     []string{"cons"},
+				Usage:       "set true if benchmark evolve with constants",
+				Destination: &constantsBenchmark,
+			},
+			&cli.BoolFlag{
+				Name:        "evens benchmark",
+				Aliases:     []string{"even"},
+				Usage:       "set true if benchmark evolve with evens",
+				Destination: &evensBenchmark,
+			},
+			&cli.BoolFlag{
+				Name:        "odds benchmark",
+				Aliases:     []string{"odd"},
+				Usage:       "set true if benchmark evolve with odds",
+				Destination: &oddsBenchmark,
+			},
+			&cli.BoolFlag{
+				Name:        "primes benchmark",
+				Aliases:     []string{"prime"},
+				Usage:       "set true if benchmark evolve with primes",
+				Destination: &primesBenchmark,
+			},
+			&cli.BoolFlag{
+				Name:        "range benchmark",
+				Aliases:     []string{"range-benchmark"},
+				Usage:       "set true if benchmark evolve with range",
+				Destination: &rangeBenchmark,
+			},
+			&cli.IntFlag{
+				Name:        "upper range",
+				Aliases:     []string{"upper-range"},
+				Usage:       "upper range for range benchmarking",
+				Value:       9,
+				Destination: &upperRange,
+			},
+			&cli.IntFlag{
+				Name:        "lower range",
+				Aliases:     []string{"lower-range"},
+				Usage:       "lower range for range benchmarking",
+				Value:       2,
+				Destination: &lowerRange,
+			},
+			&cli.BoolFlag{
+				Name:        "log 2 for fitness",
+				Aliases:     []string{"use-log-fitness"},
+				Usage:       "set true if fitness will be log2",
+				Destination: &logFitness,
+			},
 			&cli.IntFlag{
 				Name:        "width",
 				Aliases:     []string{"W"},
@@ -140,6 +211,13 @@ func main() {
 				Usage:       "height of the generated maze",
 				Value:       2,
 				Destination: &mazeHeight,
+			},
+			&cli.IntFlag{
+				Name:        "rounds number",
+				Aliases:     []string{"rounds-total"},
+				Usage:       "number of rounds for numbers benchmarking",
+				Value:       6,
+				Destination: &numberOfRounds,
 			},
 			&cli.IntFlag{
 				Name:        "Population Size",
@@ -178,7 +256,7 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:        "Random Maze Size",
-				Aliases:     []string{"random"},
+				Aliases:     []string{"random-maze-size"},
 				Usage:       "set true if generated mazes will be random from NxN 2,3,4,5,6,7, or 8",
 				Destination: &randomMazeSize,
 			},
@@ -196,7 +274,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			EvolveWithMaze()
+			Evolve()
 			return nil
 		},
 	}
@@ -207,9 +285,19 @@ func main() {
 	}
 }
 
-func EvolveWithMaze() {
+func Evolve() {
 	// Setting seed so results vary every time we run the example.
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	// Set input and output signature based on what to benchmark
+	if mazeBenchmark {
+		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
+		outputSignature = []string{"i32"}
+	}
+	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || rangeBenchmark {
+		inputSignature = []string{"i32"}
+		outputSignature = []string{"i32"}
+	}
 
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()
@@ -237,11 +325,25 @@ func EvolveWithMaze() {
 
 	// Evolving the population. The errors between the real and simulated data will be printed to standard output.
 	pop.Evolve(evolve.EvolveConfig{
-		MazeWidth:      mazeWidth,
-		MazeHeight:     mazeHeight,
+		ConstantsBenchmark: constantsBenchmark,
+		MazeBenchmark:      mazeBenchmark,
+		EvensBenchmark:     evensBenchmark,
+		OddsBenchmark:      oddsBenchmark,
+		PrimesBenchmark:    primesBenchmark,
+		RangeBenchmark:     rangeBenchmark,
+
+		MazeWidth:  mazeWidth,
+		MazeHeight: mazeHeight,
+
+		NumberOfRounds: numberOfRounds,
+
+		UpperRange: upperRange,
+		LowerRange: lowerRange,
+
 		EpochLength:    epochLength,
 		PlotFitness:    plotFitness,
 		SaveAST:        saveAST,
 		RandomMazeSize: randomMazeSize,
+		UseAntiLog2:    logFitness,
 	})
 }
