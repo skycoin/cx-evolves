@@ -47,6 +47,7 @@ func perByteEvaluationPrimes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunct
 
 		data := binary.BigEndian.Uint32(simOuts[0])
 
+		// If not a prime, add 1 to total points
 		if !big.NewInt(int64(data)).ProbablyPrime(4) {
 			points++
 		}

@@ -45,6 +45,8 @@ func perByteEvaluationOdds(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunctio
 		simOuts := extractMainOutputs(ind, solPrototype)
 
 		data := binary.BigEndian.Uint32(simOuts[0])
+
+		// If not odd, add 1 to total points
 		if int64(data)%2 == 0 {
 			points++
 		}

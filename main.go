@@ -16,12 +16,13 @@ import (
 
 // Maze and Output Configuration
 var (
-	mazeBenchmark      bool
-	constantsBenchmark bool
-	evensBenchmark     bool
-	oddsBenchmark      bool
-	primesBenchmark    bool
-	rangeBenchmark     bool
+	mazeBenchmark       bool
+	constantsBenchmark  bool
+	evensBenchmark      bool
+	oddsBenchmark       bool
+	primesBenchmark     bool
+	compositesBenchmark bool
+	rangeBenchmark      bool
 
 	// Maze Config
 	mazeWidth      int
@@ -173,6 +174,12 @@ func main() {
 				Destination: &primesBenchmark,
 			},
 			&cli.BoolFlag{
+				Name:        "composites benchmark",
+				Aliases:     []string{"composite"},
+				Usage:       "set true if benchmark evolve with composites",
+				Destination: &compositesBenchmark,
+			},
+			&cli.BoolFlag{
 				Name:        "range benchmark",
 				Aliases:     []string{"range-benchmark"},
 				Usage:       "set true if benchmark evolve with range",
@@ -294,7 +301,7 @@ func Evolve() {
 		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
 		outputSignature = []string{"i32"}
 	}
-	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || rangeBenchmark {
+	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || compositesBenchmark || rangeBenchmark {
 		inputSignature = []string{"i32"}
 		outputSignature = []string{"i32"}
 	}
@@ -325,12 +332,13 @@ func Evolve() {
 
 	// Evolving the population. The errors between the real and simulated data will be printed to standard output.
 	pop.Evolve(evolve.EvolveConfig{
-		ConstantsBenchmark: constantsBenchmark,
-		MazeBenchmark:      mazeBenchmark,
-		EvensBenchmark:     evensBenchmark,
-		OddsBenchmark:      oddsBenchmark,
-		PrimesBenchmark:    primesBenchmark,
-		RangeBenchmark:     rangeBenchmark,
+		ConstantsBenchmark:  constantsBenchmark,
+		MazeBenchmark:       mazeBenchmark,
+		EvensBenchmark:      evensBenchmark,
+		OddsBenchmark:       oddsBenchmark,
+		PrimesBenchmark:     primesBenchmark,
+		CompositesBenchmark: compositesBenchmark,
+		RangeBenchmark:      rangeBenchmark,
 
 		MazeWidth:  mazeWidth,
 		MazeHeight: mazeHeight,

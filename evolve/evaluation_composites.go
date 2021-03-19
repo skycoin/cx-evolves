@@ -2,14 +2,15 @@ package evolve
 
 import (
 	"encoding/binary"
+	"math/big"
 	"math/rand"
 	"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 )
 
-// perByteEvaluation for evolve with range, 1 i32 input, 1 i32 output
-func perByteEvaluationRange(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds, upperRange, lowerRange int) int64 {
+// perByteEvaluation for evolve with composites numbers, 1 i32 input, 1 i32 output
+func perByteEvaluationComposites(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
 	var points int64 = 0
 	var tmp *cxcore.CXProgram = cxcore.PROGRAM
 	cxcore.PROGRAM = ind
@@ -46,9 +47,11 @@ func perByteEvaluationRange(ind *cxcore.CXProgram, solPrototype *cxcore.CXFuncti
 
 		data := binary.BigEndian.Uint32(simOuts[0])
 
-		// if not within range, add 1 to total points
-		if data > uint32(upperRange) || data < uint32(lowerRange) {
-			points++
+		// If not composite, add 1 to total points
+		if big.NewInt(int64(data)).ProbablyPrime(4) {
+			if data > 1 {
+				points++
+			}
 		}
 	}
 

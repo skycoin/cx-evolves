@@ -37,8 +37,13 @@ func makeDirectory(cfg *EvolveConfig) string {
 		}
 
 		if cfg.PrimesBenchmark {
-			// Unixtime-Odds
+			// Unixtime-Primes
 			dir = fmt.Sprintf("./Results/%v-Primes/", time.Now().Unix())
+		}
+
+		if cfg.CompositesBenchmark {
+			// Unixtime-Composites
+			dir = fmt.Sprintf("./Results/%v-Composites/", time.Now().Unix())
 		}
 
 		if cfg.RangeBenchmark {

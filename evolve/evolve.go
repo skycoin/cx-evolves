@@ -12,12 +12,13 @@ import (
 )
 
 type EvolveConfig struct {
-	MazeBenchmark      bool
-	ConstantsBenchmark bool
-	EvensBenchmark     bool
-	OddsBenchmark      bool
-	PrimesBenchmark    bool
-	RangeBenchmark     bool
+	MazeBenchmark       bool
+	ConstantsBenchmark  bool
+	EvensBenchmark      bool
+	OddsBenchmark       bool
+	PrimesBenchmark     bool
+	CompositesBenchmark bool
+	RangeBenchmark      bool
 
 	MazeHeight     int
 	MazeWidth      int
@@ -195,6 +196,11 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 
 				if cfg.PrimesBenchmark {
 					intOut := perByteEvaluationPrimes(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				if cfg.CompositesBenchmark {
+					intOut := perByteEvaluationComposites(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
