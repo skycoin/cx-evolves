@@ -61,7 +61,7 @@ go run main.go
 --use-log-fitness=true 
 ```
 
-### Example
+### Example Benchmarking
 
 For Maze
 ```
