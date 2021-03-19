@@ -3,23 +3,35 @@ package evolve
 import (
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"os"
+	"math"
 	"runtime"
 	"sync"
-	"time"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
 	cxcore "github.com/skycoin/cx/cx"
 )
 
 type EvolveConfig struct {
+	MazeBenchmark      bool
+	ConstantsBenchmark bool
+	EvensBenchmark     bool
+	OddsBenchmark      bool
+	PrimesBenchmark    bool
+	RangeBenchmark     bool
+
 	MazeHeight     int
 	MazeWidth      int
-	EpochLength    int
-	PlotFitness    bool
-	SaveAST        bool
 	RandomMazeSize bool
+
+	NumberOfRounds int
+
+	UpperRange int
+	LowerRange int
+
+	EpochLength int
+	PlotFitness bool
+	SaveAST     bool
+	UseAntiLog2 bool
 }
 
 // Original Evolve
@@ -93,7 +105,7 @@ type EvolveConfig struct {
 // 	}
 // }
 
-// Used for concurrent maze moves evaluation
+// Used for concurrent output evaluation
 var wg = sync.WaitGroup{}
 
 func (pop *Population) Evolve(cfg EvolveConfig) {
@@ -103,42 +115,25 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	var game maze.Game
 	var saveDirectory string
 
-	moves := make([]float64, pop.PopulationSize)
+	output := make([]float64, pop.PopulationSize)
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
 	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0)
 
-	if cfg.EpochLength == 0 {
-		cfg.EpochLength = 1
-	}
-
-	if cfg.PlotFitness || cfg.SaveAST {
-		saveDirectory = getSaveDirectory(&cfg)
-
-		// create directory
-		_ = os.Mkdir(saveDirectory, 0700)
-
-		if cfg.SaveAST {
-			_ = os.Mkdir(saveDirectory+"AST/", 0700)
-		}
-	}
+	setEpochLength(&cfg)
+	saveDirectory = makeDirectory(&cfg)
 
 	// Evolution process.
 	for c := 0; c < int(numIter); c++ {
-		// Maze Creation
-		if c%cfg.EpochLength == 0 || c == 0 {
-			if cfg.RandomMazeSize {
-				setRandomMazeSize(&cfg)
-			}
-
-			game = maze.Game{}
-			game.Init(cfg.MazeWidth, cfg.MazeHeight)
+		// Maze Creation if Maze Benchmark
+		if cfg.MazeBenchmark {
+			generateNewMaze(c, &cfg, &game)
 		}
 
 		// Selection process.
-		pop1Idx, pop2Idx := tournamentSelection(moves, 0.5, true)
-		dead1Idx, dead2Idx := tournamentSelection(moves, 0.5, false)
+		pop1Idx, pop2Idx := tournamentSelection(output, 0.5, true)
+		dead1Idx, dead2Idx := tournamentSelection(output, 0.5, false)
 
 		pop1MainPkg, err := pop.Individuals[pop1Idx].GetPackage(cxcore.MAIN_PKG)
 		if err != nil {
@@ -179,17 +174,44 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		for i := range pop.Individuals {
 			wg.Add(1)
 			go func(j int) {
-				moves[j] = mazeMovesEvaluation(pop.Individuals[j], solProt, game)
-				fmt.Printf("moves of program[%v]:%v\n", j, moves[j])
+				if cfg.MazeBenchmark {
+					output[j] = mazeMovesEvaluation(pop.Individuals[j], solProt, game)
+				}
+
+				if cfg.ConstantsBenchmark {
+					intOut := perByteEvaluationConstants(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				if cfg.EvensBenchmark {
+					intOut := perByteEvaluationEvens(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				if cfg.OddsBenchmark {
+					intOut := perByteEvaluationOdds(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				if cfg.PrimesBenchmark {
+					intOut := perByteEvaluationPrimes(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				if cfg.RangeBenchmark {
+					intOut := perByteEvaluationRange(pop.Individuals[j], solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
+					output[j] = float64(intOut)
+				}
+				fmt.Printf("output of program[%v]:%v\n", j, output[j])
 			}(i)
 		}
 		wg.Wait()
 
-		var total int = 0
+		var total float64 = 0
 		var fittestIndex int = 0
-		var fittest int = int(moves[0])
-		for z := 0; z < len(moves); z++ {
-			fitness := int(moves[z])
+		var fittest float64 = output[0]
+		for z := 0; z < len(output); z++ {
+			fitness := output[z]
 			total = total + fitness
 
 			// Get Best fitness per generation
@@ -202,13 +224,18 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			histoValues = append(histoValues, float64(fitness))
 		}
 
-		ave := total / pop.PopulationSize
+		ave := total / float64(pop.PopulationSize)
+
+		if cfg.UseAntiLog2 {
+			ave = math.Pow(2, ave)
+			fittest = math.Pow(2, fittest)
+		}
 
 		// Add average values for Average fitness graph
-		averageValues = append(averageValues, float64(ave))
+		averageValues = append(averageValues, ave)
 
 		// Add fittest values for Fittest per generation graph
-		mostFit = append(mostFit, float64(fittest))
+		mostFit = append(mostFit, fittest)
 
 		if cfg.SaveAST {
 			// Save best ASTs per generation
@@ -222,26 +249,6 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}
 
 	if cfg.PlotFitness {
-		pointsPlot(averageValues, "Generation Number", "Ave Fitness", "Average Fitness Of Individuals In Generation N", saveDirectory+"AverageFitness.png")
-		pointsPlot(mostFit, "Generation Number", "Fitness", "Fittest Per Generation N", saveDirectory+"FittestPerGeneration.png")
-		histogramPlot(histoValues, "Fitness Distribution of all programs across all generations", saveDirectory+"Histogram.png")
+		saveGraphs(averageValues, mostFit, histoValues, saveDirectory)
 	}
-}
-
-func getSaveDirectory(cfg *EvolveConfig) string {
-	// Unixtime-Maze-2x2
-	mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
-	if cfg.RandomMazeSize {
-		mazeSize = "random"
-	}
-
-	return fmt.Sprintf("./Results/%v-%v-%v/", time.Now().Unix(), "Maze", mazeSize)
-}
-
-func setRandomMazeSize(cfg *EvolveConfig) {
-	rand.Seed(time.Now().Unix())
-	randOptions := []int{2, 3, 4, 5, 6, 7, 8}
-	size := randOptions[rand.Int()%len(randOptions)]
-	cfg.MazeWidth = size
-	cfg.MazeHeight = size
 }

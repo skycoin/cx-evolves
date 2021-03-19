@@ -1,12 +1,12 @@
 package evolve
 
-import (
-	"encoding/binary"
-	"fmt"
+// import (
+// 	"encoding/binary"
+// 	"fmt"
 
-	"github.com/skycoin/cx-evolves/cmd/maze"
-	cxcore "github.com/skycoin/cx/cx"
-)
+// 	"github.com/skycoin/cx-evolves/cmd/maze"
+// 	cxcore "github.com/skycoin/cx/cx"
+// )
 
 // Codes associated to each of the mutation functions.
 const (
@@ -96,94 +96,3 @@ const (
 // 	cxcore.PROGRAM = tmp
 // 	return sum
 // }
-
-// perByteEvaluation for evolve with maze, 13 i2 input, 1 i32 output
-func perByteEvaluation(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, inputs [][]byte, outputs [][]byte) int {
-	var move int
-	var tmp *cxcore.CXProgram
-	tmp = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
-
-	inpFullByteSize := 0
-	for c := 0; c < len(solPrototype.Inputs); c++ {
-		inpFullByteSize += solPrototype.Inputs[c].TotalSize
-	}
-
-	// We'll store the `i`th inputs on `inps`.
-	inps := make([]byte, inpFullByteSize)
-	// `inpsOff` helps us keep track of what byte in `inps` we can write to.
-	inpsOff := 0
-
-	for c := 0; c < len(inputs); c++ {
-		// The size of the input.
-		inpSize := solPrototype.Inputs[c].TotalSize
-		// The bytes representing the input.
-		inp := inputs[c]
-
-		// Copying the input `b`ytes.
-		for b := 0; b < len(inp); b++ {
-			inps[inpsOff+b] = inp[b]
-		}
-
-		// Updating offset.
-		inpsOff += inpSize
-	}
-
-	// Injecting the input bytes `inps` to program `ind`.
-	injectMainInputs(ind, inps)
-
-	// Running program `ind`.
-	ind.RunCompiled(0, nil)
-
-	// Extracting outputs processed by `solPrototype`.
-	simOuts := extractMainOutputs(ind, solPrototype)
-
-	data := binary.BigEndian.Uint32(simOuts[0])
-	move = int(data)
-
-	cxcore.PROGRAM = tmp
-	return move
-}
-
-// Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, mazeGame maze.Game) float64 {
-	player := func(gameMove *maze.GameMove) maze.AgentInput {
-		agentInput := maze.AgentInput{
-			PassMazeData:             true,
-			WallDistanceInputEnabled: true,
-			AgentPositionEnabled:     true,
-		}
-		options := []int{maze.Up, maze.Down, maze.Left, maze.Right}
-
-		move := perByteEvaluation(ind, solPrototype, EncodeParam(gameMove), nil)
-		input := options[int(move)%len(options)]
-		agentInput.Move = input
-
-		return agentInput
-	}
-
-	moves := mazeGame.MazeGame(1, player)
-	wg.Done()
-	return float64(moves)
-}
-
-func EncodeParam(param *maze.GameMove) [][]byte {
-	paramCount := 13
-	inputs := make([][]byte, paramCount)
-
-	inputs[0] = []byte(fmt.Sprint(int32(param.MoveCount)))
-	inputs[1] = []byte(fmt.Sprint(int32(param.ErrorCode)))
-	inputs[2] = []byte(param.ErrorMsg)
-	inputs[3] = []byte(fmt.Sprint(int32(param.MazeData.Goal.X)))
-	inputs[4] = []byte(fmt.Sprint(int32(param.MazeData.Goal.Y)))
-	inputs[5] = []byte(fmt.Sprint(int32(param.AgentPosition.X)))
-	inputs[6] = []byte(fmt.Sprint(int32(param.AgentPosition.Y)))
-	inputs[7] = []byte(fmt.Sprint(int32(param.NumberOfSquaresLeftNorth)))
-	inputs[8] = []byte(fmt.Sprint(int32(param.NumberOfSquaresLeftSouth)))
-	inputs[9] = []byte(fmt.Sprint(int32(param.NumberOfSquaresLeftEast)))
-	inputs[10] = []byte(fmt.Sprint(int32(param.NumberOfSquaresLeftWest)))
-	inputs[11] = []byte(fmt.Sprint(int32(param.MazeData.Height)))
-	inputs[12] = []byte(fmt.Sprint(int32(param.MazeData.Width)))
-
-	return inputs
-}
