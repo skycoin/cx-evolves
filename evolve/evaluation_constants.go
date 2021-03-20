@@ -10,7 +10,7 @@ import (
 )
 
 // perByteEvaluation for evolve with constants, 1 i32 input, 1 i32 output
-func perByteEvaluationConstants(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) float64 {
+func perByteEvaluation_Constants(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) float64 {
 	var total float64 = 0
 	var tmp *cxcore.CXProgram = cxcore.PROGRAM
 	cxcore.PROGRAM = ind
@@ -61,6 +61,5 @@ func perByteEvaluationConstants(ind *cxcore.CXProgram, solPrototype *cxcore.CXFu
 	}
 
 	cxcore.PROGRAM = tmp
-	wg.Done()
 	return total
 }

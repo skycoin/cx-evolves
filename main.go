@@ -23,6 +23,7 @@ var (
 	primesBenchmark     bool
 	compositesBenchmark bool
 	rangeBenchmark      bool
+	networkSimBenchmark bool
 
 	// Maze Config
 	mazeWidth      int
@@ -200,6 +201,12 @@ func main() {
 				Destination: &lowerRange,
 			},
 			&cli.BoolFlag{
+				Name:        "network simulator benchmark",
+				Aliases:     []string{"network-sim"},
+				Usage:       "set true if benchmark evolve with network simulator",
+				Destination: &networkSimBenchmark,
+			},
+			&cli.BoolFlag{
 				Name:        "log 2 for fitness",
 				Aliases:     []string{"use-log-fitness"},
 				Usage:       "set true if fitness will be log2",
@@ -301,7 +308,7 @@ func Evolve() {
 		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
 		outputSignature = []string{"i32"}
 	}
-	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || compositesBenchmark || rangeBenchmark {
+	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || compositesBenchmark || rangeBenchmark || networkSimBenchmark {
 		inputSignature = []string{"i32"}
 		outputSignature = []string{"i32"}
 	}
@@ -339,6 +346,7 @@ func Evolve() {
 		PrimesBenchmark:     primesBenchmark,
 		CompositesBenchmark: compositesBenchmark,
 		RangeBenchmark:      rangeBenchmark,
+		NetworkSimBenchmark: networkSimBenchmark,
 
 		MazeWidth:  mazeWidth,
 		MazeHeight: mazeHeight,

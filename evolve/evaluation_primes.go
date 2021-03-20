@@ -10,7 +10,7 @@ import (
 )
 
 // perByteEvaluation for evolve with prime numbers, 1 i32 input, 1 i32 output
-func perByteEvaluationPrimes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Primes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
 	var points int64 = 0
 	var tmp *cxcore.CXProgram = cxcore.PROGRAM
 	cxcore.PROGRAM = ind
@@ -54,6 +54,5 @@ func perByteEvaluationPrimes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunct
 	}
 
 	cxcore.PROGRAM = tmp
-	wg.Done()
 	return points
 }

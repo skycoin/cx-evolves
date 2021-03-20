@@ -69,12 +69,15 @@ go run main.go
 <!-- Set if composites benchmark -->
 --composites=[set true if benchmark evolve with composites]
 
+<!-- Set if network simulator benchmark -->
+--network-sim=[set true if benchmark evolve with network simulator]
+
 <!-- Set if range benchmark -->
 --range=[set true if benchmark evolve with range]
 --upper-range=[upper range (int) for range benchmark]
 --lower-range=[lower range (int) for range benchmark]
 
-<!-- Set if benchmark is either constants, evens, odds, primes, composites, or range -->
+<!-- Set if benchmark is either constants, evens, odds, primes, composites, range, or network simulator -->
 --rounds=[Number of rounds per program]
 
 ```
@@ -115,5 +118,11 @@ For Composites
 ```
 go run main.go --composites=true --rounds=10 --name=Composites --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
 ```
+
+For Network Simulator
+```
+ go run main.go --network-sim=true --rounds=20 --name=NetworkSimulator --population=300 --generations=2000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false    
+```
+
 ### Notes
 1. If no arguments are specified, the program will run default values.

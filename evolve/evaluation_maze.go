@@ -28,7 +28,6 @@ func mazeMovesEvaluation(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction,
 	}
 
 	moves := mazeGame.MazeGame(1, player)
-	wg.Done()
 	return float64(moves)
 }
 

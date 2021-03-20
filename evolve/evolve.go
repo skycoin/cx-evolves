@@ -19,6 +19,7 @@ type EvolveConfig struct {
 	PrimesBenchmark     bool
 	CompositesBenchmark bool
 	RangeBenchmark      bool
+	NetworkSimBenchmark bool
 
 	MazeHeight     int
 	MazeWidth      int
@@ -180,34 +181,41 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 				}
 
 				if cfg.ConstantsBenchmark {
-					intOut := perByteEvaluationConstants(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					intOut := perByteEvaluation_Constants(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
 				if cfg.EvensBenchmark {
-					intOut := perByteEvaluationEvens(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					intOut := perByteEvaluation_Evens(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
 				if cfg.OddsBenchmark {
-					intOut := perByteEvaluationOdds(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					intOut := perByteEvaluation_Odds(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
 				if cfg.PrimesBenchmark {
-					intOut := perByteEvaluationPrimes(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					intOut := perByteEvaluation_Primes(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
 				if cfg.CompositesBenchmark {
-					intOut := perByteEvaluationComposites(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					intOut := perByteEvaluation_Composites(pop.Individuals[j], solProt, cfg.NumberOfRounds)
 					output[j] = float64(intOut)
 				}
 
 				if cfg.RangeBenchmark {
-					intOut := perByteEvaluationRange(pop.Individuals[j], solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
+					intOut := perByteEvaluation_Range(pop.Individuals[j], solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
 					output[j] = float64(intOut)
 				}
+
+				if cfg.NetworkSimBenchmark {
+					intOut := perByteEvaluation_NetworkSim(pop.Individuals[j], solProt, cfg.NumberOfRounds)
+					output[j] = float64(intOut)
+				}
+
+				wg.Done()
 				fmt.Printf("output of program[%v]:%v\n", j, output[j])
 			}(i)
 		}

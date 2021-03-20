@@ -9,7 +9,7 @@ import (
 )
 
 // perByteEvaluation for evolve with range, 1 i32 input, 1 i32 output
-func perByteEvaluationRange(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds, upperRange, lowerRange int) int64 {
+func perByteEvaluation_Range(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds, upperRange, lowerRange int) int64 {
 	var points int64 = 0
 	var tmp *cxcore.CXProgram = cxcore.PROGRAM
 	cxcore.PROGRAM = ind
@@ -53,6 +53,5 @@ func perByteEvaluationRange(ind *cxcore.CXProgram, solPrototype *cxcore.CXFuncti
 	}
 
 	cxcore.PROGRAM = tmp
-	wg.Done()
 	return points
 }

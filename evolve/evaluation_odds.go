@@ -9,7 +9,7 @@ import (
 )
 
 // perByteEvaluation for evolve with odd numbers, 1 i32 input, 1 i32 output
-func perByteEvaluationOdds(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Odds(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
 	var points int64 = 0
 	var tmp *cxcore.CXProgram = cxcore.PROGRAM
 	cxcore.PROGRAM = ind
@@ -53,6 +53,5 @@ func perByteEvaluationOdds(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunctio
 	}
 
 	cxcore.PROGRAM = tmp
-	wg.Done()
 	return points
 }

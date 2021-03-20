@@ -50,6 +50,12 @@ func makeDirectory(cfg *EvolveConfig) string {
 			// Unixtime-Range
 			dir = fmt.Sprintf("./Results/%v-Range/", time.Now().Unix())
 		}
+
+		if cfg.NetworkSimBenchmark {
+			// Unixtime-NetworkSim
+			dir = fmt.Sprintf("./Results/%v-NetworkSim/", time.Now().Unix())
+		}
+
 		// create directory
 		_ = os.Mkdir(dir, 0700)
 
