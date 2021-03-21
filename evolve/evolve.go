@@ -255,8 +255,10 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			// Save best ASTs per generation
 			saveASTDirectory := saveDirectory + "AST/"
 			astName := fmt.Sprintf("Generation_%v", c)
+
 			pop.Individuals[fittestIndex].PrintProgram()
-			if err := ioutil.WriteFile(saveASTDirectory+astName+".ast", []byte(fmt.Sprintf("%v", pop.Individuals[fittestIndex])), 0644); err != nil {
+			astInBytes := cxcore.Serialize(pop.Individuals[fittestIndex], 1)
+			if err := ioutil.WriteFile(saveASTDirectory+astName+".ast", astInBytes, 0644); err != nil {
 				panic(err)
 			}
 		}
