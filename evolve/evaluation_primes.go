@@ -6,14 +6,15 @@ import (
 	"math/rand"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // perByteEvaluation for evolve with prime numbers, 1 i32 input, 1 i32 output
-func perByteEvaluation_Primes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
 	var points int64 = 0
-	var tmp *cxcore.CXProgram = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
+	var tmp *cxast.CXProgram = cxast.PROGRAM
+	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
 	for c := 0; c < len(solPrototype.Inputs); c++ {
@@ -40,7 +41,7 @@ func perByteEvaluation_Primes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunc
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		ind.RunCompiled(0, nil)
+		cxexecute.RunCompiled(ind, 0, nil)
 
 		// Extracting outputs processed by `solPrototype`.
 		simOuts := extractMainOutputs(ind, solPrototype)
@@ -53,6 +54,6 @@ func perByteEvaluation_Primes(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunc
 		}
 	}
 
-	cxcore.PROGRAM = tmp
+	cxast.PROGRAM = tmp
 	return points
 }

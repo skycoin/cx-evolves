@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, mazeGame maze.Game) float64 {
+func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) float64 {
 	player := func(gameMove *maze.GameMove) maze.AgentInput {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
@@ -32,10 +33,10 @@ func mazeMovesEvaluation(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction,
 }
 
 // perByteEvaluation for evolve with maze, 13 i32 input, 1 i32 output
-func perByteEvaluationMaze(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, inputs [][]byte, outputs [][]byte) int {
+func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, outputs [][]byte) int {
 	var move int
-	var tmp *cxcore.CXProgram = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
+	var tmp *cxast.CXProgram = cxast.PROGRAM
+	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
 	for c := 0; c < len(solPrototype.Inputs); c++ {
@@ -66,7 +67,7 @@ func perByteEvaluationMaze(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunctio
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	ind.RunCompiled(0, nil)
+	cxexecute.RunCompiled(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
@@ -74,7 +75,7 @@ func perByteEvaluationMaze(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunctio
 	data := binary.BigEndian.Uint32(simOuts[0])
 	move = int(data)
 
-	cxcore.PROGRAM = tmp
+	cxast.PROGRAM = tmp
 	return move
 }
 

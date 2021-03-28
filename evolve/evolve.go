@@ -121,7 +121,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
-	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0)
+	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0, true)
 
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
@@ -257,9 +257,13 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			astName := fmt.Sprintf("Generation_%v", c)
 
 			astInBytes := []byte(pop.Individuals[fittestIndex].ToString())
+
 			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astInBytes, 0644); err != nil {
 				panic(err)
 			}
+
+			programSize := cxcore.SerializeDebugInfo(pop.Individuals[fittestIndex], 1, false)
+			fmt.Printf("%+v\n", programSize)
 		}
 	}
 

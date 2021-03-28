@@ -6,14 +6,15 @@ import (
 	"math/rand"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // perByteEvaluation for evolve with constants, 1 i32 input, 1 i32 output
-func perByteEvaluation_Constants(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) float64 {
+func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) float64 {
 	var total float64 = 0
-	var tmp *cxcore.CXProgram = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
+	var tmp *cxast.CXProgram = cxast.PROGRAM
+	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
 	for c := 0; c < len(solPrototype.Inputs); c++ {
@@ -42,7 +43,7 @@ func perByteEvaluation_Constants(ind *cxcore.CXProgram, solPrototype *cxcore.CXF
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		ind.RunCompiled(0, nil)
+		cxexecute.RunCompiled(ind, 0, nil)
 
 		// Extracting outputs processed by `solPrototype`.
 		simOuts := extractMainOutputs(ind, solPrototype)
@@ -60,6 +61,6 @@ func perByteEvaluation_Constants(ind *cxcore.CXProgram, solPrototype *cxcore.CXF
 		}
 	}
 
-	cxcore.PROGRAM = tmp
+	cxast.PROGRAM = tmp
 	return total
 }

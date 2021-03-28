@@ -7,7 +7,8 @@ import (
 	"strconv"
 
 	copier "github.com/jinzhu/copier"
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 // Debug just prints its input arguments using `fmt.Println`.
@@ -16,23 +17,23 @@ func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
 
-func getFunctionSet(prgrm *cxcore.CXProgram, fnNames []string) (fns []*cxcore.CXFunction) {
+func getFunctionSet(prgrm *cxast.CXProgram, fnNames []string) (fns []*cxast.CXFunction) {
 	for _, fnName := range fnNames {
-		fn := cxcore.Natives[cxcore.OpCodes[fnName]]
+		fn := cxast.Natives[cxast.OpCodes[fnName]]
 		if fn == nil {
 			panic("standard library function not found.")
 		}
-		
+
 		fns = append(fns, fn)
 	}
 	return fns
 }
 
-func getRandFn(fnSet []*cxcore.CXFunction) *cxcore.CXFunction {
+func getRandFn(fnSet []*cxast.CXFunction) *cxast.CXFunction {
 	return fnSet[rand.Intn(len(fnSet))]
 }
 
-func calcFnSize(fn *cxcore.CXFunction) (size int) {
+func calcFnSize(fn *cxast.CXFunction) (size int) {
 	for _, arg := range fn.Inputs {
 		size += arg.TotalSize
 	}
@@ -50,8 +51,8 @@ func calcFnSize(fn *cxcore.CXFunction) (size int) {
 	return size
 }
 
-func getRandInp(fn *cxcore.CXFunction) *cxcore.CXArgument {
-	var arg cxcore.CXArgument
+func getRandInp(fn *cxast.CXFunction) *cxast.CXArgument {
+	var arg cxast.CXArgument
 	// Unlike getRandOut, we need to also consider the function inputs.
 	rndExprIdx := rand.Intn(len(fn.Inputs) + len(fn.Expressions))
 	// Then we're returning one of fn.Inputs as the input argument.
@@ -91,8 +92,8 @@ func getRandInp(fn *cxcore.CXFunction) *cxcore.CXArgument {
 	return &arg
 }
 
-func getRandOut(fn *cxcore.CXFunction) *cxcore.CXArgument {
-	var arg cxcore.CXArgument
+func getRandOut(fn *cxast.CXFunction) *cxast.CXArgument {
+	var arg cxast.CXArgument
 	rndExprIdx := rand.Intn(len(fn.Expressions))
 	// Making a copy of the argument
 	err := copier.Copy(&arg, fn.Expressions[rndExprIdx].Operator.Outputs[0])
@@ -119,7 +120,7 @@ func getRandOut(fn *cxcore.CXFunction) *cxcore.CXArgument {
 
 func printData(data [][]byte, typ int) {
 	switch typ {
-	case cxcore.TYPE_F64:
+	case cxconstants.TYPE_F64:
 		for _, datum := range data {
 			fmt.Printf("%f ", mustDeserializeF64(datum))
 		}

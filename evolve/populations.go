@@ -1,17 +1,18 @@
 package evolve
 
 import (
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 type Population struct {
-	Individuals      []*cxcore.CXProgram
+	Individuals      []*cxast.CXProgram
 	PopulationSize   int
 	ExpressionsCount int
 	Iterations       int
 	TargetError      float64
-	FunctionToEvolve *cxcore.CXFunction
-	FunctionSet      []*cxcore.CXFunction
+	FunctionToEvolve *cxast.CXFunction
+	FunctionSet      []*cxast.CXFunction
 	EvaluationMethod int
 	CrossoverMethod  int
 	MutationMethod   int
@@ -25,17 +26,17 @@ type Population struct {
 func MakePopulation(populationSize int) *Population {
 	var pop Population
 	pop.PopulationSize = populationSize
-	pop.Individuals = make([]*cxcore.CXProgram, populationSize)
+	pop.Individuals = make([]*cxast.CXProgram, populationSize)
 	return &pop
 }
 
 // InitIndividuals initializes the `Individuals` in a `Population` using a `CXProgram` which works as a template. In the end, all the `Individuals` in `pop` will be exact copies of `initPrgrm` (but not pointers to the same object).
-func (pop *Population) InitIndividuals(initPrgrm *cxcore.CXProgram) {
+func (pop *Population) InitIndividuals(initPrgrm *cxast.CXProgram) {
 	// Serializing root CX program to create copies of it.
-	sPrgrm := cxcore.Serialize(initPrgrm, 0)
+	sPrgrm := cxast.SerializeCXProgram(initPrgrm, true)
 
 	for i := 0; i < len(pop.Individuals); i++ {
-		pop.Individuals[i] = cxcore.Deserialize(sPrgrm)
+		pop.Individuals[i] = cxast.Deserialize(sPrgrm)
 	}
 }
 
@@ -48,7 +49,7 @@ func (pop *Population) InitFunctionSet(fnNames []string) {
 // InitFunctionsToEvolve initializes the `FunctionToEvolve` in each of the individuals in a `Population`, so each individual has a `FunctionToEvolve` with a random set of expressions.
 func (pop *Population) InitFunctionsToEvolve(fnName string) {
 	prgrm := pop.Individuals[0]
-	fnToEvolve, err := prgrm.GetFunction(fnName, cxcore.MAIN_PKG)
+	fnToEvolve, err := prgrm.GetFunction(fnName, cxconstants.MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
