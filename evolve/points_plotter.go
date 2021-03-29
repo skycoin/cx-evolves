@@ -7,6 +7,12 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
+func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory string) {
+	pointsPlot(aveFitnessValues, "Generation Number", "Ave Fitness", "Average Fitness Of Individuals In Generation N", saveDirectory+"AverageFitness.png")
+	pointsPlot(fittestValues, "Generation Number", "Fitness", "Fittest Per Generation N", saveDirectory+"FittestPerGeneration.png")
+	histogramPlot(histoValues, "Fitness Distribution of all programs across all generations", saveDirectory+"Histogram.png")
+}
+
 func pointsPlot(values []float64, Xlabel, Ylabel, title, saveLocation string) {
 	p := plot.New()
 
@@ -26,7 +32,7 @@ func pointsPlot(values []float64, Xlabel, Ylabel, title, saveLocation string) {
 	}
 }
 
-// Points returns some random x, y points.
+// Points returns plotter x, y points.
 func Points(values []float64) plotter.XYs {
 	pts := make(plotter.XYs, len(values))
 	for i := range pts {
