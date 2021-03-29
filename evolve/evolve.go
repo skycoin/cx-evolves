@@ -8,7 +8,8 @@ import (
 	"sync"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 type EvolveConfig struct {
@@ -121,7 +122,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
-	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0, true)
+	sPrgrm := cxast.SerializeCXProgram(pop.Individuals[0], true)
 
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
@@ -137,7 +138,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		pop1Idx, pop2Idx := tournamentSelection(output, 0.5, true)
 		dead1Idx, dead2Idx := tournamentSelection(output, 0.5, false)
 
-		pop1MainPkg, err := pop.Individuals[pop1Idx].GetPackage(cxcore.MAIN_PKG)
+		pop1MainPkg, err := pop.Individuals[pop1Idx].GetPackage(cxconstants.MAIN_PKG)
 		if err != nil {
 			panic(err)
 		}
@@ -146,7 +147,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			panic(err)
 		}
 
-		pop2MainPkg, err := pop.Individuals[pop2Idx].GetPackage(cxcore.MAIN_PKG)
+		pop2MainPkg, err := pop.Individuals[pop2Idx].GetPackage(cxconstants.MAIN_PKG)
 		if err != nil {
 			panic(err)
 		}
@@ -256,14 +257,17 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			saveASTDirectory := saveDirectory + "AST/"
 			astName := fmt.Sprintf("Generation_%v", c)
 
-			astInBytes := []byte(pop.Individuals[fittestIndex].ToString())
-
-			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astInBytes, 0644); err != nil {
+			// Save as human-readable string .txt format
+			astAsString := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
+			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astAsString, 0644); err != nil {
 				panic(err)
 			}
 
-			programSize := cxcore.SerializeDebugInfo(pop.Individuals[fittestIndex], 1, false)
-			fmt.Printf("%+v\n", programSize)
+			// Save as serialized bytes.
+			astInBytes := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
+			if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
+				panic(err)
+			}
 		}
 	}
 
