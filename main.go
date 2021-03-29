@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
+	cxcore "github.com/skycoin/cx/cx"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 	cxglobals "github.com/skycoin/cx/cx/globals"
@@ -314,6 +315,9 @@ func Evolve() {
 		inputSignature = []string{"i32"}
 		outputSignature = []string{"i32"}
 	}
+
+	// Load op code tables
+	cxcore.LoadOpCodeTables()
 
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()
