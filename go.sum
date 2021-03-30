@@ -55,12 +55,8 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5I
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.8.0 h1:nfhvjKcUMhBMVqbKHJlk5RPrrfYr/NMo3692g0dwfWU=
 github.com/sirupsen/logrus v1.8.0/go.mod h1:4GuYW9TZmE769R5STWrRakJc4UqQ3+QQ95fyz7ENv1A=
-github.com/skycoin/cx v0.7.6-0.20210328035215-ec0b85ade7d0 h1:3aABDl1Mkdym3BOVgiNa8GhGOYVE3bvKkbRbf7VM43Q=
-github.com/skycoin/cx v0.7.6-0.20210328035215-ec0b85ade7d0/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
-github.com/skycoin/cx v0.7.6-0.20210328041536-8b377fab3685 h1:v7UT3eQ0tW5TwzkhMWurGBNyUg14jUqF9OFrM/ohvbo=
-github.com/skycoin/cx v0.7.6-0.20210328041536-8b377fab3685/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
-github.com/skycoin/cx v0.7.6-0.20210328134130-8fd96e12fa00 h1:XsDSe2ATc9C+F+HUi6+RpZL9HcnfyDORRXv5ziD+D4E=
-github.com/skycoin/cx v0.7.6-0.20210328134130-8fd96e12fa00/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
+github.com/skycoin/cx v0.7.6-0.20210322143655-ed8d304cd3f6 h1:piETEQd3ZbyXsqA3dGkDZoeW/G7bm/lmGzXranFbWIo=
+github.com/skycoin/cx v0.7.6-0.20210322143655-ed8d304cd3f6/go.mod h1:AlhFtnVS8Uurw+YqnzTajj9G1y2Duif1+IxN2PRz7WI=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14/go.mod h1:Zy/QpZ0lNGam8oqDXU0wMeNe6yZbTnMueJrz8CeAzt8=
 github.com/skycoin/skycoin v0.27.1 h1:HatxsRwVSPaV4qxH6290xPBmkH/HgiuAoY2qC+e8C9I=
 github.com/skycoin/skycoin v0.27.1/go.mod h1:78nHjQzd8KG0jJJVL/j0xMmrihXi70ti63fh8vXScJw=
@@ -109,6 +105,8 @@ golang.org/x/sys v0.0.0-20190312061237-fead79001313/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191001151750-bb3f8db39f24/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210304124612-50617c2ba197 h1:7+SpRyhoo46QjKkYInQXpcfxx3TYFEYkn131lwGE9/0=
 golang.org/x/sys v0.0.0-20210304124612-50617c2ba197/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210324051608-47abb6519492 h1:Paq34FxTluEPvVyayQqMPgHm+vTOrIifmcYxFBx9TLg=
 golang.org/x/sys v0.0.0-20210324051608-47abb6519492/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

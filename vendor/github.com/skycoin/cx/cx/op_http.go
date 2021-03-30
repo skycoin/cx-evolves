@@ -86,22 +86,23 @@ func init() {
 	PROGRAM.AddPackage(httpPkg)
 }
 
-func opHTTPHandle(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+func opHTTPHandle(expr *CXExpression, fp int) {
+
+	//step 3  : specify the input and outout parameters of Handle function.
+	urlstring, functionnamestring := expr.Inputs[0], expr.Inputs[1]
 
 	// Getting handler function.
-	handlerPkg, err := prgrm.GetPackage(inp2.Package.Name)
+	handlerPkg, err := PROGRAM.GetPackage(functionnamestring.Package.Name)
+
 	if err != nil {
 		panic(err)
 	}
-	handlerFn, err := handlerPkg.GetFunction(inp2.Name)
+	handlerFn, err := handlerPkg.GetFunction(functionnamestring.Name)
 	if err != nil {
 		panic(err)
 	}
 
-	http.HandleFunc(ReadStr(fp, inp1), func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(ReadStr(fp, urlstring), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
 		callFP := fp + PROGRAM.CallStack[PROGRAM.CallCounter].Operator.Size
@@ -133,57 +134,55 @@ func opHTTPHandle(prgrm *CXProgram) {
 
 var server *http.Server
 
-func opHTTPClose(prgrm *CXProgram) {
+func opHTTPClose(expr *CXExpression, fp int) {
 	server.Close()
 }
 
-func opHTTPListenAndServe(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
+func opHTTPListenAndServe(expr *CXExpression, fp int) {
 
-	fp := prgrm.GetFramePointer()
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	url := ReadStr(fp, inp1)
+	//step 3  : specify the input and outout parameters of HTTPServe function.
+	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
+
+	url := ReadStr(fp, urlstring)
 
 	server = &http.Server{Addr: url}
 
 	err := server.ListenAndServe()
-	WriteString(fp, err.Error(), out1)
+	WriteString(fp, err.Error(), errstring)
 }
 
-func opHTTPServe(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
+func opHTTPServe(expr *CXExpression, fp int) {
 
-	fp := prgrm.GetFramePointer()
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	url := ReadStr(fp, inp1)
+	//step 3  : specify the imput and out of HTTPServe function.
+	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
+
+	url := ReadStr(fp, urlstring)
 
 	l, err := net.Listen("tcp", url)
 	if err != nil {
-		WriteString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), errstring)
 	}
 
 	err = http.Serve(l, nil)
 	if err != nil {
-		WriteString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), errstring)
 	}
 }
 
-func opHTTPNewRequest(prgrm *CXProgram) {
+func opHTTPNewRequest(expr *CXExpression, fp int) {
 	// TODO: This whole OP needs rewriting/finishing.
 	// Seems more a prototype.
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+	stringmethod, stringurl, stringbody, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
-	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
-
-	method := ReadStr(fp, inp1)
-	urlString := ReadStr(fp, inp2)
-	body := ReadStr(fp, inp3)
+	//this is an alternative for following 3 lines of code that fail due to URL
+	method := ReadStr(fp, stringmethod)
+	urlString := ReadStr(fp, stringurl)
+	body := ReadStr(fp, stringbody)
 
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
-		WriteString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), errorstring)
 	}
 
 	var netClient = &http.Client{
@@ -191,7 +190,7 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	}
 	resp, err := netClient.Do(req)
 	if err != nil {
-		WriteString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), errorstring)
 	}
 	resp1 := *resp // dereference to exclude pointer issue
 
@@ -201,7 +200,7 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// 2019/10/27 23:10:14 invalid type int
 	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
 
-	out1Offset := GetFinalOffset(fp, out1)
+	out1Offset := GetFinalOffset(fp, errorstring)
 
 	// TODO: Used `Response.Status` for now, to avoid getting an error.
 	// This will be rewritten as the whole operator is unfinished.
@@ -284,7 +283,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
 
 	// Creating empty `http.Request` object on heap.
-	reqOff := writeObj(make([]byte, requestType.Size))
+	reqOff := WriteObjectData(make([]byte, requestType.Size))
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
 	WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
 
@@ -292,7 +291,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 
 	// Creating empty `http.URL` object on heap.
 	req.Fields = accessURL
-	urlOff := writeObj(make([]byte, urlType.Size))
+	urlOff := WriteObjectData(make([]byte, urlType.Size))
 	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
 	WriteMemory(GetFinalOffset(fp, &req), urlOffByts)
 
@@ -317,16 +316,14 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	WriteMemory(GetFinalOffset(fp, &req), FromBool(request.URL.ForceQuery))
 }
 
-func opHTTPDo(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func opHTTPDo(expr *CXExpression, fp int) {
 
-	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
+	reqstruct, respstruct, errorstring := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	req := CXArgument{}
-	err := copier.Copy(&req, inp1)
+	err := copier.Copy(&req, reqstruct)
 	if err != nil {
 		panic(err)
 	}
@@ -412,12 +409,12 @@ func opHTTPDo(prgrm *CXProgram) {
 	}
 	response, err := netClient.Do(&request)
 	if err != nil {
-		WriteString(fp, err.Error(), out2)
+		WriteString(fp, err.Error(), errorstring)
 		return
 	}
 
 	resp := CXArgument{}
-	err = copier.Copy(&resp, out1)
+	err = copier.Copy(&resp, respstruct)
 	if err != nil {
 		panic(err)
 	}
@@ -484,10 +481,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	WriteString(fp, string(body), &resp)
 }
 
-func opDMSGDo(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opDMSGDo(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
 	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)

@@ -26,17 +26,17 @@ var ofMessages = map[string]string{
 func GetInferActions(inp *CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := mustDeserializeI32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
+	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
 
-	l := mustDeserializeI32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
+	l := Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
 
 	result := make([]string, l)
 
 	// for c := int(l); c > 0; c-- {
 	for c := 0; c < int(l); c++ {
-		// elof := mustDeserializeI32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
-		elOff := mustDeserializeI32(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE : int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE])
-		// size := mustDeserializeI32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
+		// elof := Deserialize_i32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
+		elOff := Deserialize_i32(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE : int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE])
+		// size := Deserialize_i32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
 		// var res string
 		// _, err := encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
 		// if err != nil {
@@ -50,10 +50,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	return result
 }
 
-func opAffPrint(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffPrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -84,10 +81,12 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 		GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
+    var inputs []CXValue
+    var outputs []CXValue
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		err := call.ccall(PROGRAM)
+		err := call.ccall(PROGRAM, &inputs, &outputs)
 		if err != nil {
 			panic(err)
 		}
@@ -145,17 +144,17 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 		if elt.CustomType != nil {
 			// then it's custom type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.CustomType.Package.Name + "." + elt.CustomType.Name))
-			typOffset = WriteStringObj(elt.CustomType.Package.Name + "." + elt.CustomType.Name)
+			typOffset = WriteStringData(elt.CustomType.Package.Name + "." + elt.CustomType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[elt.Type]))
-			typOffset = WriteStringObj(TypeNames[elt.Type])
+			typOffset = WriteStringData(TypeNames[elt.Type])
 		}
 
 		// Name
 		// argNameB := encoder.Serialize(arg.Name)
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
-		argNameOffset := WriteStringObj(arg.Name)
+		argNameOffset := WriteStringData(arg.Name)
 
 		argOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE + STR_SIZE)
 		WriteI32(argOffset+OBJECT_HEADER_SIZE, int32(argNameOffset))
@@ -173,7 +172,7 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 
 			// affNameB := encoder.Serialize(fmt.Sprintf("%s.%d", exprLbl, i))
 			// affNameOffset := AllocateSeq(len(affNameB))
-			affNameOffset := WriteStringObj(fmt.Sprintf("%s.%d", exprLbl, i))
+			affNameOffset := WriteStringData(fmt.Sprintf("%s.%d", exprLbl, i))
 			// WriteMemory(affNameOffset, affNameB)
 
 			var affNameOffsetBytes [4]byte
@@ -209,10 +208,10 @@ func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, af
 		opNameOffset := 0
 		if ex.Operator.IsNative {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
-			opNameOffset = WriteStringObj(OpNames[ex.Operator.OpCode])
+			opNameOffset = WriteStringData(OpNames[ex.Operator.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(ex.Operator.Name)
-			opNameOffset = WriteStringObj(ex.Operator.Name)
+			opNameOffset = WriteStringData(ex.Operator.Name)
 		}
 
 		// opNameOffset := AllocateSeq(len(opNameB))
@@ -226,7 +225,7 @@ func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, af
 
 			// lblNameB := encoder.Serialize(ex.Label)
 			// lblNameOffset := AllocateSeq(len(lblNameB))
-			lblNameOffset := WriteStringObj(ex.Label)
+			lblNameOffset := WriteStringData(ex.Label)
 			// WriteMemory(lblNameOffset, lblNameB)
 			var lblNameOffsetB [4]byte
 			WriteMemI32(lblNameOffsetB[:], 0, int32(lblNameOffset))
@@ -243,11 +242,11 @@ func getSignatureSlice(params []*CXArgument) int {
 		if param.CustomType != nil {
 			// then it's custom type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(param.CustomType.Package.Name + "." + param.CustomType.Name))
-			typOffset = WriteStringObj(param.CustomType.Package.Name + "." + param.CustomType.Name)
+			typOffset = WriteStringData(param.CustomType.Package.Name + "." + param.CustomType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))
-			typOffset = WriteStringObj(TypeNames[param.Type])
+			typOffset = WriteStringData(TypeNames[param.Type])
 		}
 
 		var typOffsetB [4]byte
@@ -264,7 +263,7 @@ func queryStructsInPackage(fn *CXFunction, strctOffsetB []byte, affOffset *int, 
 		// strctNameB := encoder.Serialize(f.Name)
 
 		// strctNameOffset := WriteObjectRetOff(strctNameB)
-		strctNameOffset := WriteStringObj(f.Name)
+		strctNameOffset := WriteStringData(f.Name)
 		var strctNameOffsetB [4]byte
 		WriteMemI32(strctNameOffsetB[:], 0, int32(strctNameOffset))
 
@@ -301,10 +300,10 @@ func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffs
 		opNameOffset := 0
 		if f.IsNative {
 			// opNameB = encoder.Serialize(OpNames[f.OpCode])
-			opNameOffset = WriteStringObj(OpNames[f.OpCode])
+			opNameOffset = WriteStringData(OpNames[f.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(f.Name)
-			opNameOffset = WriteStringObj(f.Name)
+			opNameOffset = WriteStringData(f.Name)
 		}
 
 		var opNameOffsetB [4]byte
@@ -345,10 +344,10 @@ func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOf
 	opNameOffset := 0
 	if call.Operator.IsNative {
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-		opNameOffset = WriteStringObj(OpNames[call.Operator.OpCode])
+		opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
 	} else {
 		// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
-		opNameOffset = WriteStringObj(call.Operator.Package.Name + "." + call.Operator.Name)
+		opNameOffset = WriteStringData(call.Operator.Package.Name + "." + call.Operator.Name)
 	}
 
 	callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
@@ -386,10 +385,10 @@ func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOf
 		opNameOffset := 0
 		if call.Operator.IsNative {
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-			opNameOffset = WriteStringObj(OpNames[call.Operator.OpCode])
+			opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
-			opNameOffset = WriteStringObj(call.Operator.Package.Name + "." + call.Operator.Name)
+			opNameOffset = WriteStringData(call.Operator.Package.Name + "." + call.Operator.Name)
 		}
 
 		// callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
@@ -608,10 +607,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 	}
 }
 
-func opAffOn(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -647,10 +643,7 @@ func opAffOn(prgrm *CXProgram) {
 	}
 }
 
-func opAffOf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -748,10 +741,7 @@ func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 
 }
 
-func opAffInform(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -850,10 +840,7 @@ func opAffInform(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffRequest(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -972,10 +959,7 @@ func opAffRequest(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffQuery(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffQuery(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)
@@ -998,7 +982,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// argB := encoder.Serialize("arg")
 					// argOffset := AllocateSeq(len(argB))
 					// WriteMemory(argOffset, argB)
-					argOffset := WriteStringObj("arg")
+					argOffset := WriteStringData("arg")
 					var argOffsetB [4]byte
 					WriteMemI32(argOffsetB[:], 0, int32(argOffset))
 
@@ -1006,7 +990,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// exprB := encoder.Serialize("expr")
 					// exprOffset := AllocateSeq(len(exprB))
 					// WriteMemory(exprOffset, exprB)
-					exprOffset := WriteStringObj("expr")
+					exprOffset := WriteStringData("expr")
 					var exprOffsetB [4]byte
 					WriteMemI32(exprOffsetB[:], 0, int32(exprOffset))
 
@@ -1014,7 +998,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// fnB := encoder.Serialize("fn")
 					// fnOffset := AllocateSeq(len(fnB))
 					// WriteMemory(fnOffset, fnB)
-					fnOffset := WriteStringObj("fn")
+					fnOffset := WriteStringData("fn")
 					var fnOffsetB [4]byte
 					WriteMemI32(fnOffsetB[:], 0, int32(fnOffset))
 
@@ -1022,7 +1006,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// strctB := encoder.Serialize("strct")
 					// strctOffset := AllocateSeq(len(strctB))
 					// WriteMemory(strctOffset, strctB)
-					strctOffset := WriteStringObj("strct")
+					strctOffset := WriteStringData("strct")
 					var strctOffsetB [4]byte
 					WriteMemI32(strctOffsetB[:], 0, int32(strctOffset))
 
@@ -1030,7 +1014,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// callerB := encoder.Serialize("caller")
 					// callerOffset := AllocateSeq(len(callerB))
 					// WriteMemory(callerOffset, callerB)
-					callerOffset := WriteStringObj("caller")
+					callerOffset := WriteStringData("caller")
 					var callerOffsetB [4]byte
 					WriteMemI32(callerOffsetB[:], 0, int32(callerOffset))
 
@@ -1038,7 +1022,7 @@ func opAffQuery(prgrm *CXProgram) {
 					// prgrmB := encoder.Serialize("prgrm")
 					// prgrmOffset := AllocateSeq(len(prgrmB))
 					// WriteMemory(prgrmOffset, prgrmB)
-					prgrmOffset := WriteStringObj("prgrm")
+					prgrmOffset := WriteStringData("prgrm")
 					var prgrmOffsetB [4]byte
 					WriteMemI32(prgrmOffsetB[:], 0, int32(prgrmOffset))
 

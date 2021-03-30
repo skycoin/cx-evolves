@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -10,480 +11,478 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func opLt(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opLt(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrLt(prgrm)
+		opStrLt(inputs, outputs)
 	case TYPE_I8:
-		opI8Lt(prgrm)
+		opI8Lt(inputs, outputs)
 	case TYPE_I16:
-		opI16Lt(prgrm)
+		opI16Lt(inputs, outputs)
 	case TYPE_I32:
-		opI32Lt(prgrm)
+		opI32Lt(inputs, outputs)
 	case TYPE_I64:
-		opI64Lt(prgrm)
+		opI64Lt(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Lt(prgrm)
+		opUI8Lt(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Lt(prgrm)
+		opUI16Lt(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Lt(prgrm)
+		opUI32Lt(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Lt(prgrm)
+		opUI64Lt(inputs, outputs)
 	case TYPE_F32:
-		opF32Lt(prgrm)
+		opF32Lt(inputs, outputs)
 	case TYPE_F64:
-		opF64Lt(prgrm)
+		opF64Lt(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGt(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opGt(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrGt(prgrm)
+		opStrGt(inputs, outputs)
 	case TYPE_I8:
-		opI8Gt(prgrm)
+		opI8Gt(inputs, outputs)
 	case TYPE_I16:
-		opI16Gt(prgrm)
+		opI16Gt(inputs, outputs)
 	case TYPE_I32:
-		opI32Gt(prgrm)
+		opI32Gt(inputs, outputs)
 	case TYPE_I64:
-		opI64Gt(prgrm)
+		opI64Gt(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Gt(prgrm)
+		opUI8Gt(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Gt(prgrm)
+		opUI16Gt(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Gt(prgrm)
+		opUI32Gt(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Gt(prgrm)
+		opUI64Gt(inputs, outputs)
 	case TYPE_F32:
-		opF32Gt(prgrm)
+		opF32Gt(inputs, outputs)
 	case TYPE_F64:
-		opF64Gt(prgrm)
+		opF64Gt(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opLteq(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opLteq(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrLteq(prgrm)
+		opStrLteq(inputs, outputs)
 	case TYPE_I8:
-		opI8Lteq(prgrm)
+		opI8Lteq(inputs, outputs)
 	case TYPE_I16:
-		opI16Lteq(prgrm)
+		opI16Lteq(inputs, outputs)
 	case TYPE_I32:
-		opI32Lteq(prgrm)
+		opI32Lteq(inputs, outputs)
 	case TYPE_I64:
-		opI64Lteq(prgrm)
+		opI64Lteq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Lteq(prgrm)
+		opUI8Lteq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Lteq(prgrm)
+		opUI16Lteq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Lteq(prgrm)
+		opUI32Lteq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Lteq(prgrm)
+		opUI64Lteq(inputs, outputs)
 	case TYPE_F32:
-		opF32Lteq(prgrm)
+		opF32Lteq(inputs, outputs)
 	case TYPE_F64:
-		opF64Lteq(prgrm)
+		opF64Lteq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGteq(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opGteq(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrGteq(prgrm)
+		opStrGteq(inputs, outputs)
 	case TYPE_I8:
-		opI8Gteq(prgrm)
+		opI8Gteq(inputs, outputs)
 	case TYPE_I16:
-		opI16Gteq(prgrm)
+		opI16Gteq(inputs, outputs)
 	case TYPE_I32:
-		opI32Gteq(prgrm)
+		opI32Gteq(inputs, outputs)
 	case TYPE_I64:
-		opI64Gteq(prgrm)
+		opI64Gteq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Gteq(prgrm)
+		opUI8Gteq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Gteq(prgrm)
+		opUI16Gteq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Gteq(prgrm)
+		opUI32Gteq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Gteq(prgrm)
+		opUI64Gteq(inputs, outputs)
 	case TYPE_F32:
-		opF32Gteq(prgrm)
+		opF32Gteq(inputs, outputs)
 	case TYPE_F64:
-		opF64Gteq(prgrm)
+		opF64Gteq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opEqual(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opEqual(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolEqual(prgrm)
+		opBoolEqual(inputs, outputs)
 	case TYPE_STR:
-		opStrEq(prgrm)
+		opStrEq(inputs, outputs)
 	case TYPE_I8:
-		opI8Eq(prgrm)
+		opI8Eq(inputs, outputs)
 	case TYPE_I16:
-		opI16Eq(prgrm)
+		opI16Eq(inputs, outputs)
 	case TYPE_I32:
-		opI32Eq(prgrm)
+		opI32Eq(inputs, outputs)
 	case TYPE_I64:
-		opI64Eq(prgrm)
+		opI64Eq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Eq(prgrm)
+		opUI8Eq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Eq(prgrm)
+		opUI16Eq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Eq(prgrm)
+		opUI32Eq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Eq(prgrm)
+		opUI64Eq(inputs, outputs)
 	case TYPE_F32:
-		opF32Eq(prgrm)
+		opF32Eq(inputs, outputs)
 	case TYPE_F64:
-		opF64Eq(prgrm)
+		opF64Eq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opUnequal(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opUnequal(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolUnequal(prgrm)
+		opBoolUnequal(inputs, outputs)
 	case TYPE_STR:
-		opStrUneq(prgrm)
+		opStrUneq(inputs, outputs)
 	case TYPE_I8:
-		opI8Uneq(prgrm)
+		opI8Uneq(inputs, outputs)
 	case TYPE_I16:
-		opI16Uneq(prgrm)
+		opI16Uneq(inputs, outputs)
 	case TYPE_I32:
-		opI32Uneq(prgrm)
+		opI32Uneq(inputs, outputs)
 	case TYPE_I64:
-		opI64Uneq(prgrm)
+		opI64Uneq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Uneq(prgrm)
+		opUI8Uneq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Uneq(prgrm)
+		opUI16Uneq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Uneq(prgrm)
+		opUI32Uneq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Uneq(prgrm)
+		opUI64Uneq(inputs, outputs)
 	case TYPE_F32:
-		opF32Uneq(prgrm)
+		opF32Uneq(inputs, outputs)
 	case TYPE_F64:
-		opF64Uneq(prgrm)
+		opF64Uneq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitand(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitand(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitand(prgrm)
+		opI8Bitand(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitand(prgrm)
+		opI16Bitand(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitand(prgrm)
+		opI32Bitand(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitand(prgrm)
+		opI64Bitand(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitand(prgrm)
+		opUI8Bitand(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitand(prgrm)
+		opUI16Bitand(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitand(prgrm)
+		opUI32Bitand(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitand(prgrm)
+		opUI64Bitand(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitor(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitor(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitor(prgrm)
+		opI8Bitor(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitor(prgrm)
+		opI16Bitor(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitor(prgrm)
+		opI32Bitor(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitor(prgrm)
+		opI64Bitor(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitor(prgrm)
+		opUI8Bitor(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitor(prgrm)
+		opUI16Bitor(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitor(prgrm)
+		opUI32Bitor(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitor(prgrm)
+		opUI64Bitor(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitxor(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitxor(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitxor(prgrm)
+		opI8Bitxor(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitxor(prgrm)
+		opI16Bitxor(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitxor(prgrm)
+		opI32Bitxor(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitxor(prgrm)
+		opI64Bitxor(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitxor(prgrm)
+		opUI8Bitxor(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitxor(prgrm)
+		opUI16Bitxor(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitxor(prgrm)
+		opUI32Bitxor(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitxor(prgrm)
+		opUI64Bitxor(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMul(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opMul(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Mul(prgrm)
+		opI8Mul(inputs, outputs)
 	case TYPE_I16:
-		opI16Mul(prgrm)
+		opI16Mul(inputs, outputs)
 	case TYPE_I32:
-		opI32Mul(prgrm)
+		opI32Mul(inputs, outputs)
 	case TYPE_I64:
-		opI64Mul(prgrm)
+		opI64Mul(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Mul(prgrm)
+		opUI8Mul(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Mul(prgrm)
+		opUI16Mul(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Mul(prgrm)
+		opUI32Mul(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Mul(prgrm)
+		opUI64Mul(inputs, outputs)
 	case TYPE_F32:
-		opF32Mul(prgrm)
+		opF32Mul(inputs, outputs)
 	case TYPE_F64:
-		opF64Mul(prgrm)
+		opF64Mul(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opDiv(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opDiv(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Div(prgrm)
+		opI8Div(inputs, outputs)
 	case TYPE_I16:
-		opI16Div(prgrm)
+		opI16Div(inputs, outputs)
 	case TYPE_I32:
-		opI32Div(prgrm)
+		opI32Div(inputs, outputs)
 	case TYPE_I64:
-		opI64Div(prgrm)
+		opI64Div(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Div(prgrm)
+		opUI8Div(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Div(prgrm)
+		opUI16Div(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Div(prgrm)
+		opUI32Div(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Div(prgrm)
+		opUI64Div(inputs, outputs)
 	case TYPE_F32:
-		opF32Div(prgrm)
+		opF32Div(inputs, outputs)
 	case TYPE_F64:
-		opF64Div(prgrm)
+		opF64Div(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMod(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opMod(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Mod(prgrm)
+		opI8Mod(inputs, outputs)
 	case TYPE_I16:
-		opI16Mod(prgrm)
+		opI16Mod(inputs, outputs)
 	case TYPE_I32:
-		opI32Mod(prgrm)
+		opI32Mod(inputs, outputs)
 	case TYPE_I64:
-		opI64Mod(prgrm)
+		opI64Mod(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Mod(prgrm)
+		opUI8Mod(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Mod(prgrm)
+		opUI16Mod(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Mod(prgrm)
+		opUI32Mod(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Mod(prgrm)
+		opUI64Mod(inputs, outputs)
 	case TYPE_F32:
-		opF32Mod(prgrm)
+		opF32Mod(inputs, outputs)
 	case TYPE_F64:
-		opF64Mod(prgrm)
+		opF64Mod(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opAdd(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opAdd(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Add(prgrm)
+		opI8Add(inputs, outputs)
 	case TYPE_I16:
-		opI16Add(prgrm)
+		opI16Add(inputs, outputs)
 	case TYPE_I32:
-		opI32Add(prgrm)
+		opI32Add(inputs, outputs)
 	case TYPE_I64:
-		opI64Add(prgrm)
+		opI64Add(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Add(prgrm)
+		opUI8Add(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Add(prgrm)
+		opUI16Add(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Add(prgrm)
+		opUI32Add(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Add(prgrm)
+		opUI64Add(inputs, outputs)
 	case TYPE_F32:
-		opF32Add(prgrm)
+		opF32Add(inputs, outputs)
 	case TYPE_F64:
-		opF64Add(prgrm)
+		opF64Add(inputs, outputs)
 	default:
+		log.Println("CX_INTERNAL_ERROR :")
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opSub(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opSub(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Sub(prgrm)
+		opI8Sub(inputs, outputs)
 	case TYPE_I16:
-		opI16Sub(prgrm)
+		opI16Sub(inputs, outputs)
 	case TYPE_I32:
-		opI32Sub(prgrm)
+		opI32Sub(inputs, outputs)
 	case TYPE_I64:
-		opI64Sub(prgrm)
+		opI64Sub(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Sub(prgrm)
+		opUI8Sub(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Sub(prgrm)
+		opUI16Sub(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Sub(prgrm)
+		opUI32Sub(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Sub(prgrm)
+		opUI64Sub(inputs, outputs)
 	case TYPE_F32:
-		opF32Sub(prgrm)
+		opF32Sub(inputs, outputs)
 	case TYPE_F64:
-		opF64Sub(prgrm)
+		opF64Sub(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opNeg(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opNeg(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Neg(prgrm)
+		opI8Neg(inputs, outputs)
 	case TYPE_I16:
-		opI16Neg(prgrm)
+		opI16Neg(inputs, outputs)
 	case TYPE_I32:
-		opI32Neg(prgrm)
+		opI32Neg(inputs, outputs)
 	case TYPE_I64:
-		opI64Neg(prgrm)
+		opI64Neg(inputs, outputs)
 	case TYPE_F32:
-		opF32Neg(prgrm)
+		opF32Neg(inputs, outputs)
 	case TYPE_F64:
-		opF64Neg(prgrm)
+		opF64Neg(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshl(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitshl(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshl(prgrm)
+		opI8Bitshl(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitshl(prgrm)
+		opI16Bitshl(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitshl(prgrm)
+		opI32Bitshl(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitshl(prgrm)
+		opI64Bitshl(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitshl(prgrm)
+		opUI8Bitshl(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitshl(prgrm)
+		opUI16Bitshl(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitshl(prgrm)
+		opUI32Bitshl(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitshl(prgrm)
+		opUI64Bitshl(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshr(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitshr(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshr(prgrm)
+		opI8Bitshr(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitshr(prgrm)
+		opI16Bitshr(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitshr(prgrm)
+		opI32Bitshr(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitshr(prgrm)
+		opI64Bitshr(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitshr(prgrm)
+		opUI8Bitshr(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitshr(prgrm)
+		opUI16Bitshr(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitshr(prgrm)
+		opUI32Bitshr(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitshr(prgrm)
+		opUI64Bitshr(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitclear(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitclear(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitclear(prgrm)
+		opI8Bitclear(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitclear(prgrm)
+		opI16Bitclear(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitclear(prgrm)
+		opI32Bitclear(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitclear(prgrm)
+		opI64Bitclear(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitclear(prgrm)
+		opUI8Bitclear(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitclear(prgrm)
+		opUI16Bitclear(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitclear(prgrm)
+		opUI32Bitclear(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitclear(prgrm)
+		opUI64Bitclear(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opLen(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opLen(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -515,10 +514,7 @@ func opLen(prgrm *CXProgram) {
 	}
 }
 
-func opAppend(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	eltInp1 := GetAssignmentElement(inp1)
@@ -552,10 +548,7 @@ func opAppend(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opResize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opResize(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -567,10 +560,7 @@ func opResize(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opInsert(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -591,10 +581,7 @@ func opInsert(prgrm *CXProgram) {
 	}
 }
 
-func opRemove(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opRemove(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -606,10 +593,7 @@ func opRemove(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opCopy(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opCopy(expr *CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -744,28 +728,15 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
-	byts := encoder.Serialize(string(buildString(expr, fp)))
-	WriteObject(out1Offset, byts)
+func opSprintf(expr *CXExpression, fp int) {
+	WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
 }
 
-func opPrintf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opPrintf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opRead(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 

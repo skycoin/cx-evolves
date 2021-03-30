@@ -462,7 +462,6 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
-	sPrgrm.BCPackageCount = int32(prgrm.BCPackageCount)
 	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
 }
 
@@ -649,6 +648,7 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 }
 
 // SplitSerialize ...
+// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
@@ -818,10 +818,7 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	return byts
 }
 
-func opSerialize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opSerialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -836,18 +833,15 @@ func opSerialize(prgrm *CXProgram) {
 	WriteI32(out1Offset, int32(slcOff))
 }
 
-func opDeserialize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opDeserialize(expr *CXExpression, fp int) {
 	inp := expr.Inputs[0]
 
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := mustDeserializeI32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
+	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
 
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	l := mustDeserializeI32(_l[4:8])
+	l := Deserialize_i32(_l[4:8])
 
 	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
@@ -858,7 +852,7 @@ func dsName(off int32, size int32, s *sAll) string {
 	}
 
 	var name string
-	mustDeserializeRaw(s.Names[off:off+size], &name)
+	DeserializeRaw(s.Names[off:off+size], &name)
 
 	return name
 }
@@ -1178,7 +1172,6 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
 	prgrm.HeapSize = int(s.Program.HeapSize)
-	prgrm.BCPackageCount = int(s.Program.BCPackageCount)
 	prgrm.Version = dsName(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	dsPackages(s, prgrm)
@@ -1191,15 +1184,15 @@ func Deserialize(byts []byte) (prgrm *CXProgram) {
 
 	var s sAll
 
-	mustDeserializeRaw(byts[:idxSize], &s.Index)
-	mustDeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	mustDeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	mustDeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	mustDeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	mustDeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	mustDeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	mustDeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	mustDeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
+	DeserializeRaw(byts[:idxSize], &s.Index)
+	DeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	DeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	DeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	DeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	DeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	DeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	DeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	DeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
 	s.Names = byts[s.Index.NamesOffset:s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset:]
 
@@ -1217,14 +1210,14 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	var index1 sIndex
 	var index2 sIndex
 
-	mustDeserializeRaw((*sPrgrm1)[:idxSize], &index1)
-	mustDeserializeRaw((*sPrgrm2)[:idxSize], &index2)
+	DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
+	DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	mustDeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	mustDeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
@@ -1237,282 +1230,13 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	}
 }
 
-// updateSerializedSize updates the header of each of the serialized parts of a CX program. For example, if in a full CX program there were 5 packages and after extracting the transaction or blockchain parts of it, there are now 3 packages, updateSerializedSize updates this size in the header of the serialization.
-func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
-	if len((*byts)[off1:off2]) == 0 {
-		return
-	}
-	WriteMemI32(*byts, int(off1), int32((off2-off1-4)/int32(n)))
-}
-
-// ExtractBlockchainProgram extracts the blockchain program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
-func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := encoder.Size(sIndex{})
-
-	var index1 sIndex
-	var index2 sIndex
-
-	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
-	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
-
-	var prgrm1Info sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
-
-	var prgrm2Info sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
-
-	var extracted []byte
-	// must match the index from sPrgrm1
-	extracted = append(extracted, sPrgrm1[:index1.ProgramOffset]...)
-
-	// Program
-	var sPrgrm sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
-	// We need the heap pointer calculated after running the program, which is
-	// present in `sPrgrm2`.
-	sPrgrm.HeapPointer = prgrm2Info.HeapPointer
-	extracted = append(extracted, encoder.Serialize(sPrgrm)...)
-
-	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.StructsOffset:index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset:index2.FunctionsOffset+(index1.ExpressionsOffset-index1.FunctionsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset:index2.ExpressionsOffset+(index1.ArgumentsOffset-index1.ExpressionsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset:index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset)]...)
-
-	// We were also simulating an empty stack, but it doesn't make sense now.
-	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
-	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
-	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
-	prgrm2HeapStart := index2.MemoryOffset + prgrm2Info.HeapStartsAt
-
-	// Adding data segment.
-	extracted = append(extracted, sPrgrm2[prgrm2DataStart:prgrm2DataStart+prgrm1DataSize]...)
-	// Adding heap segment.
-	extracted = append(extracted, sPrgrm2[prgrm2HeapStart:prgrm2HeapStart+prgrm2Info.HeapPointer]...)
-
-	// correcting sizes
-	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, int(encoder.Size(sCall{})))
-	updateSerializedSize(&extracted, index1.PackagesOffset, index1.StructsOffset, int(encoder.Size(sPackage{})))
-	updateSerializedSize(&extracted, index1.StructsOffset, index1.FunctionsOffset, int(encoder.Size(sStruct{})))
-	updateSerializedSize(&extracted, index1.FunctionsOffset, index1.ExpressionsOffset, int(encoder.Size(sFunction{})))
-	updateSerializedSize(&extracted, index1.ExpressionsOffset, index1.ArgumentsOffset, int(encoder.Size(sExpression{})))
-	updateSerializedSize(&extracted, index1.ArgumentsOffset, index1.IntegersOffset, int(encoder.Size(sArgument{})))
-	updateSerializedSize(&extracted, index1.IntegersOffset, index1.NamesOffset, int(encoder.Size(int32(0))))
-
-	return extracted
-}
-
-// ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program.
-func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := encoder.Size(sIndex{})
-
-	var index1 sIndex
-	var index2 sIndex
-
-	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
-	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
-
-	var prgrm1Info sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
-
-	var prgrm2Info sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
-
-	var extracted []byte
-	// must match the index from sPrgrm2
-	extracted = append(extracted, sPrgrm2[:index2.ProgramOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.ProgramOffset:index2.CallsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset):index2.PackagesOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset):index2.StructsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset):index2.FunctionsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset+(index1.ExpressionsOffset-index1.FunctionsOffset):index2.ExpressionsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset+(index1.ArgumentsOffset-index1.ExpressionsOffset):index2.ArgumentsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset):index2.IntegersOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
-
-	// Calculating where the data segment starts and its sizes in `sPrgrm1` and `sPrgrm2`.
-	// In this case, the heap segment of the transaction code should not be appended.
-	// The transaction code heap should only be auxiliary in the process of updating
-	// the CX chain program state.
-	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
-	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
-	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
-
-	// Adding data segment.
-	extracted = append(extracted, sPrgrm2[prgrm2DataStart+prgrm1DataSize:prgrm2DataStart+prgrm1DataSize+(prgrm2DataSize-prgrm1DataSize)]...)
-
-	return extracted
-}
-
-// MergeTransactionAndBlockchain merges the serialized CX programs that represent a transaction and the program state stored on the blockchain.
-func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := encoder.Size(sIndex{})
-
-	var index1 sIndex
-	var index2 sIndex
-
-	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
-	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
-
-	var prgrm1Info sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
-
-	var prgrm2Info sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
-
-	var acc int32
-	var s int32
-	var merged []byte
-
-	// Index
-	merged = append(merged, sPrgrm2[:index2.ProgramOffset]...)
-	acc = index2.ProgramOffset
-
-	// Program
-	var sPrgrm sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &sPrgrm)
-	// We need to use the heap pointer from the CX chain program state, which is
-	// represented by `sPrgrm1`.
-	sPrgrm.HeapPointer = prgrm1Info.HeapPointer
-	merged = append(merged, encoder.Serialize(sPrgrm)...)
-	acc += index2.CallsOffset - index2.ProgramOffset
-
-	// Calls
-	s = (index2.PackagesOffset - index2.CallsOffset) - (index1.PackagesOffset - index1.CallsOffset)
-	merged = append(merged, sPrgrm1[index1.CallsOffset:index1.PackagesOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Packages
-	s = (index2.StructsOffset - index2.PackagesOffset) - (index1.StructsOffset - index1.PackagesOffset)
-	merged = append(merged, sPrgrm1[index1.PackagesOffset:index1.StructsOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Structs
-	s = (index2.FunctionsOffset - index2.StructsOffset) - (index1.FunctionsOffset - index1.StructsOffset)
-	merged = append(merged, sPrgrm1[index1.StructsOffset:index1.FunctionsOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Functions
-	s = (index2.ExpressionsOffset - index2.FunctionsOffset) - (index1.ExpressionsOffset - index1.FunctionsOffset)
-	merged = append(merged, sPrgrm1[index1.FunctionsOffset:index1.ExpressionsOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Expressions
-	s = (index2.ArgumentsOffset - index2.ExpressionsOffset) - (index1.ArgumentsOffset - index1.ExpressionsOffset)
-	merged = append(merged, sPrgrm1[index1.ExpressionsOffset:index1.ArgumentsOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Arguments
-	s = (index2.IntegersOffset - index2.ArgumentsOffset) - (index1.IntegersOffset - index1.ArgumentsOffset)
-	merged = append(merged, sPrgrm1[index1.ArgumentsOffset:index1.IntegersOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Integers
-	s = (index2.NamesOffset - index2.IntegersOffset) - (index1.NamesOffset - index1.IntegersOffset)
-	merged = append(merged, sPrgrm1[index1.IntegersOffset:index1.NamesOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Names
-	s = (index2.MemoryOffset - index2.NamesOffset) - (index1.MemoryOffset - index1.NamesOffset)
-	merged = append(merged, sPrgrm1[index1.NamesOffset:index1.MemoryOffset]...)
-	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
-
-	// Memory
-	// For now we need to create an empty stack so we can run the merged blockchain and transaction codes.
-	merged = append(merged, make([]byte, prgrm2Info.StackSize)...)
-	// We're not incrementing `acc` with stack size because we're ignoring that memory segment for now.
-	// acc += prgrm2Info.StackSize
-
-	// prgrm1DataStart := index1.MemoryOffset+prgrm1Info.StackSize
-	prgrm1DataStart := index1.MemoryOffset
-	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
-
-	// prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
-	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
-
-	s = prgrm2DataSize - prgrm1DataSize
-
-	bcDataSegment := sPrgrm1[prgrm1DataStart : prgrm1DataStart+prgrm1DataSize]
-	txnDataSegment := sPrgrm2[acc : acc+s]
-
-	// Data segments from blockchain and transaction codes.
-	merged = append(merged, bcDataSegment...)
-	merged = append(merged, txnDataSegment...)
-
-	// Adding heap segment.
-	bcHeapSegment := sPrgrm1[index1.MemoryOffset+prgrm1DataSize : index1.MemoryOffset+prgrm1DataSize+prgrm1Info.HeapPointer]
-	merged = append(merged, bcHeapSegment...)
-
-	// correcting sizes
-	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, int(encoder.Size(sCall{})))
-	updateSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, int(encoder.Size(sPackage{})))
-	updateSerializedSize(&merged, index2.StructsOffset, index2.FunctionsOffset, int(encoder.Size(sStruct{})))
-	updateSerializedSize(&merged, index2.FunctionsOffset, index2.ExpressionsOffset, int(encoder.Size(sFunction{})))
-	updateSerializedSize(&merged, index2.ExpressionsOffset, index2.ArgumentsOffset, int(encoder.Size(sExpression{})))
-	updateSerializedSize(&merged, index2.ArgumentsOffset, index2.IntegersOffset, int(encoder.Size(sArgument{})))
-	updateSerializedSize(&merged, index2.IntegersOffset, index2.NamesOffset, int(encoder.Size(int32(0))))
-
-	return merged
-}
-
-// MergePrograms merges `prgrm1` and `prgrm2`, favoring `prgrm1` (if both have a package with the same name, `prgrm1`'s is used). Note: `prgrm2` is permanently altered.
-func MergePrograms(prgrm1, prgrm2 *CXProgram) *CXProgram {
-	for _, pkg := range prgrm1.Packages {
-		// We're always going to keep prgrm2's main
-		if pkg.Name == MAIN_PKG {
-			continue
-		}
-		if dupPkg, err := prgrm2.GetPackage(pkg.Name); err == nil {
-			// Then it's duplicated and we need to replace it by prgrm1's
-			*dupPkg = *pkg
-		} else {
-			prgrm2.AddPackage(pkg)
-		}
-	}
-
-	DataOffset := prgrm1.HeapStartsAt
-	for _, pkg := range prgrm2.Packages {
-		for _, glbl := range pkg.Globals {
-			glbl.Offset += DataOffset
-		}
-
-		for _, fn := range pkg.Functions {
-			for _, expr := range fn.Expressions {
-				for _, inp := range expr.Inputs {
-					if inp.Offset > prgrm2.StackSize {
-						inp.Offset += DataOffset
-					}
-				}
-
-				for _, out := range expr.Inputs {
-					if out.Offset > prgrm2.StackSize {
-						out.Offset += DataOffset
-					}
-				}
-			}
-		}
-	}
-
-	return prgrm2
-}
-
 // GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
+// Only used in one place? Delete if possible
+// ./cxgo/cxlexer/state.go:30:	memOffset := cxcore.GetSerializedMemoryOffset(progS)
 func GetSerializedMemoryOffset(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 	return int(index.MemoryOffset)
 }
 
@@ -1520,10 +1244,10 @@ func GetSerializedMemoryOffset(sPrgrm []byte) int {
 func GetSerializedStackSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo sProgram
-	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.StackSize)
 }
@@ -1532,10 +1256,10 @@ func GetSerializedStackSize(sPrgrm []byte) int {
 func GetSerializedDataSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo sProgram
-	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }
