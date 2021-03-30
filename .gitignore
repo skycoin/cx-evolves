@@ -6,3 +6,6 @@ evolve/evolve
 
 # Ignore Emacs backup files.
 *~
+
+# Ignore vendor files
+vendor/
