@@ -7,7 +7,6 @@ import (
 
 	copier "github.com/jinzhu/copier"
 	cxast "github.com/skycoin/cx/cx/ast"
-	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 // Debug just prints its input arguments using `fmt.Println`.

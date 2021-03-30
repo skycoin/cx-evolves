@@ -80,7 +80,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 
 	var newPkg cxast.CXPackage
 	copier.Copy(&newPkg, *pkg)
-	pkgs := make([]*cxcore.CXPackage, len(prgrm.Packages))
+	pkgs := make([]*cxast.CXPackage, len(prgrm.Packages))
 	for i := range pkgs {
 		pkgs[i] = prgrm.Packages[i]
 	}
@@ -106,7 +106,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 
 	solutionName := fn.Name
 
-	tmpFns := make([]*cxcore.CXFunction, len(newPkg.Functions))
+	tmpFns := make([]*cxast.CXFunction, len(newPkg.Functions))
 	for i := range tmpFns {
 		tmpFns[i] = newPkg.Functions[i]
 	}
