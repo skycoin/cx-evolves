@@ -7,7 +7,8 @@
 ```
 $go get -u ./...
 $go mod verify 
-$go mod vendor
+$go mod tidy
+$go mod download
 ```
 
 # High priority tasks
