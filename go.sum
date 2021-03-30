@@ -55,12 +55,8 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5I
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.8.0 h1:nfhvjKcUMhBMVqbKHJlk5RPrrfYr/NMo3692g0dwfWU=
 github.com/sirupsen/logrus v1.8.0/go.mod h1:4GuYW9TZmE769R5STWrRakJc4UqQ3+QQ95fyz7ENv1A=
-github.com/skycoin/cx v0.7.6-0.20210328035215-ec0b85ade7d0 h1:3aABDl1Mkdym3BOVgiNa8GhGOYVE3bvKkbRbf7VM43Q=
-github.com/skycoin/cx v0.7.6-0.20210328035215-ec0b85ade7d0/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
-github.com/skycoin/cx v0.7.6-0.20210328041536-8b377fab3685 h1:v7UT3eQ0tW5TwzkhMWurGBNyUg14jUqF9OFrM/ohvbo=
-github.com/skycoin/cx v0.7.6-0.20210328041536-8b377fab3685/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
-github.com/skycoin/cx v0.7.6-0.20210328134130-8fd96e12fa00 h1:XsDSe2ATc9C+F+HUi6+RpZL9HcnfyDORRXv5ziD+D4E=
-github.com/skycoin/cx v0.7.6-0.20210328134130-8fd96e12fa00/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
+github.com/skycoin/cx v0.7.6-0.20210330083608-499dd6f9e769 h1:N7wF4xJlcwuWYFkHb9CpxJikAgXDJ7FvTIztIS6SJBA=
+github.com/skycoin/cx v0.7.6-0.20210330083608-499dd6f9e769/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14/go.mod h1:Zy/QpZ0lNGam8oqDXU0wMeNe6yZbTnMueJrz8CeAzt8=
 github.com/skycoin/skycoin v0.27.1 h1:HatxsRwVSPaV4qxH6290xPBmkH/HgiuAoY2qC+e8C9I=
 github.com/skycoin/skycoin v0.27.1/go.mod h1:78nHjQzd8KG0jJJVL/j0xMmrihXi70ti63fh8vXScJw=

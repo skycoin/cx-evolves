@@ -26,13 +26,13 @@ const (
 // }
 
 // mirrorMutation swaps a gene (*CXExpression) from fn.Expressions (our genome) in a mirror-like manner.
-func mirrorMutation(fn *cxast.CXFunction) {
-	randIdx := rand.Intn(len(fn.Expressions))
-	tmpExpr := fn.Expressions[randIdx]
-	mirrorIdx := len(fn.Expressions) - randIdx - 1
-	fn.Expressions[randIdx] = fn.Expressions[mirrorIdx]
-	fn.Expressions[mirrorIdx] = tmpExpr
-}
+// func mirrorMutation(fn *cxcore.CXFunction) {
+// 	randIdx := rand.Intn(len(fn.Expressions))
+// 	tmpExpr := fn.Expressions[randIdx]
+// 	mirrorIdx := len(fn.Expressions) - randIdx - 1
+// 	fn.Expressions[randIdx] = fn.Expressions[mirrorIdx]
+// 	fn.Expressions[mirrorIdx] = tmpExpr
+// }
 
 func randomMutation(pop *Population, sPrgrm []byte) {
 	fnToEvolve := pop.FunctionToEvolve
@@ -45,24 +45,24 @@ func randomMutation(pop *Population, sPrgrm []byte) {
 	resetPrgrm(pop.Individuals[randIdx])
 }
 
-func bitflipMutation(fn *cxast.CXFunction, fnBag []*cxast.CXFunction) {
-	rndExprIdx := rand.Intn(len(fn.Expressions))
-	rndFn := getRandFn(fnBag)
+// func bitflipMutation(fn *cxcore.CXFunction, fnBag []*cxcore.CXFunction) {
+// 	rndExprIdx := rand.Intn(len(fn.Expressions))
+// 	rndFn := getRandFn(fnBag)
 
-	expr := cxast.MakeExpression(rndFn, "", -1)
-	expr.Package = fn.Package
-	expr.Inputs = fn.Expressions[rndExprIdx].Inputs
-	expr.Outputs = fn.Expressions[rndExprIdx].Outputs
+// 	expr := cxcore.MakeExpression(rndFn, "", -1)
+// 	expr.Package = fn.Package
+// 	expr.Inputs = fn.Expressions[rndExprIdx].Inputs
+// 	expr.Outputs = fn.Expressions[rndExprIdx].Outputs
 
-	exprs := make([]*cxast.CXExpression, len(fn.Expressions))
-	for i, ex := range fn.Expressions {
-		if i == rndExprIdx {
-			exprs[i] = expr
-		} else {
-			exprs[i] = ex
-		}
-	}
+// 	exprs := make([]*cxcore.CXExpression, len(fn.Expressions))
+// 	for i, ex := range fn.Expressions {
+// 		if i == rndExprIdx {
+// 			exprs[i] = expr
+// 		} else {
+// 			exprs[i] = ex
+// 		}
+// 	}
 
-	// fn.Expressions[rndExprIdx] = expr
-	fn.Expressions = exprs
-}
+// 	// fn.Expressions[rndExprIdx] = expr
+// 	fn.Expressions = exprs
+// }
