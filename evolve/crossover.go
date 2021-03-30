@@ -3,8 +3,8 @@ package evolve
 import (
 	"math/rand"
 
-	cxcore "github.com/skycoin/cx/cx"
 	copier "github.com/jinzhu/copier"
+	cxast "github.com/skycoin/cx/cx/ast"
 )
 
 // Codes associated to each of the crossover functions.
@@ -13,7 +13,7 @@ const (
 )
 
 // getCrossoverFn returns the crossover function associated to `crossoverCode`.
-func (pop *Population) getCrossoverFn() func(*cxcore.CXFunction, *cxcore.CXFunction) (*cxcore.CXFunction, *cxcore.CXFunction) {
+func (pop *Population) getCrossoverFn() func(*cxast.CXFunction, *cxast.CXFunction) (*cxast.CXFunction, *cxast.CXFunction) {
 	crossoverCode := pop.CrossoverMethod
 	switch crossoverCode {
 	case CrossoverSinglePoint:
@@ -25,8 +25,8 @@ func (pop *Population) getCrossoverFn() func(*cxcore.CXFunction, *cxcore.CXFunct
 }
 
 // singlePointCrossover ...
-func singlePointCrossover(parent1, parent2 *cxcore.CXFunction) (*cxcore.CXFunction, *cxcore.CXFunction) {
-	var child1, child2 cxcore.CXFunction
+func singlePointCrossover(parent1, parent2 *cxast.CXFunction) (*cxast.CXFunction, *cxast.CXFunction) {
+	var child1, child2 cxast.CXFunction
 
 	cutPoint := rand.Intn(len(parent1.Expressions))
 
@@ -37,7 +37,7 @@ func singlePointCrossover(parent1, parent2 *cxcore.CXFunction) (*cxcore.CXFuncti
 	// reprint.FromTo(parent1, &child1)
 
 	// Replacing reference to slice.
-	child1.Expressions = make([]*cxcore.CXExpression, len(child1.Expressions))
+	child1.Expressions = make([]*cxast.CXExpression, len(child1.Expressions))
 
 	// It's okay to keep the same references to expressions, though.
 	// We only want to be handling a different slice of `*CXExpression`s.
@@ -52,7 +52,7 @@ func singlePointCrossover(parent1, parent2 *cxcore.CXFunction) (*cxcore.CXFuncti
 	// reprint.FromTo(parent2, &child2)
 
 	// Replacing expressions as we did for `child1`.
-	child2.Expressions = make([]*cxcore.CXExpression, len(child2.Expressions))
+	child2.Expressions = make([]*cxast.CXExpression, len(child2.Expressions))
 
 	for i, expr := range parent2.Expressions {
 		child2.Expressions[i] = expr

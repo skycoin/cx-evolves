@@ -4,11 +4,12 @@ import (
 	"math/rand"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // perByteEvaluation for evolve with network sim, 1 i32 input, 1 i32 output
-func perByteEvaluation_NetworkSim(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
 	var score int = 0
 	for rounds := 0; rounds < numberOfRounds; rounds++ {
 		// Generate random Input
@@ -31,9 +32,9 @@ func perByteEvaluation_NetworkSim(ind *cxcore.CXProgram, solPrototype *cxcore.CX
 }
 
 // perByteEvaluation for evolve with network sim transmitter, 1 i32 input, 1 i32 output
-func perByteEvaluation_NetworkSim_Transmitter(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, input []byte) []byte {
-	var tmp *cxcore.CXProgram = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
+func perByteEvaluation_NetworkSim_Transmitter(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, input []byte) []byte {
+	var tmp *cxast.CXProgram = cxast.PROGRAM
+	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
 	for c := 0; c < len(solPrototype.Inputs); c++ {
@@ -54,20 +55,20 @@ func perByteEvaluation_NetworkSim_Transmitter(ind *cxcore.CXProgram, solPrototyp
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	ind.RunCompiled(0, nil)
+	cxexecute.RunCompiled(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
 	data := simOuts[0]
 
-	cxcore.PROGRAM = tmp
+	cxast.PROGRAM = tmp
 	return data
 }
 
 // perByteEvaluation for evolve with network sim receiver, 1 i32 input, 1 i32 output
-func perByteEvaluation_NetworkSim_Receiver(ind *cxcore.CXProgram, solPrototype *cxcore.CXFunction, input []byte) []byte {
-	var tmp *cxcore.CXProgram = cxcore.PROGRAM
-	cxcore.PROGRAM = ind
+func perByteEvaluation_NetworkSim_Receiver(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, input []byte) []byte {
+	var tmp *cxast.CXProgram = cxast.PROGRAM
+	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
 	for c := 0; c < len(solPrototype.Inputs); c++ {
@@ -88,14 +89,14 @@ func perByteEvaluation_NetworkSim_Receiver(ind *cxcore.CXProgram, solPrototype *
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	ind.RunCompiled(0, nil)
+	cxexecute.RunCompiled(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
 
 	data := simOuts[0]
 
-	cxcore.PROGRAM = tmp
+	cxast.PROGRAM = tmp
 	return data
 }
 

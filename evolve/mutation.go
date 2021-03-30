@@ -3,7 +3,7 @@ package evolve
 import (
 	"math/rand"
 
-	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
 )
 
 // Codes associated to each of the mutation functions.
@@ -14,7 +14,7 @@ const (
 )
 
 // getCrossoverFn returns the crossover function associated to `mutationCode`.
-// func (pop *Population) getMutationFn(mutationCode int) func(*cxcore.CXFunction) {
+// func (pop *Population) getMutationFn(mutationCode int) func(*cxast.CXFunction) {
 // 	switch mutationCode {
 // 	case MutationRandom:
 // 		return randomMutation
@@ -26,7 +26,7 @@ const (
 // }
 
 // mirrorMutation swaps a gene (*CXExpression) from fn.Expressions (our genome) in a mirror-like manner.
-func mirrorMutation(fn *cxcore.CXFunction) {
+func mirrorMutation(fn *cxast.CXFunction) {
 	randIdx := rand.Intn(len(fn.Expressions))
 	tmpExpr := fn.Expressions[randIdx]
 	mirrorIdx := len(fn.Expressions) - randIdx - 1
@@ -39,22 +39,22 @@ func randomMutation(pop *Population, sPrgrm []byte) {
 	numExprs := pop.ExpressionsCount
 	fns := pop.FunctionSet
 	randIdx := rand.Intn(len(pop.Individuals))
-	pop.Individuals[randIdx] = cxcore.Deserialize(sPrgrm)
+	pop.Individuals[randIdx] = cxast.Deserialize(sPrgrm)
 	initSolution(pop.Individuals[randIdx], fnToEvolve, fns, numExprs)
 	adaptSolution(pop.Individuals[randIdx], fnToEvolve)
 	resetPrgrm(pop.Individuals[randIdx])
 }
 
-func bitflipMutation(fn *cxcore.CXFunction, fnBag []*cxcore.CXFunction) {
+func bitflipMutation(fn *cxast.CXFunction, fnBag []*cxast.CXFunction) {
 	rndExprIdx := rand.Intn(len(fn.Expressions))
 	rndFn := getRandFn(fnBag)
 
-	expr := cxcore.MakeExpression(rndFn, "", -1)
+	expr := cxast.MakeExpression(rndFn, "", -1)
 	expr.Package = fn.Package
 	expr.Inputs = fn.Expressions[rndExprIdx].Inputs
 	expr.Outputs = fn.Expressions[rndExprIdx].Outputs
 
-	exprs := make([]*cxcore.CXExpression, len(fn.Expressions))
+	exprs := make([]*cxast.CXExpression, len(fn.Expressions))
 	for i, ex := range fn.Expressions {
 		if i == rndExprIdx {
 			exprs[i] = expr

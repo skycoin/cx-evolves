@@ -5,13 +5,16 @@ import (
 	"os"
 	"time"
 
-	evolve "github.com/skycoin/cx-evolves/evolve"
-	cxcore "github.com/skycoin/cx/cx"
-	actions "github.com/skycoin/cx/cxgo/actions"
-	cxgo "github.com/skycoin/cx/cxgo/cxgo"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+
+	evolve "github.com/skycoin/cx-evolves/evolve"
+	cxcore "github.com/skycoin/cx/cx"
+	cxast "github.com/skycoin/cx/cx/ast"
+	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxglobals "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/cxparser"
 )
 
 // Maze and Output Configuration
@@ -76,41 +79,41 @@ var (
 	outputSignature []string
 )
 
-func InitialProgram() *cxcore.CXProgram {
+func InitialProgram() *cxast.CXProgram {
 	// Creating the initial CX program.
-	prgrm := cxcore.MakeProgram()
-	prgrm.SelectProgram()
+	prgrm := cxast.MakeProgram()
+	prgrm.SetCurrentCxProgram()
 	actions.SelectProgram(prgrm)
 
 	// Adding `main` package.
-	mainPkg := cxcore.MakePackage(cxcore.MAIN_PKG)
+	mainPkg := cxast.MakePackage(cxconstants.MAIN_PKG)
 	prgrm.AddPackage(mainPkg)
 
 	// Adding `main` function to `main` package.
-	mainFn := cxcore.MakeFunction(cxcore.MAIN_FUNC, "", -1)
+	mainFn := cxast.MakeFunction(cxconstants.MAIN_FUNC, "", -1)
 	mainFn.Package = mainPkg
 	mainPkg.AddFunction(mainFn)
 
 	// Adding function to evolve (`FunctionToEvolve`).
-	toEvolveFn := cxcore.MakeFunction(functionToEvolve, "", -1)
+	toEvolveFn := cxast.MakeFunction(functionToEvolve, "", -1)
 	mainPkg.AddFunction(toEvolveFn)
 
 	// Adding input signature to function to evolve (`FunctionToEvolve`).
 	for _, inpType := range inputSignature {
-		inp := cxcore.MakeArgument(cxcore.MakeGenSym("evo_inp"), "", -1).AddType(inpType)
+		inp := cxast.MakeArgument(cxglobals.MakeGenSym("evo_inp"), "", -1).AddType(inpType)
 		inp.AddPackage(mainPkg)
 		toEvolveFn.AddInput(inp)
 	}
 
 	// Adding output signature to function to evolve (`FunctionToEvolve`).
 	for _, outType := range outputSignature {
-		out := cxcore.MakeArgument(cxcore.MakeGenSym("evo_out"), "", -1).AddType(outType)
+		out := cxast.MakeArgument(cxglobals.MakeGenSym("evo_out"), "", -1).AddType(outType)
 		out.AddPackage(mainPkg)
 		toEvolveFn.AddOutput(out)
 	}
 
 	// Creating an init function for the CX program.
-	cxgo.AddInitFunction(prgrm)
+	cxparser.AddInitFunction(prgrm)
 
 	return prgrm
 }
@@ -312,6 +315,9 @@ func Evolve() {
 		inputSignature = []string{"i32"}
 		outputSignature = []string{"i32"}
 	}
+
+	// Load op code tables
+	cxcore.LoadOpCodeTables()
 
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()
