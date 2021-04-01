@@ -177,45 +177,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		for i := range pop.Individuals {
 			wg.Add(1)
 			go func(j int) {
-				if cfg.MazeBenchmark {
-					output[j] = mazeMovesEvaluation(pop.Individuals[j], solProt, game)
-				}
-
-				if cfg.ConstantsBenchmark {
-					intOut := perByteEvaluation_Constants(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.EvensBenchmark {
-					intOut := perByteEvaluation_Evens(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.OddsBenchmark {
-					intOut := perByteEvaluation_Odds(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.PrimesBenchmark {
-					intOut := perByteEvaluation_Primes(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.CompositesBenchmark {
-					intOut := perByteEvaluation_Composites(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.RangeBenchmark {
-					intOut := perByteEvaluation_Range(pop.Individuals[j], solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
-					output[j] = float64(intOut)
-				}
-
-				if cfg.NetworkSimBenchmark {
-					intOut := perByteEvaluation_NetworkSim(pop.Individuals[j], solProt, cfg.NumberOfRounds)
-					output[j] = float64(intOut)
-				}
-
+				output[j] = RunBenchmark(pop.Individuals[j], solProt, &cfg, &game)
 				wg.Done()
 				fmt.Printf("output of program[%v]:%v\n", j, output[j])
 			}(i)
@@ -252,26 +214,83 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		// Add fittest values for Fittest per generation graph
 		mostFit = append(mostFit, fittest)
 
+		// if cfg.SaveAST {
+		// 	// Save best ASTs per generation
+		// 	saveASTDirectory := saveDirectory + "AST/"
+		// 	astName := fmt.Sprintf("Generation_%v", c)
+
+		// 	// Save as human-readable string .txt format
+		// 	astAsString := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
+		// 	if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astAsString, 0644); err != nil {
+		// 		panic(err)
+		// 	}
+
+		// 	// Save as serialized bytes.
+		// 	astInBytes := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
+		// 	if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
+		// 		panic(err)
+		// 	}
+		// }
 		if cfg.SaveAST {
 			// Save best ASTs per generation
 			saveASTDirectory := saveDirectory + "AST/"
 			astName := fmt.Sprintf("Generation_%v", c)
 
-			// Save as human-readable string .txt format
-			astAsString := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
-			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astAsString, 0644); err != nil {
+			// Save as human-readable string .txt format.
+			astInBytes := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
+			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astInBytes, 0644); err != nil {
 				panic(err)
 			}
 
-			// Save as serialized bytes.
-			astInBytes := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
-			if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
-				panic(err)
-			}
+			// // Save as serialized bytes.
+			// astInBytess := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
+			// if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytess), 0644); err != nil {
+			// 	panic(err)
+			// }
+
+			// dat, _ := ioutil.ReadFile(saveASTDirectory + astName + "_serialized" + ".ast")
+			// deserProg := cxast.Deserialize(dat)
+			// fmt.Println("Deserialized ast")
+			// deserProg.PrintProgram()
 		}
 	}
 
 	if cfg.PlotFitness {
 		saveGraphs(averageValues, mostFit, histoValues, saveDirectory)
 	}
+}
+
+func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig, game *maze.Game) float64 {
+	var intOut float64
+	if cfg.MazeBenchmark {
+		intOut = mazeMovesEvaluation(cxprogram, solProt, *game)
+	}
+	if cfg.ConstantsBenchmark {
+		intOut = perByteEvaluation_Constants(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+
+	if cfg.EvensBenchmark {
+		intOut = perByteEvaluation_Evens(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+
+	if cfg.OddsBenchmark {
+		intOut = perByteEvaluation_Odds(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+
+	if cfg.PrimesBenchmark {
+		intOut = perByteEvaluation_Primes(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+
+	if cfg.CompositesBenchmark {
+		intOut = perByteEvaluation_Composites(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+
+	if cfg.RangeBenchmark {
+		intOut = perByteEvaluation_Range(cxprogram, solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
+	}
+
+	if cfg.NetworkSimBenchmark {
+		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg.NumberOfRounds)
+	}
+	return intOut
 }

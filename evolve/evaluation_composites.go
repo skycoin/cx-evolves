@@ -11,7 +11,7 @@ import (
 )
 
 // perByteEvaluation for evolve with composites numbers, 1 i32 input, 1 i32 output
-func perByteEvaluation_Composites(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Composites(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) float64 {
 	var points int64 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -57,5 +57,5 @@ func perByteEvaluation_Composites(ind *cxast.CXProgram, solPrototype *cxast.CXFu
 	}
 
 	cxast.PROGRAM = tmp
-	return points
+	return float64(points)
 }
