@@ -74,15 +74,15 @@ func getRandInp(fn *cxast.CXFunction) *cxast.CXArgument {
 	}
 	// Determining the offset where the expression should be writing to.
 	for c := 0; c < len(fn.Inputs); c++ {
-		arg.Offset += fn.Inputs[c].TotalSize
+		arg.DataSegmentOffset += fn.Inputs[c].TotalSize
 	}
 	for c := 0; c < len(fn.Outputs); c++ {
-		arg.Offset += fn.Outputs[c].TotalSize
+		arg.DataSegmentOffset += fn.Outputs[c].TotalSize
 	}
 	for c := 0; c < rndExprIdx; c++ {
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-		arg.Offset += fn.Expressions[c].Operator.Outputs[0].TotalSize
+		arg.DataSegmentOffset += fn.Expressions[c].Operator.Outputs[0].TotalSize
 	}
 
 	arg.Package = fn.Package
@@ -100,15 +100,15 @@ func getRandOut(fn *cxast.CXFunction) *cxast.CXArgument {
 	}
 	// Determining the offset where the expression should be writing to.
 	for c := 0; c < len(fn.Inputs); c++ {
-		arg.Offset += fn.Inputs[c].TotalSize
+		arg.DataSegmentOffset += fn.Inputs[c].TotalSize
 	}
 	for c := 0; c < len(fn.Outputs); c++ {
-		arg.Offset += fn.Outputs[c].TotalSize
+		arg.DataSegmentOffset += fn.Outputs[c].TotalSize
 	}
 	for c := 0; c < rndExprIdx; c++ {
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-		arg.Offset += fn.Expressions[c].Operator.Outputs[0].TotalSize
+		arg.DataSegmentOffset += fn.Expressions[c].Operator.Outputs[0].TotalSize
 	}
 
 	arg.Package = fn.Package

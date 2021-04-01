@@ -159,7 +159,7 @@ func extractMainOutputs(prgrm *cxast.CXProgram, solPrototype *cxast.CXFunction) 
 	outputs := make([][]byte, len(solPrototype.Outputs))
 	for c := 0; c < len(solPrototype.Outputs); c++ {
 		size := solPrototype.Outputs[c].TotalSize
-		off := solPrototype.Outputs[0].Offset
+		off := solPrototype.Outputs[0].DataSegmentOffset
 		outputs[c] = prgrm.Memory[off : off+size]
 	}
 
