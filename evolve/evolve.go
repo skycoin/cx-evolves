@@ -184,74 +184,17 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		}
 		wg.Wait()
 
-		var total float64 = 0
 		var fittestIndex int = 0
-		var fittest float64 = output[0]
-		for z := 0; z < len(output); z++ {
-			fitness := output[z]
-			total = total + fitness
-
-			// Get Best fitness per generation
-			if fitness < fittest {
-				fittest = fitness
-				fittestIndex = z
-			}
-
-			// Add fitness for histogram
-			histoValues = append(histoValues, float64(fitness))
+		err = UpdateGraphValues(output, &fittestIndex, &histoValues, &mostFit, &averageValues, &cfg, pop.PopulationSize)
+		if err != nil {
+			panic(err)
 		}
 
-		ave := total / float64(pop.PopulationSize)
-
-		if cfg.UseAntiLog2 {
-			ave = math.Pow(2, ave)
-			fittest = math.Pow(2, fittest)
-		}
-
-		// Add average values for Average fitness graph
-		averageValues = append(averageValues, ave)
-
-		// Add fittest values for Fittest per generation graph
-		mostFit = append(mostFit, fittest)
-
-		// if cfg.SaveAST {
-		// 	// Save best ASTs per generation
-		// 	saveASTDirectory := saveDirectory + "AST/"
-		// 	astName := fmt.Sprintf("Generation_%v", c)
-
-		// 	// Save as human-readable string .txt format
-		// 	astAsString := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
-		// 	if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astAsString, 0644); err != nil {
-		// 		panic(err)
-		// 	}
-
-		// 	// Save as serialized bytes.
-		// 	astInBytes := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
-		// 	if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
-		// 		panic(err)
-		// 	}
-		// }
 		if cfg.SaveAST {
-			// Save best ASTs per generation
-			saveASTDirectory := saveDirectory + "AST/"
-			astName := fmt.Sprintf("Generation_%v", c)
-
-			// Save as human-readable string .txt format.
-			astInBytes := []byte(cxast.ToString(pop.Individuals[fittestIndex]))
-			if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astInBytes, 0644); err != nil {
+			err := SaveAST(pop.Individuals[fittestIndex], saveDirectory, c)
+			if err != nil {
 				panic(err)
 			}
-
-			// // Save as serialized bytes.
-			// astInBytess := cxast.SerializeCXProgram(pop.Individuals[fittestIndex], false)
-			// if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytess), 0644); err != nil {
-			// 	panic(err)
-			// }
-
-			// dat, _ := ioutil.ReadFile(saveASTDirectory + astName + "_serialized" + ".ast")
-			// deserProg := cxast.Deserialize(dat)
-			// fmt.Println("Deserialized ast")
-			// deserProg.PrintProgram()
 		}
 	}
 
@@ -293,4 +236,56 @@ func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *Ev
 		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg.NumberOfRounds)
 	}
 	return intOut
+}
+
+func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) error {
+	// Save best ASTs per generation
+	saveASTDirectory := saveDir + "AST/"
+	astName := fmt.Sprintf("Generation_%v", generationNum)
+
+	// Save as human-readable string .txt format
+	astAsString := []byte(cxast.ToString(cxprogram))
+	if err := ioutil.WriteFile(saveASTDirectory+astName+".txt", astAsString, 0644); err != nil {
+		return err
+	}
+
+	// Save as serialized bytes.
+	astInBytes := cxast.SerializeCXProgram(cxprogram, false)
+	if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit, averageValues *[]float64, cfg *EvolveConfig, popuSize int) error {
+	var total float64 = 0
+	var fittest float64 = output[0]
+	for z := 0; z < len(output); z++ {
+		fitness := output[z]
+		total = total + fitness
+
+		// Get Best fitness per generation
+		if fitness < fittest {
+			fittest = fitness
+			*fittestIndex = z
+		}
+
+		// Add fitness for histogram
+		*histoValues = append(*histoValues, float64(fitness))
+	}
+
+	ave := total / float64(popuSize)
+
+	if cfg.UseAntiLog2 {
+		ave = math.Pow(2, ave)
+		fittest = math.Pow(2, fittest)
+	}
+
+	// Add average values for Average fitness graph
+	*averageValues = append(*averageValues, ave)
+
+	// Add fittest values for Fittest per generation graph
+	*mostFit = append(*mostFit, fittest)
+	return nil
 }
