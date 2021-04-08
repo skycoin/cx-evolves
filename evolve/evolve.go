@@ -95,8 +95,8 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = sPrgrm
 		_ = dead1Idx
 		_ = dead2Idx
-		// _ = child1
-		// _ = child2
+		_ = child1
+		_ = child2
 		randomMutation(pop, sPrgrm)
 
 		// Replacing individuals in population.
