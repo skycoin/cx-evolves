@@ -3,7 +3,6 @@ package evolve
 import (
 	"encoding/binary"
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) float64 {
+func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) (float64, error) {
 	player := func(gameMove *maze.GameMove) (maze.AgentInput, error) {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
@@ -34,9 +33,9 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, m
 
 	moves, err := mazeGame.MazeGame(1, player)
 	if err != nil {
-		moves = int(math.MaxInt32)
+		return 0, err
 	}
-	return float64(moves)
+	return float64(moves), nil
 }
 
 // perByteEvaluation for evolve with maze, 13 i32 input, 1 i32 output
@@ -74,7 +73,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	err := cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+	err := cxexecute.RunCompiled(ind, 0, nil)
 	if err != nil {
 		fmt.Printf("Error in runcompiled: %v\n", err)
 		return 0, err
