@@ -37,77 +37,6 @@ type EvolveConfig struct {
 	UseAntiLog2 bool
 }
 
-// Original Evolve
-// func (pop *Population) Evolve() {
-// 	errors := make([]float64, pop.PopulationSize)
-// 	numIter := pop.Iterations
-// 	solProt := pop.FunctionToEvolve
-// 	fnToEvolveName := solProt.Name
-// 	sPrgrm := cxcore.Serialize(pop.Individuals[0], 0)
-// 	targetError := pop.TargetError
-// 	inputs := pop.Inputs
-// 	outputs := pop.Outputs
-
-// 	// Evolution process.
-// 	for c := 0; c < int(numIter); c++ {
-// 		// Selection process.
-// 		pop1Idx, pop2Idx := tournamentSelection(errors, 0.5, true)
-// 		dead1Idx, dead2Idx := tournamentSelection(errors, 0.5, false)
-
-// 		pop1MainPkg, err := pop.Individuals[pop1Idx].GetPackage(cxcore.MAIN_PKG)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 		parent1, err := pop1MainPkg.GetFunction(fnToEvolveName)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-
-// 		pop2MainPkg, err := pop.Individuals[pop2Idx].GetPackage(cxcore.MAIN_PKG)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 		parent2, err := pop2MainPkg.GetFunction(fnToEvolveName)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-
-// 		// Crossover process.
-// 		crossoverFn := pop.getCrossoverFn()
-// 		child1, child2 := crossoverFn(parent1, parent2)
-// 		// child1 := parent1
-// 		// child2 := parent2
-
-// 		// Mutation process.
-// 		_ = sPrgrm
-// 		_ = dead1Idx
-// 		_ = dead2Idx
-// 		_ = child1
-// 		_ = child2
-// 		randomMutation(pop, sPrgrm)
-
-// 		// Replacing individuals in population.
-// 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
-// 		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
-
-// 		// Evaluation process.
-// 		for i, _ := range pop.Individuals {
-// 			errors[i] = perByteEvaluation(pop.Individuals[i], solProt, inputs, outputs)
-// 			if errors[i] <= targetError {
-// 				fmt.Printf("\nFound solution:\n\n")
-// 				pop.Individuals[i].PrintProgram()
-// 				return
-// 			}
-// 		}
-
-// 		avg := 0.0
-// 		for _, err := range errors {
-// 			avg += err
-// 		}
-// 		fmt.Printf("%v\n", float64(avg) / float64(len(errors)))
-// 	}
-// }
-
 // Used for concurrent output evaluation
 var wg = sync.WaitGroup{}
 
@@ -142,6 +71,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		if err != nil {
 			panic(err)
 		}
+
 		parent1, err := pop1MainPkg.GetFunction(fnToEvolveName)
 		if err != nil {
 			panic(err)
@@ -151,6 +81,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		if err != nil {
 			panic(err)
 		}
+
 		parent2, err := pop2MainPkg.GetFunction(fnToEvolveName)
 		if err != nil {
 			panic(err)
@@ -164,8 +95,8 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = sPrgrm
 		_ = dead1Idx
 		_ = dead2Idx
-		_ = child1
-		_ = child2
+		// _ = child1
+		// _ = child2
 		randomMutation(pop, sPrgrm)
 
 		// Replacing individuals in population.
@@ -177,7 +108,11 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		for i := range pop.Individuals {
 			wg.Add(1)
 			go func(j int) {
-				output[j] = RunBenchmark(pop.Individuals[j], solProt, &cfg, &game)
+				pop.Individuals[j].PrintProgram()
+				output[j], err = RunBenchmark(pop.Individuals[j], solProt, &cfg, &game)
+				if err != nil {
+					output[j] = float64(math.MaxInt32)
+				}
 				wg.Done()
 				fmt.Printf("output of program[%v]:%v\n", j, output[j])
 			}(i)
@@ -203,11 +138,14 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}
 }
 
-func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig, game *maze.Game) float64 {
-	var intOut float64
+func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig, game *maze.Game) (intOut float64, err error) {
 	if cfg.MazeBenchmark {
-		intOut = mazeMovesEvaluation(cxprogram, solProt, *game)
+		intOut, err = mazeMovesEvaluation(cxprogram, solProt, *game)
+		if err != nil {
+			return 0, err
+		}
 	}
+
 	if cfg.ConstantsBenchmark {
 		intOut = perByteEvaluation_Constants(cxprogram, solProt, cfg.NumberOfRounds)
 	}
@@ -235,7 +173,7 @@ func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *Ev
 	if cfg.NetworkSimBenchmark {
 		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg.NumberOfRounds)
 	}
-	return intOut
+	return intOut, nil
 }
 
 func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) error {
