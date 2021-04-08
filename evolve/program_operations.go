@@ -123,11 +123,18 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 	// Checking if we need to add more expressions.
 	for i := 0; i < numExprs-preExistingExpressions; i++ {
 		op := getRandFn(fns)
+		// Last expression output must be the same as function output.
+		if i == (numExprs-preExistingExpressions)-1 && len(op.Outputs) > 0 && len(newFn.Outputs) > 0 {
+			for len(op.Outputs) == 0 || op.Outputs[0].Type != newFn.Outputs[0].Type {
+				op = getRandFn(fns)
+			}
+		}
+
 		expr := cxast.MakeExpression(op, "", -1)
 		expr.Package = &newPkg
 		expr.Function = &newFn
 		for c := 0; c < len(op.Inputs); c++ {
-			expr.Inputs = append(expr.Inputs, getRandInp(&newFn))
+			expr.Inputs = append(expr.Inputs, getRandInp(expr))
 		}
 		// We need to add the expression at this point, so we
 		// can consider this expression's output as a
@@ -138,7 +145,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 			expr.Outputs = append(expr.Outputs, newFn.Outputs[0])
 		} else {
 			for c := 0; c < len(op.Outputs); c++ {
-				expr.Outputs = append(expr.Outputs, getRandOut(&newFn))
+				expr.Outputs = append(expr.Outputs, getRandOut(expr))
 			}
 		}
 	}
@@ -191,7 +198,14 @@ func replaceSolution(ind *cxast.CXProgram, solutionName string, sol *cxast.CXFun
 			// mainPkg.Functions[i] = sol
 			// We need to replace expression by expression, otherwise we'll
 			// end up with duplicated pointers all over the population.
-			for j := range sol.Expressions {
+
+			var replaceRange int
+			replaceRange = len(mainPkg.Functions[i].Expressions)
+			if len(sol.Expressions) < len(mainPkg.Functions[i].Expressions) {
+				replaceRange = len(sol.Expressions)
+			}
+
+			for j := 0; j < replaceRange; j++ {
 				mainPkg.Functions[i].Expressions[j] = sol.Expressions[j]
 			}
 		}
