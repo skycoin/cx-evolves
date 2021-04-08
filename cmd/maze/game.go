@@ -30,13 +30,12 @@ func (game *Game) Init(w, h int) {
 	game.maze = StartMaze(w, h)
 }
 
-func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) AgentInput) int {
+func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) (AgentInput, error)) (int, error) {
 	var moves int
 	var reachTime time.Duration
 	var stopTime time.Duration
 	var histoValues plotter.Values
 	var gameMove *GameMove
-	var agentInput AgentInput
 	var movedToAWall bool
 
 	maxMoves := 100 * game.maze.Width * game.maze.Height
@@ -68,7 +67,10 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) Age
 		startTime := time.Now()
 
 		for !reachedGoal {
-			agentInput = InputCallback(player, gameMove)
+			agentInput, err := InputCallback(player, gameMove)
+			if err != nil {
+				return 0, err
+			}
 			movedToAWall = false
 			gameMove.ErrorCode = 0
 			gameMove.ErrorMsg = ""
@@ -161,7 +163,7 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) Age
 		histogramPlot(histoValues, "Number Of Moves The Random Player Took", histoSaveDirectory+"MovesHistogram-"+time.Now().Format(time.RFC3339)+".png")
 	}
 
-	return moves
+	return moves, nil
 }
 
 func (game *Game) CountSquaresBeforeWall(currPos Point, direction int) int {

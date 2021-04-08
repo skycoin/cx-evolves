@@ -8,6 +8,7 @@
 $go get -u ./...
 $go mod verify 
 $go mod tidy
+$go mod update
 $go mod download
 ```
 

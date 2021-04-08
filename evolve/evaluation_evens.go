@@ -10,7 +10,7 @@ import (
 )
 
 // perByteEvaluation for evolve with even numbers, 1 i32 input, 1 i32 output
-func perByteEvaluation_Evens(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Evens(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) float64 {
 	var points int64 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -40,7 +40,7 @@ func perByteEvaluation_Evens(ind *cxast.CXProgram, solPrototype *cxast.CXFunctio
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		cxexecute.RunCompiled(ind, 0, nil)
+		cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
 
 		// Extracting outputs processed by `solPrototype`.
 		simOuts := extractMainOutputs(ind, solPrototype)
@@ -55,5 +55,5 @@ func perByteEvaluation_Evens(ind *cxast.CXProgram, solPrototype *cxast.CXFunctio
 	}
 
 	cxast.PROGRAM = tmp
-	return points
+	return float64(points)
 }

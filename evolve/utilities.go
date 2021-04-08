@@ -7,6 +7,7 @@ import (
 
 	copier "github.com/jinzhu/copier"
 	cxast "github.com/skycoin/cx/cx/ast"
+	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 // Debug just prints its input arguments using `fmt.Println`.
@@ -49,71 +50,139 @@ func calcFnSize(fn *cxast.CXFunction) (size int) {
 	return size
 }
 
-func getRandInp(fn *cxast.CXFunction) *cxast.CXArgument {
+func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
+	var rndExprIdx int
+	var argToCopy *cxast.CXArgument
 	var arg cxast.CXArgument
-	// Unlike getRandOut, we need to also consider the function inputs.
-	rndExprIdx := rand.Intn(len(fn.Inputs) + len(fn.Expressions))
-	// Then we're returning one of fn.Inputs as the input argument.
-	if rndExprIdx < len(fn.Inputs) {
-		// Making a copy of the operator.
-		// Inputs should have already a compiled offset.
-		err := copier.Copy(&arg, fn.Inputs[rndExprIdx])
-		if err != nil {
-			panic(err)
-		}
-		arg.Package = fn.Package
-		return &arg
+
+	// Find available arg options.
+	optionsFromInputs, optionsFromExpressions := findArgOptions(expr, expr.Operator.Inputs[0].Type)
+	lengthOfOptions := len(optionsFromInputs) + len(optionsFromExpressions)
+
+	// if no options available or if operator is jump, add new i32_LT expression.
+	if lengthOfOptions == 0 || expr.Operator.OpCode == cxconstants.OP_JMP {
+		return addNewExpression(expr, cxconstants.OP_I32_LT)
 	}
-	// It was not a function input.
-	// We need to subtract the number of inputs to rndExprIdx.
-	rndExprIdx -= len(fn.Inputs)
+
+	rndExprIdx = rand.Intn(lengthOfOptions)
+	gotOptionsFromFunctionInputs := rndExprIdx < len(optionsFromInputs)
+
+	if gotOptionsFromFunctionInputs {
+		argToCopy = expr.Function.Inputs[optionsFromInputs[rndExprIdx]]
+	} else {
+		rndExprIdx -= len(optionsFromInputs)
+		argToCopy = expr.Function.Expressions[optionsFromExpressions[rndExprIdx]].Operator.Outputs[0]
+	}
+
 	// Making a copy of the argument
-	err := copier.Copy(&arg, fn.Expressions[rndExprIdx].Operator.Outputs[0])
+	err := copier.Copy(&arg, argToCopy)
 	if err != nil {
 		panic(err)
 	}
-	// Determining the offset where the expression should be writing to.
-	for c := 0; c < len(fn.Inputs); c++ {
-		arg.Offset += fn.Inputs[c].TotalSize
-	}
-	for c := 0; c < len(fn.Outputs); c++ {
-		arg.Offset += fn.Outputs[c].TotalSize
-	}
-	for c := 0; c < rndExprIdx; c++ {
-		// TODO: We're only considering one output per operator.
-		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-		arg.Offset += fn.Expressions[c].Operator.Outputs[0].TotalSize
-	}
 
-	arg.Package = fn.Package
-	arg.Name = strconv.Itoa(rndExprIdx)
+	if !gotOptionsFromFunctionInputs {
+		determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
+		arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+	}
+	arg.Package = expr.Function.Package
+
 	return &arg
 }
 
-func getRandOut(fn *cxast.CXFunction) *cxast.CXArgument {
+func addNewExpression(expr *cxast.CXExpression, expressionType int) *cxast.CXArgument {
+	var rndExprIdx int
+	var argToAdd *cxast.CXArgument
+
+	exp := cxast.MakeExpression(cxast.Natives[expressionType], "", -1)
+	exp.Operator.Name = cxast.OpNames[expressionType]
+
+	// Add expression's inputs
+	for i := 0; i < 2; i++ {
+		optionsFromInputs, optionsFromExpressions := findArgOptions(expr, exp.Operator.Inputs[0].Type)
+		rndExprIdx = rand.Intn(len(optionsFromInputs) + len(optionsFromExpressions))
+		if rndExprIdx < len(optionsFromInputs) {
+			argToAdd = expr.Function.Inputs[optionsFromInputs[rndExprIdx]]
+		} else {
+			rndExprIdx -= len(optionsFromInputs)
+			argToAdd = expr.Function.Expressions[optionsFromExpressions[rndExprIdx]].Outputs[0]
+		}
+		exp.AddInput(argToAdd)
+	}
+
+	// Add expression's output
+	argOutName := strconv.Itoa(len(expr.Function.Expressions))
+	argOut := cxast.MakeField(argOutName, cxconstants.TYPE_BOOL, "", -1)
+	argOut.AddType(cxconstants.TypeNames[cxconstants.TYPE_BOOL])
+	argOut.Package = expr.Function.Package
+	exp.AddOutput(argOut)
+	expr.Function.AddExpression(exp)
+
+	determineExpressionOffset(argOut, expr, len(expr.Function.Expressions))
+
+	return argOut
+}
+
+func findArgOptions(expr *cxast.CXExpression, argTypeToFind int) ([]int, []int) {
+	var optionsFromInputs []int
+	var optionsFromExpressions []int
+
+	// loop in inputs
+	for i, inp := range expr.Function.Inputs {
+		if inp.Type == argTypeToFind && inp.Name != "" {
+			// add index to options from inputs
+			optionsFromInputs = append(optionsFromInputs, i)
+		}
+	}
+
+	// loop in expression outputs
+	for i, exp := range expr.Function.Expressions {
+		if len(exp.Outputs) > 0 && exp.Outputs[0].Type == argTypeToFind && exp.Outputs[0].Name != "" {
+			// add index to options from inputs
+			optionsFromExpressions = append(optionsFromExpressions, i)
+		}
+	}
+	return optionsFromInputs, optionsFromExpressions
+}
+
+func getRandOut(expr *cxast.CXExpression) *cxast.CXArgument {
 	var arg cxast.CXArgument
-	rndExprIdx := rand.Intn(len(fn.Expressions))
+	var optionsFromExpressions []int
+
+	for i, exp := range expr.Function.Expressions {
+		if len(exp.Operator.Outputs) > 0 && exp.Operator.Outputs[0].Type == expr.Operator.Outputs[0].Type {
+			optionsFromExpressions = append(optionsFromExpressions, i)
+		}
+	}
+
+	rndExprIdx := rand.Intn(len(optionsFromExpressions))
 	// Making a copy of the argument
-	err := copier.Copy(&arg, fn.Expressions[rndExprIdx].Operator.Outputs[0])
+	err := copier.Copy(&arg, expr.Function.Expressions[optionsFromExpressions[rndExprIdx]].Operator.Outputs[0])
 	if err != nil {
 		panic(err)
 	}
-	// Determining the offset where the expression should be writing to.
-	for c := 0; c < len(fn.Inputs); c++ {
-		arg.Offset += fn.Inputs[c].TotalSize
-	}
-	for c := 0; c < len(fn.Outputs); c++ {
-		arg.Offset += fn.Outputs[c].TotalSize
-	}
-	for c := 0; c < rndExprIdx; c++ {
-		// TODO: We're only considering one output per operator.
-		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-		arg.Offset += fn.Expressions[c].Operator.Outputs[0].TotalSize
-	}
 
-	arg.Package = fn.Package
-	arg.Name = strconv.Itoa(rndExprIdx)
+	determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
+	arg.Package = expr.Function.Package
+	arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+
 	return &arg
+}
+
+func determineExpressionOffset(arg *cxast.CXArgument, expr *cxast.CXExpression, indexOfSelectedOption int) {
+	// Determining the offset where the expression should be writing to.
+	for c := 0; c < len(expr.Function.Inputs); c++ {
+		arg.DataSegmentOffset += expr.Function.Inputs[c].TotalSize
+	}
+	for c := 0; c < len(expr.Function.Outputs); c++ {
+		arg.DataSegmentOffset += expr.Function.Outputs[c].TotalSize
+	}
+	for c := 0; c < indexOfSelectedOption; c++ {
+		if len(expr.Function.Expressions[c].Operator.Outputs) > 0 {
+			// TODO: We're only considering one output per operator.
+			/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
+			arg.DataSegmentOffset += expr.Function.Expressions[c].Operator.Outputs[0].TotalSize
+		}
+	}
 }
 
 // func printData(data [][]byte, typ int) {

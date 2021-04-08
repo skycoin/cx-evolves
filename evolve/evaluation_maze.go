@@ -12,8 +12,8 @@ import (
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) float64 {
-	player := func(gameMove *maze.GameMove) maze.AgentInput {
+func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) (float64, error) {
+	player := func(gameMove *maze.GameMove) (maze.AgentInput, error) {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
 			WallDistanceInputEnabled: true,
@@ -21,19 +21,25 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, m
 		}
 		options := []int{maze.Up, maze.Down, maze.Left, maze.Right}
 
-		move := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove), nil)
+		move, err := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove), nil)
+		if err != nil {
+			return maze.AgentInput{}, err
+		}
 		input := options[int(move)%len(options)]
 		agentInput.Move = input
 
-		return agentInput
+		return agentInput, nil
 	}
 
-	moves := mazeGame.MazeGame(1, player)
-	return float64(moves)
+	moves, err := mazeGame.MazeGame(1, player)
+	if err != nil {
+		return 0, err
+	}
+	return float64(moves), nil
 }
 
 // perByteEvaluation for evolve with maze, 13 i32 input, 1 i32 output
-func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, outputs [][]byte) int {
+func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, outputs [][]byte) (int, error) {
 	var move int
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -67,7 +73,11 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	cxexecute.RunCompiled(ind, 0, nil)
+	err := cxexecute.RunCompiled(ind, 0, nil)
+	if err != nil {
+		fmt.Printf("Error in runcompiled: %v\n", err)
+		return 0, err
+	}
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
@@ -76,7 +86,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 	move = int(data)
 
 	cxast.PROGRAM = tmp
-	return move
+	return move, nil
 }
 
 func MazeEncodeParam(param *maze.GameMove) [][]byte {

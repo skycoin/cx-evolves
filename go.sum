@@ -79,6 +79,10 @@ github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/skycoin/cx v0.7.6-0.20210330083608-499dd6f9e769 h1:N7wF4xJlcwuWYFkHb9CpxJikAgXDJ7FvTIztIS6SJBA=
 github.com/skycoin/cx v0.7.6-0.20210330083608-499dd6f9e769/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
+github.com/skycoin/cx v0.7.6-0.20210401091900-71a98113559d h1:jm1e/phcAfjc71RG26gGmVKt/+UGaU8SfK6sO4hT4KY=
+github.com/skycoin/cx v0.7.6-0.20210401091900-71a98113559d/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
+github.com/skycoin/cx v0.7.6-0.20210401093548-818f088e3783 h1:VYQKJkd6LMMYn6N7hsGOB9Axov2wFVfY8MiMJTjpQ4Y=
+github.com/skycoin/cx v0.7.6-0.20210401093548-818f088e3783/go.mod h1:J+bJc1LSFeo2spjq6B6ad2aae8kx9g+3BRPhbhi/lYw=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14 h1:A3h5e2AIp7vQTrJGeM/t+/gHs54R0VJ1Gtdb5jFvqyQ=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14/go.mod h1:Zy/QpZ0lNGam8oqDXU0wMeNe6yZbTnMueJrz8CeAzt8=
 github.com/skycoin/skycoin v0.27.1 h1:HatxsRwVSPaV4qxH6290xPBmkH/HgiuAoY2qC+e8C9I=

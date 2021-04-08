@@ -2,6 +2,8 @@ package evolve
 
 import (
 	"encoding/binary"
+	"fmt"
+	"math"
 	"math/big"
 	"math/rand"
 	"time"
@@ -11,7 +13,7 @@ import (
 )
 
 // perByteEvaluation for evolve with prime numbers, 1 i32 input, 1 i32 output
-func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) float64 {
 	var points int64 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -41,7 +43,11 @@ func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFuncti
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		cxexecute.RunCompiled(ind, 0, nil)
+		err := cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+		if err != nil {
+			fmt.Printf("Error in runcompiled: %v\n", err)
+			return float64(math.MaxInt32)
+		}
 
 		// Extracting outputs processed by `solPrototype`.
 		simOuts := extractMainOutputs(ind, solPrototype)
@@ -55,5 +61,5 @@ func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFuncti
 	}
 
 	cxast.PROGRAM = tmp
-	return points
+	return float64(points)
 }

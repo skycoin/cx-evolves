@@ -14,12 +14,12 @@ type AgentInput struct {
 	AgentPositionEnabled     bool
 }
 
-type Player func(gameMove *GameMove) AgentInput
+type Player func(gameMove *GameMove) (AgentInput, error)
 
-var defaultRandomPlayer Player = func(gameMove *GameMove) AgentInput {
-	var defaultRandomPlayerInside func(gameMove *GameMove) AgentInput
+var defaultRandomPlayer Player = func(gameMove *GameMove) (AgentInput, error) {
+	var defaultRandomPlayerInside func(gameMove *GameMove) (AgentInput, error)
 
-	defaultRandomPlayerInside = func(gameMove *GameMove) AgentInput {
+	defaultRandomPlayerInside = func(gameMove *GameMove) (AgentInput, error) {
 		var input int
 		var options []int
 		var agentInput AgentInput
@@ -72,16 +72,20 @@ var defaultRandomPlayer Player = func(gameMove *GameMove) AgentInput {
 			}
 			if len(options) == 0 {
 				gameMove.PrevInput = 0
-				input = InputCallback(defaultRandomPlayerInside, gameMove).Move
+				aInput, err := InputCallback(defaultRandomPlayerInside, gameMove)
+				if err != nil {
+					return agentInput, err
+				}
+				input = aInput.Move
 			}
 		}
 		agentInput.Move = input
-		return agentInput
+		return agentInput, nil
 	}
 
 	return defaultRandomPlayerInside(gameMove)
 }
 
-func InputCallback(player func(gameMove *GameMove) AgentInput, move *GameMove) AgentInput {
+func InputCallback(player func(gameMove *GameMove) (AgentInput, error), move *GameMove) (AgentInput, error) {
 	return player(move)
 }

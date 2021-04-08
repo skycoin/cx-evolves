@@ -9,7 +9,7 @@ import (
 )
 
 // perByteEvaluation for evolve with network sim, 1 i32 input, 1 i32 output
-func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) int64 {
+func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, numberOfRounds int) float64 {
 	var score int = 0
 	for rounds := 0; rounds < numberOfRounds; rounds++ {
 		// Generate random Input
@@ -28,7 +28,7 @@ func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFu
 		score = score + countDifferentBits(input, receiverOutput)
 	}
 
-	return int64(score)
+	return float64(score)
 }
 
 // perByteEvaluation for evolve with network sim transmitter, 1 i32 input, 1 i32 output
@@ -55,7 +55,7 @@ func perByteEvaluation_NetworkSim_Transmitter(ind *cxast.CXProgram, solPrototype
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	cxexecute.RunCompiled(ind, 0, nil)
+	cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
@@ -89,7 +89,7 @@ func perByteEvaluation_NetworkSim_Receiver(ind *cxast.CXProgram, solPrototype *c
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	cxexecute.RunCompiled(ind, 0, nil)
+	cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
