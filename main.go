@@ -9,12 +9,10 @@ import (
 	"github.com/urfave/cli/v2"
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
-	cxcore "github.com/skycoin/cx/cx"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxglobals "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxparser"
+	cxactions "github.com/skycoin/cx/cxparser/actions"
+	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 )
 
 // Maze and Output Configuration
@@ -76,7 +74,7 @@ func InitialProgram() *cxast.CXProgram {
 	// Creating the initial CX program.
 	prgrm := cxast.MakeProgram()
 	prgrm.SetCurrentCxProgram()
-	actions.SelectProgram(prgrm)
+	cxactions.SelectProgram(prgrm)
 
 	// Adding `main` package.
 	mainPkg := cxast.MakePackage(cxconstants.MAIN_PKG)
@@ -93,20 +91,20 @@ func InitialProgram() *cxast.CXProgram {
 
 	// Adding input signature to function to evolve (`FunctionToEvolve`).
 	for _, inpType := range inputSignature {
-		inp := cxast.MakeArgument(cxglobals.MakeGenSym("evo_inp"), "", -1).AddType(inpType)
+		inp := cxast.MakeArgument(cxactions.MakeGenSym("evo_inp"), "", -1).AddType(inpType)
 		inp.AddPackage(mainPkg)
 		toEvolveFn.AddInput(inp)
 	}
 
 	// Adding output signature to function to evolve (`FunctionToEvolve`).
 	for _, outType := range outputSignature {
-		out := cxast.MakeArgument(cxglobals.MakeGenSym("evo_out"), "", -1).AddType(outType)
+		out := cxast.MakeArgument(cxactions.MakeGenSym("evo_out"), "", -1).AddType(outType)
 		out.AddPackage(mainPkg)
 		toEvolveFn.AddOutput(out)
 	}
 
 	// Creating an init function for the CX program.
-	cxparser.AddInitFunction(prgrm)
+	cxparsing.AddInitFunction(prgrm)
 
 	return prgrm
 }
@@ -308,9 +306,6 @@ func Evolve() {
 		inputSignature = []string{"i32"}
 		outputSignature = []string{"i32"}
 	}
-
-	// Load op code tables
-	cxcore.LoadOpCodeTables()
 
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()

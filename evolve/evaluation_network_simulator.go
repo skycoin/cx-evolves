@@ -55,7 +55,7 @@ func perByteEvaluation_NetworkSim_Transmitter(ind *cxast.CXProgram, solPrototype
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+	cxexecute.RunCompiled(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
@@ -89,7 +89,7 @@ func perByteEvaluation_NetworkSim_Receiver(ind *cxast.CXProgram, solPrototype *c
 	injectMainInputs(ind, inps)
 
 	// Running program `ind`.
-	cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+	cxexecute.RunCompiled(ind, 0, nil)
 
 	// Extracting outputs processed by `solPrototype`.
 	simOuts := extractMainOutputs(ind, solPrototype)
