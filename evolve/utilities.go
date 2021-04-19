@@ -49,6 +49,7 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 
 	// if no options available or if operator is jump, add new i32_LT expression.
 	if lengthOfOptions == 0 || expr.Operator.OpCode == cxconstants.OP_JMP {
+		// TODO: improve process when there's OP_JMP
 		return addNewExpression(expr, cxast.OpCodes["i32.lt"])
 	}
 
@@ -233,9 +234,6 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 
 		// if operator is jmp, add then and else lines
 		if op.OpCode == cxconstants.OP_JMP {
-			fmt.Printf("DEBUG--numexprs=%v\n", numExprs)
-			fmt.Printf("DEBUG--len=%v\n", len(expr.Function.Expressions))
-			fmt.Printf("DEBUG--rand=%v\n", numExprs-len(expr.Function.Expressions))
 			lineNumOptions := numExprs - len(expr.Function.Expressions)
 			if lineNumOptions < 0 {
 				lineNumOptions = (lineNumOptions * -1) - 2
@@ -247,8 +245,6 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 
 			expr.ThenLines = 1
 			expr.ElseLines = randThenLineIndex
-			fmt.Printf("DEBUG--then on line=%v\n", 1)
-			fmt.Printf("DEBUG--else on line=%v\n", randThenLineIndex)
 		}
 
 		// We need to add the expression at this point, so we
