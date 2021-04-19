@@ -16,18 +16,6 @@ func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
 
-func getFunctionSet(prgrm *cxast.CXProgram, fnNames []string) (fns []*cxast.CXFunction) {
-	for _, fnName := range fnNames {
-		fn := cxast.Natives[cxast.OpCodes[fnName]]
-		if fn == nil {
-			panic("standard library function not found.")
-		}
-
-		fns = append(fns, fn)
-	}
-	return fns
-}
-
 func getRandFn(fnSet []*cxast.CXFunction) *cxast.CXFunction {
 	return fnSet[rand.Intn(len(fnSet))]
 }
@@ -61,7 +49,8 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 
 	// if no options available or if operator is jump, add new i32_LT expression.
 	if lengthOfOptions == 0 || expr.Operator.OpCode == cxconstants.OP_JMP {
-		return addNewExpression(expr, cxconstants.OP_I32_LT)
+		// TODO: improve process when there's OP_JMP
+		return addNewExpression(expr, cxast.OpCodes["i32.lt"])
 	}
 
 	rndExprIdx = rand.Intn(lengthOfOptions)
@@ -82,9 +71,9 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 
 	if !gotOptionsFromFunctionInputs {
 		determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
-		arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+		arg.ArgDetails.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 	}
-	arg.Package = expr.Function.Package
+	arg.ArgDetails.Package = expr.Function.Package
 
 	return &arg
 }
@@ -113,7 +102,7 @@ func addNewExpression(expr *cxast.CXExpression, expressionType int) *cxast.CXArg
 	argOutName := strconv.Itoa(len(expr.Function.Expressions))
 	argOut := cxast.MakeField(argOutName, cxconstants.TYPE_BOOL, "", -1)
 	argOut.AddType(cxconstants.TypeNames[cxconstants.TYPE_BOOL])
-	argOut.Package = expr.Function.Package
+	argOut.ArgDetails.Package = expr.Function.Package
 	exp.AddOutput(argOut)
 	expr.Function.AddExpression(exp)
 
@@ -128,7 +117,7 @@ func findArgOptions(expr *cxast.CXExpression, argTypeToFind int) ([]int, []int) 
 
 	// loop in inputs
 	for i, inp := range expr.Function.Inputs {
-		if inp.Type == argTypeToFind && inp.Name != "" {
+		if inp.Type == argTypeToFind && inp.ArgDetails.Name != "" {
 			// add index to options from inputs
 			optionsFromInputs = append(optionsFromInputs, i)
 		}
@@ -136,7 +125,7 @@ func findArgOptions(expr *cxast.CXExpression, argTypeToFind int) ([]int, []int) 
 
 	// loop in expression outputs
 	for i, exp := range expr.Function.Expressions {
-		if len(exp.Outputs) > 0 && exp.Outputs[0].Type == argTypeToFind && exp.Outputs[0].Name != "" {
+		if len(exp.Outputs) > 0 && exp.Outputs[0].Type == argTypeToFind && exp.Outputs[0].ArgDetails.Name != "" {
 			// add index to options from inputs
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
@@ -162,8 +151,8 @@ func getRandOut(expr *cxast.CXExpression) *cxast.CXArgument {
 	}
 
 	determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
-	arg.Package = expr.Function.Package
-	arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+	arg.ArgDetails.Package = expr.Function.Package
+	arg.ArgDetails.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 
 	return &arg
 }
@@ -171,16 +160,16 @@ func getRandOut(expr *cxast.CXExpression) *cxast.CXArgument {
 func determineExpressionOffset(arg *cxast.CXArgument, expr *cxast.CXExpression, indexOfSelectedOption int) {
 	// Determining the offset where the expression should be writing to.
 	for c := 0; c < len(expr.Function.Inputs); c++ {
-		arg.DataSegmentOffset += expr.Function.Inputs[c].TotalSize
+		arg.Offset += expr.Function.Inputs[c].TotalSize
 	}
 	for c := 0; c < len(expr.Function.Outputs); c++ {
-		arg.DataSegmentOffset += expr.Function.Outputs[c].TotalSize
+		arg.Offset += expr.Function.Outputs[c].TotalSize
 	}
 	for c := 0; c < indexOfSelectedOption; c++ {
 		if len(expr.Function.Expressions[c].Operator.Outputs) > 0 {
 			// TODO: We're only considering one output per operator.
 			/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-			arg.DataSegmentOffset += expr.Function.Expressions[c].Operator.Outputs[0].TotalSize
+			arg.Offset += expr.Function.Expressions[c].Operator.Outputs[0].TotalSize
 		}
 	}
 }
@@ -211,3 +200,67 @@ func determineExpressionOffset(arg *cxast.CXArgument, expr *cxast.CXExpression, 
 // func mustDeserializeF64(b []byte) float64 {
 // 	return math.Float64frombits(mustDeserializeUI64(b))
 // }
+
+func GetFunctionSet(fnNames []string) (fns []*cxast.CXFunction) {
+	for _, fnName := range fnNames {
+		fn := cxast.Natives[cxast.OpCodes[fnName]]
+		if fn == nil {
+			panic("standard library function not found.")
+		}
+
+		fns = append(fns, fn)
+	}
+	return fns
+}
+
+func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPackage, fns []*cxast.CXFunction, numExprs int) {
+	preExistingExpressions := len(inputFn.Expressions)
+	// Checking if we need to add more expressions.
+	for i := 0; i < numExprs-preExistingExpressions; i++ {
+		op := getRandFn(fns)
+		// Last expression output must be the same as function output.
+		if i == (numExprs-preExistingExpressions)-1 && len(op.Outputs) > 0 && len(inputFn.Outputs) > 0 {
+			for len(op.Outputs) == 0 || op.Outputs[0].Type != inputFn.Outputs[0].Type {
+				op = getRandFn(fns)
+			}
+		}
+
+		expr := cxast.MakeExpression(op, "", -1)
+		expr.Package = inputPkg
+		expr.Function = inputFn
+		for c := 0; c < len(op.Inputs); c++ {
+			expr.Inputs = append(expr.Inputs, getRandInp(expr))
+		}
+
+		// if operator is jmp, add then and else lines
+		if op.OpCode == cxconstants.OP_JMP {
+			lineNumOptions := numExprs - len(expr.Function.Expressions)
+			if lineNumOptions < 0 {
+				lineNumOptions = (lineNumOptions * -1) - 2
+			}
+			randThenLineIndex := 0
+			if lineNumOptions > 0 {
+				randThenLineIndex = rand.Intn(lineNumOptions)
+			}
+
+			expr.ThenLines = 1
+			expr.ElseLines = randThenLineIndex
+		}
+
+		// We need to add the expression at this point, so we
+		// can consider this expression's output as a
+		// possibility to assign stuff.
+		inputFn.Expressions = append(inputFn.Expressions, expr)
+
+		// Adding last expression, so output must be fn's output.
+		if i == numExprs-preExistingExpressions-1 {
+			expr.Outputs = append(expr.Outputs, inputFn.Outputs[0])
+		} else {
+			for c := 0; c < len(op.Outputs); c++ {
+				expr.Outputs = append(expr.Outputs, getRandOut(expr))
+			}
+		}
+	}
+	inputFn.Size = calcFnSize(inputFn)
+	inputFn.Length = numExprs
+}

@@ -42,8 +42,7 @@ func (pop *Population) InitIndividuals(initPrgrm *cxast.CXProgram) {
 
 // InitFunctionSet gathers the functions contained in `prgrm` named by `fnNames`.
 func (pop *Population) InitFunctionSet(fnNames []string) {
-	prgrm := pop.Individuals[0]
-	pop.FunctionSet = getFunctionSet(prgrm, fnNames)
+	pop.FunctionSet = GetFunctionSet(fnNames)
 }
 
 // InitFunctionsToEvolve initializes the `FunctionToEvolve` in each of the individuals in a `Population`, so each individual has a `FunctionToEvolve` with a random set of expressions.

@@ -41,7 +41,7 @@ func perByteEvaluation_Composites(ind *cxast.CXProgram, solPrototype *cxast.CXFu
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+		cxexecute.RunCompiled(ind, 0, nil)
 
 		// Extracting outputs processed by `solPrototype`.
 		simOuts := extractMainOutputs(ind, solPrototype)

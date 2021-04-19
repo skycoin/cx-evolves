@@ -43,7 +43,7 @@ func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFuncti
 		injectMainInputs(ind, inps)
 
 		// Running program `ind`.
-		err := cxexecute.RunCompiled_ForCXEvolves(ind, 0, nil)
+		err := cxexecute.RunCompiled(ind, 0, nil)
 		if err != nil {
 			fmt.Printf("Error in runcompiled: %v\n", err)
 			return float64(math.MaxInt32)
