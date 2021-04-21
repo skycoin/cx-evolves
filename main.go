@@ -40,6 +40,8 @@ var (
 	plotFitness bool
 	saveAST     bool
 	logFitness  bool
+
+	workersAvailable int
 )
 
 // Evolve Configuration
@@ -52,16 +54,7 @@ var (
 	// What functions from CX standard library can we use to create expressions in the programs.
 	functionSetNames = []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
 	// Missing
-	// "i32.div", "i32.mod","jmp",
-
-	// If the algorithm reaches this error, the evolutionary process stops.
-	// var targetError = 0.1
-
-	// What function (evolve/crossover.go) will we use to perform crossover.
-	crossoverFunction = evolve.CrossoverSinglePoint
-
-	// What function (evolve/evaluation.go) will we use to evaluate individuals.
-	evaluationFunction = evolve.EvaluationPerByte
+	// "i32.div", "i32.mod",
 
 	// What's the input signature of the programs being evolved.
 	inputSignature []string
@@ -108,30 +101,6 @@ func InitialProgram() *cxast.CXProgram {
 
 	return prgrm
 }
-
-// // polynomial is used to create a data model for the programs to evolve.
-// // This can be changed to whatever you want.
-// func polynomial(inp1 float64, inp2 float64) float64 {
-// 	return inp1*inp1 + inp2*inp2
-// }
-
-// // ployDataPoints uses `polynomial` to create the data model.
-// // This can be changed to whatever you want. The important thing is to generate
-// // some data represented by slices of type [][]byte.
-// func polyDataPoints(paramCount, sampleSize int) ([][]byte, [][]byte) {
-// 	inputs := make([][]byte, paramCount)
-// 	outputs := make([][]byte, 1)
-// 	for c := 0; c < paramCount; c++ {
-// 		for i := 0; i < sampleSize; i++ {
-// 			inputs[c] = append(inputs[c], encoder.Serialize(float64(i))...)
-// 		}
-// 	}
-// 	for i := 0; i < sampleSize; i++ {
-// 		outputs[0] = append(outputs[0], encoder.Serialize(polynomial(float64(i), float64(i)))...)
-// 	}
-
-// 	return inputs, outputs
-// }
 
 func main() {
 	EvolveApp := &cli.App{
@@ -255,6 +224,13 @@ func main() {
 				Value:       1,
 				Destination: &epochLength,
 			},
+			&cli.IntFlag{
+				Name:        "Workers Available",
+				Aliases:     []string{"workers"},
+				Usage:       "Number of CX Programs workers available/deployed",
+				Value:       1,
+				Destination: &workersAvailable,
+			},
 			&cli.StringFlag{
 				Name:        "Generated Program Name",
 				Value:       "MazeRunner",
@@ -310,22 +286,12 @@ func Evolve() {
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()
 
-	// How big will our data model be (how many data points in the dataset).
-	// sampleSize := 100
-	// How many inputs in the function to be evolved.
-	// paramCount := 1
-	// Generating the datasets.
-	// inputs, outputs := polyDataPoints(paramCount, sampleSize)
-
 	// Generate a population.
 	pop := evolve.MakePopulation(populationSize)
 
 	// Configuring the population. The method calls are self-explanatory.
 	pop.SetIterations(iterations)
 	pop.SetExpressionsCount(expressionsCount)
-	// pop.SetTargetError(targetError)
-	// pop.SetInputs(inputs)
-	// pop.SetOutputs(outputs)
 
 	pop.InitIndividuals(initPrgrm)
 	pop.InitFunctionSet(functionSetNames)
@@ -355,5 +321,7 @@ func Evolve() {
 		SaveAST:        saveAST,
 		RandomMazeSize: randomMazeSize,
 		UseAntiLog2:    logFitness,
+
+		WorkersAvailable: workersAvailable,
 	})
 }

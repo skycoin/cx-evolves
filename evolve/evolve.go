@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
+	"github.com/skycoin/cx-evolves/cxexecutes/worker"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
@@ -22,6 +23,7 @@ type EvolveConfig struct {
 	RangeBenchmark      bool
 	NetworkSimBenchmark bool
 
+	MazeGame       *maze.Game
 	MazeHeight     int
 	MazeWidth      int
 	RandomMazeSize bool
@@ -35,6 +37,9 @@ type EvolveConfig struct {
 	PlotFitness bool
 	SaveAST     bool
 	UseAntiLog2 bool
+
+	WorkerPortNum    int
+	WorkersAvailable int
 }
 
 // Used for concurrent output evaluation
@@ -44,6 +49,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	var histoValues []float64
 	var averageValues []float64
 	var mostFit []float64
+	var availPorts []int
 	var game maze.Game
 	var saveDirectory string
 
@@ -51,16 +57,20 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
-	sPrgrm := cxast.SerializeCXProgram(pop.Individuals[0], true)
+	sPrgrm := cxast.SerializeCXProgramV2(pop.Individuals[0], true)
 
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
+
+	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
+	availPorts = append(availPorts, availWorkers...)
 
 	// Evolution process.
 	for c := 0; c < int(numIter); c++ {
 		// Maze Creation if Maze Benchmark
 		if cfg.MazeBenchmark {
 			generateNewMaze(c, &cfg, &game)
+			cfg.MazeGame = &game
 		}
 
 		// Selection process.
@@ -106,16 +116,32 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		runtime.GOMAXPROCS(4)
 		// Evaluation process.
 		for i := range pop.Individuals {
+			// Wait until ports are available.
+			for len(availPorts) == 0 {
+			}
+
+			// Get port number from the first index and
+			// remove it from list of available ports.
+			portNum := availPorts[0]
+			availPorts = RemoveIndex(availPorts, 0)
+			cfg.WorkerPortNum = portNum
+
 			wg.Add(1)
-			go func(j int) {
+			go func(j int, availPorts *[]int, portNum int) {
+				defer wg.Done()
+
 				pop.Individuals[j].PrintProgram()
-				output[j], err = RunBenchmark(pop.Individuals[j], solProt, &cfg, &game)
+				output[j], err = RunBenchmark(pop.Individuals[j], solProt, &cfg)
 				if err != nil {
 					output[j] = float64(math.MaxInt32)
 				}
-				wg.Done()
+
+				// Append back the worker port number used so that
+				// it can be used by another go routine.
+				*availPorts = append(*availPorts, portNum)
+
 				fmt.Printf("output of program[%v]:%v\n", j, output[j])
-			}(i)
+			}(i, &availPorts, portNum)
 		}
 		wg.Wait()
 
@@ -138,40 +164,40 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}
 }
 
-func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig, game *maze.Game) (intOut float64, err error) {
+func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig) (intOut float64, err error) {
 	if cfg.MazeBenchmark {
-		intOut, err = mazeMovesEvaluation(cxprogram, solProt, *game)
+		intOut, err = mazeMovesEvaluation(cxprogram, solProt, cfg)
 		if err != nil {
 			return 0, err
 		}
 	}
 
 	if cfg.ConstantsBenchmark {
-		intOut = perByteEvaluation_Constants(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_Constants(cxprogram, solProt, cfg)
 	}
 
 	if cfg.EvensBenchmark {
-		intOut = perByteEvaluation_Evens(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_Evens(cxprogram, solProt, cfg)
 	}
 
 	if cfg.OddsBenchmark {
-		intOut = perByteEvaluation_Odds(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_Odds(cxprogram, solProt, cfg)
 	}
 
 	if cfg.PrimesBenchmark {
-		intOut = perByteEvaluation_Primes(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_Primes(cxprogram, solProt, cfg)
 	}
 
 	if cfg.CompositesBenchmark {
-		intOut = perByteEvaluation_Composites(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_Composites(cxprogram, solProt, cfg)
 	}
 
 	if cfg.RangeBenchmark {
-		intOut = perByteEvaluation_Range(cxprogram, solProt, cfg.NumberOfRounds, cfg.UpperRange, cfg.LowerRange)
+		intOut = perByteEvaluation_Range(cxprogram, solProt, cfg)
 	}
 
 	if cfg.NetworkSimBenchmark {
-		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg.NumberOfRounds)
+		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg)
 	}
 	return intOut, nil
 }
@@ -188,7 +214,7 @@ func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) erro
 	}
 
 	// Save as serialized bytes.
-	astInBytes := cxast.SerializeCXProgram(cxprogram, false)
+	astInBytes := cxast.SerializeCXProgramV2(cxprogram, false)
 	if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
 		return err
 	}
@@ -226,4 +252,8 @@ func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit
 	// Add fittest values for Fittest per generation graph
 	*mostFit = append(*mostFit, fittest)
 	return nil
+}
+
+func RemoveIndex(s []int, index int) []int {
+	return append(s[:index], s[index+1:]...)
 }

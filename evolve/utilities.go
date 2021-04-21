@@ -174,33 +174,6 @@ func determineExpressionOffset(arg *cxast.CXArgument, expr *cxast.CXExpression, 
 	}
 }
 
-// func printData(data [][]byte, typ int) {
-// 	switch typ {
-// 	case cxcore.TYPE_F64:
-// 		for _, datum := range data {
-// 			fmt.Printf("%f ", mustDeserializeF64(datum))
-// 		}
-// 	}
-// 	fmt.Printf("\n")
-// }
-
-// func mustDeserializeUI32(b []byte) uint32 {
-// 	return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24
-// }
-
-// func mustDeserializeUI64(b []byte) uint64 {
-// 	return uint64(b[0]) | uint64(b[1])<<8 | uint64(b[2])<<16 | uint64(b[3])<<24 |
-// 		uint64(b[4])<<32 | uint64(b[5])<<40 | uint64(b[6])<<48 | uint64(b[7])<<56
-// }
-
-// func mustDeserializeF32(b []byte) float32 {
-// 	return math.Float32frombits(mustDeserializeUI32(b))
-// }
-
-// func mustDeserializeF64(b []byte) float64 {
-// 	return math.Float64frombits(mustDeserializeUI64(b))
-// }
-
 func GetFunctionSet(fnNames []string) (fns []*cxast.CXFunction) {
 	for _, fnName := range fnNames {
 		fn := cxast.Natives[cxast.OpCodes[fnName]]

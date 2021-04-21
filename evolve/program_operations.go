@@ -122,26 +122,6 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 	GenerateRandomExpressions(&newFn, &newPkg, fns, numExprs)
 }
 
-// injectMainInputs injects `inps` at the beginning of `prgrm`'s memory,
-// which should always represent the memory sent to the first expression contained
-// in `prgrm`'s `main`'s function.
-func injectMainInputs(prgrm *cxast.CXProgram, inps []byte) {
-	for i := 0; i < len(inps); i++ {
-		prgrm.Memory[i] = inps[i]
-	}
-}
-
-func extractMainOutputs(prgrm *cxast.CXProgram, solPrototype *cxast.CXFunction) [][]byte {
-	outputs := make([][]byte, len(solPrototype.Outputs))
-	for c := 0; c < len(solPrototype.Outputs); c++ {
-		size := solPrototype.Outputs[c].TotalSize
-		off := solPrototype.Outputs[0].Offset
-		outputs[c] = prgrm.Memory[off : off+size]
-	}
-
-	return outputs
-}
-
 func resetPrgrm(prgrm *cxast.CXProgram) {
 	// Creating a copy of `prgrm`'s memory.
 	mem := make([]byte, len(prgrm.Memory))

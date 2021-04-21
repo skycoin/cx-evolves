@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
+	"github.com/skycoin/cx-evolves/cxexecutes/worker"
+	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxast "github.com/skycoin/cx/cx/ast"
-	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, mazeGame maze.Game) (float64, error) {
+func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) (float64, error) {
 	player := func(gameMove *maze.GameMove) (maze.AgentInput, error) {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
@@ -21,7 +22,7 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, m
 		}
 		options := []int{maze.Up, maze.Down, maze.Left, maze.Right}
 
-		move, err := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove), nil)
+		move, err := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove), cfg.WorkerPortNum)
 		if err != nil {
 			return maze.AgentInput{}, err
 		}
@@ -31,7 +32,7 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, m
 		return agentInput, nil
 	}
 
-	moves, err := mazeGame.MazeGame(1, player)
+	moves, err := cfg.MazeGame.MazeGame(1, player)
 	if err != nil {
 		return 0, err
 	}
@@ -39,7 +40,7 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, m
 }
 
 // perByteEvaluation for evolve with maze, 13 i32 input, 1 i32 output
-func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, outputs [][]byte) (int, error) {
+func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, portNumber int) (int, error) {
 	var move int
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -69,21 +70,18 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 		inpsOff += inpSize
 	}
 
-	// Injecting the input bytes `inps` to program `ind`.
-	injectMainInputs(ind, inps)
-
-	// Running program `ind`.
-	err := cxexecute.RunCompiled(ind, 0, nil)
-	if err != nil {
-		fmt.Printf("Error in runcompiled: %v\n", err)
-		return 0, err
-	}
-
-	// Extracting outputs processed by `solPrototype`.
-	simOuts := extractMainOutputs(ind, solPrototype)
-
-	data := binary.BigEndian.Uint32(simOuts[0])
-	move = int(data)
+	var result worker.Result
+	workerAddr := fmt.Sprintf(":%v", portNumber)
+	workerclient.CallWorker(
+		workerclient.CallWorkerConfig{
+			Program:   ind,
+			Input:     inps,
+			OutputArg: solPrototype.Outputs[0],
+		},
+		workerAddr,
+		&result,
+	)
+	move = int(binary.BigEndian.Uint32(result.Output))
 
 	cxast.PROGRAM = tmp
 	return move, nil
