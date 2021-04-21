@@ -49,6 +49,7 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 
 	// if no options available or if operator is jump, add new i32_LT expression.
 	if lengthOfOptions == 0 || expr.Operator.OpCode == cxconstants.OP_JMP {
+		// TODO: improve process when there's OP_JMP
 		return addNewExpression(expr, cxast.OpCodes["i32.lt"])
 	}
 

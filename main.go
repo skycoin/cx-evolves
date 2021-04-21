@@ -12,7 +12,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 	cxactions "github.com/skycoin/cx/cxparser/actions"
-	cxparser "github.com/skycoin/cx/cxparser/cxparsing"
+	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 )
 
 // Maze and Output Configuration
@@ -97,7 +97,7 @@ func InitialProgram() *cxast.CXProgram {
 	}
 
 	// Creating an init function for the CX program.
-	cxparser.AddInitFunction(prgrm)
+	cxparsing.AddInitFunction(prgrm)
 
 	return prgrm
 }
