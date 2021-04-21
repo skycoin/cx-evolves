@@ -33,17 +33,16 @@ func MakePopulation(populationSize int) *Population {
 // InitIndividuals initializes the `Individuals` in a `Population` using a `CXProgram` which works as a template. In the end, all the `Individuals` in `pop` will be exact copies of `initPrgrm` (but not pointers to the same object).
 func (pop *Population) InitIndividuals(initPrgrm *cxast.CXProgram) {
 	// Serializing root CX program to create copies of it.
-	sPrgrm := cxast.SerializeCXProgram(initPrgrm, true)
+	sPrgrm := cxast.SerializeCXProgramV2(initPrgrm, true)
 
 	for i := 0; i < len(pop.Individuals); i++ {
-		pop.Individuals[i] = cxast.Deserialize(sPrgrm)
+		pop.Individuals[i] = cxast.DeserializeCXProgramV2(sPrgrm)
 	}
 }
 
 // InitFunctionSet gathers the functions contained in `prgrm` named by `fnNames`.
 func (pop *Population) InitFunctionSet(fnNames []string) {
-	prgrm := pop.Individuals[0]
-	pop.FunctionSet = getFunctionSet(prgrm, fnNames)
+	pop.FunctionSet = GetFunctionSet(fnNames)
 }
 
 // InitFunctionsToEvolve initializes the `FunctionToEvolve` in each of the individuals in a `Population`, so each individual has a `FunctionToEvolve` with a random set of expressions.
@@ -90,18 +89,3 @@ func (pop *Population) SetIterations(iter int) {
 func (pop *Population) SetExpressionsCount(exprCount int) {
 	pop.ExpressionsCount = exprCount
 }
-
-// EvalFunctionsToEvolve evaluates every `FunctionToEvolve` in each of the `Individual`s in the `Population` `pop`. A slice of `float64`s is returned, which represents the errors between the real and the simulated data points.
-// func (pop *Population) EvalFunctionsToEvolve() []float64 {
-// 	inputs := pop.Inputs
-// 	outputs := pop.Outputs
-// 	fnToEvolve := pop.FunctionToEvolve
-// 	errors := make([]float64, len(inputs))
-
-// 	for i := 0; i < len(pop.Individuals); i++ {
-// 		// Evaluating solution.
-// 		errors[i] = perByteEvaluation(pop.Individuals[i], fnToEvolve, inputs, outputs)
-// 	}
-
-// 	return errors
-// }

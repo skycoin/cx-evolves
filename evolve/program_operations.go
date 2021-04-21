@@ -119,58 +119,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 		}
 	}
 
-	preExistingExpressions := len(newFn.Expressions)
-	// Checking if we need to add more expressions.
-	for i := 0; i < numExprs-preExistingExpressions; i++ {
-		op := getRandFn(fns)
-		// Last expression output must be the same as function output.
-		if i == (numExprs-preExistingExpressions)-1 && len(op.Outputs) > 0 && len(newFn.Outputs) > 0 {
-			for len(op.Outputs) == 0 || op.Outputs[0].Type != newFn.Outputs[0].Type {
-				op = getRandFn(fns)
-			}
-		}
-
-		expr := cxast.MakeExpression(op, "", -1)
-		expr.Package = &newPkg
-		expr.Function = &newFn
-		for c := 0; c < len(op.Inputs); c++ {
-			expr.Inputs = append(expr.Inputs, getRandInp(expr))
-		}
-		// We need to add the expression at this point, so we
-		// can consider this expression's output as a
-		// possibility to assign stuff.
-		newFn.Expressions = append(newFn.Expressions, expr)
-		// Adding last expression, so output must be fn's output.
-		if i == numExprs-preExistingExpressions-1 {
-			expr.Outputs = append(expr.Outputs, newFn.Outputs[0])
-		} else {
-			for c := 0; c < len(op.Outputs); c++ {
-				expr.Outputs = append(expr.Outputs, getRandOut(expr))
-			}
-		}
-	}
-	newFn.Size = calcFnSize(&newFn)
-	newFn.Length = numExprs
-}
-
-// injectMainInputs injects `inps` at the beginning of `prgrm`'s memory,
-// which should always represent the memory sent to the first expression contained
-// in `prgrm`'s `main`'s function.
-func injectMainInputs(prgrm *cxast.CXProgram, inps []byte) {
-	for i := 0; i < len(inps); i++ {
-		prgrm.Memory[i] = inps[i]
-	}
-}
-
-func extractMainOutputs(prgrm *cxast.CXProgram, solPrototype *cxast.CXFunction) [][]byte {
-	outputs := make([][]byte, len(solPrototype.Outputs))
-	for c := 0; c < len(solPrototype.Outputs); c++ {
-		size := solPrototype.Outputs[c].TotalSize
-		off := solPrototype.Outputs[0].DataSegmentOffset
-		outputs[c] = prgrm.Memory[off : off+size]
-	}
-
-	return outputs
+	GenerateRandomExpressions(&newFn, &newPkg, fns, numExprs)
 }
 
 func resetPrgrm(prgrm *cxast.CXProgram) {

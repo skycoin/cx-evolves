@@ -28,7 +28,11 @@ func (pop *Population) getCrossoverFn() func(*cxast.CXFunction, *cxast.CXFunctio
 func singlePointCrossover(parent1, parent2 *cxast.CXFunction) (*cxast.CXFunction, *cxast.CXFunction) {
 	var child1, child2 cxast.CXFunction
 
-	cutPoint := rand.Intn(len(parent1.Expressions))
+	cutPointOption := len(parent1.Expressions)
+	if cutPointOption > len(parent2.Expressions) {
+		cutPointOption = len(parent2.Expressions)
+	}
+	cutPoint := rand.Intn(cutPointOption)
 
 	err := copier.Copy(&child1, *parent1)
 	if err != nil {
