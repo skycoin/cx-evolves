@@ -8,7 +8,6 @@
 $go get -u ./...
 $go mod verify 
 $go mod tidy
-$go mod update
 $go mod download
 ```
 
@@ -48,6 +47,7 @@ go run main.go
 --graphs=[Set true if average fitness and fittest per generation graphs will be saved] 
 --ast=[Set true if best ASTs per generation will be saved]
 --use-log-fitness=[Set true if fitness will be fitness(log base 2)]
+--workers=[number of workers available to use, if not set default is 1]
 
 <!-- Set if maze benchmark -->
 --maze=[set true if benchmark evolve with maze]
@@ -88,42 +88,42 @@ go run main.go
 
 For Maze
 ```
-go run main.go --maze=true --name=MazeRunner -W=2 -H=2 --random-maze-size=false --population=50 --generations=100 --expressions=30 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --maze=true --name=MazeRunner -W=2 -H=2 --random-maze-size=false --population=50 --generations=100 --expressions=30 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Range
 ```
-go run main.go --range=true --upper-range=9 --lower-range=2 --rounds=10 --name=Range --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --range=true --upper-range=9 --lower-range=2 --rounds=10 --name=Range --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Constants
 ```
-go run main.go --constants=true --rounds=10 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --constants=true --rounds=10 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Odds
 ```
-go run main.go --odds=true --rounds=10 --name=Odds --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --odds=true --rounds=10 --name=Odds --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Evens
 ```
-go run main.go --evens=true --rounds=10 --name=Evens --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --evens=true --rounds=10 --name=Evens --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Primes
 ```
-go run main.go --primes=true --rounds=10 --name=Primes --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --primes=true --rounds=10 --name=Primes --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Composites
 ```
-go run main.go --composites=true --rounds=10 --name=Composites --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false
+go run main.go --composites=true --rounds=10 --name=Composites --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Network Simulator
 ```
- go run main.go --network-sim=true --rounds=20 --name=NetworkSimulator --population=300 --generations=2000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false    
+ go run main.go --network-sim=true --rounds=20 --name=NetworkSimulator --population=300 --generations=2000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1  
 ```
 
 ### Notes
