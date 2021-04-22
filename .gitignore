@@ -9,3 +9,6 @@ evolve/evolve
 
 # Ignore vendor files
 vendor/
+
+# Ignore histogram_data folder
+cmd/histogram_data/
