@@ -8,6 +8,7 @@ import (
 	cxastapi "github.com/skycoin/cx/cx/astapi"
 )
 
+// GetCompatiblePositionForOperator returns list of line numbers where the operator can be inserted to.
 func GetCompatiblePositionForOperator(cxprogram *cxast.CXProgram, fnName, operatorName string) ([]int, error) {
 	var lines []int
 
@@ -45,6 +46,7 @@ func GetCompatiblePositionForOperator(cxprogram *cxast.CXProgram, fnName, operat
 	return lines, nil
 }
 
+// ReplaceArgInput replaces an expression's input with the argToPut.
 func ReplaceArgInput(expr *cxast.CXExpression, argIndex int, argToPut *cxast.CXArgument) error {
 	// Check if arg index is valid
 	if (len(expr.Inputs)-1) < argIndex || argIndex < 0 {
