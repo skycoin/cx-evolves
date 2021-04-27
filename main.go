@@ -52,7 +52,7 @@ var (
 	functionToEvolve string
 
 	// What functions from CX standard library can we use to create expressions in the programs.
-	functionSetNames = []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
+	functionSetNames = []string{"i32.jmpeq", "i32.jmpuneq", "i32.jmpgt", "i32.jmpgteq", "i32.jmplt", "i32.jmplteq", "i32.jmpzero", "i32.jmpnotzero", "jmp", "nop", "i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
 	// Missing
 	// "i32.div", "i32.mod",
 

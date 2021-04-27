@@ -206,7 +206,7 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 		}
 
 		// if operator is jmp, add then and else lines
-		if op.OpCode == cxconstants.OP_JMP {
+		if IsJumpOperator(op.OpCode) {
 			lineNumOptions := numExprs - len(expr.Function.Expressions)
 			if lineNumOptions < 0 {
 				lineNumOptions = (lineNumOptions * -1) - 2
@@ -236,4 +236,22 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 	}
 	inputFn.Size = calcFnSize(inputFn)
 	inputFn.Length = numExprs
+}
+
+func IsJumpOperator(opCode int) bool {
+	switch opCode {
+	case cxconstants.OP_JMP,
+		cxconstants.OP_ABS_JMP,
+		cxconstants.OP_JMP_EQ,
+		cxconstants.OP_JMP_UNEQ,
+		cxconstants.OP_JMP_GT,
+		cxconstants.OP_JMP_GTEQ,
+		cxconstants.OP_JMP_LT,
+		cxconstants.OP_JMP_LTEQ,
+		cxconstants.OP_JMP_ZERO,
+		cxconstants.OP_JMP_NOT_ZERO:
+		return true
+	default:
+		return false
+	}
 }
