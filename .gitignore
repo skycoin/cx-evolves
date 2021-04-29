@@ -12,3 +12,4 @@ vendor/
 
 # Ignore histogram_data folder
 cmd/histogram_data/
+Results/
