@@ -289,7 +289,6 @@ github.com/shurcooL/webdavfs v0.0.0-20170829043945-18c3829fa133 h1:JtcyT0rk/9PKO
 github.com/shurcooL/webdavfs v0.0.0-20170829043945-18c3829fa133/go.mod h1:hKmq5kWdCj2z2KEozexVbfEZIWiTjhE0+UjmZgPqehw=
 github.com/sirupsen/logrus v1.8.0 h1:nfhvjKcUMhBMVqbKHJlk5RPrrfYr/NMo3692g0dwfWU=
 github.com/sirupsen/logrus v1.8.0/go.mod h1:4GuYW9TZmE769R5STWrRakJc4UqQ3+QQ95fyz7ENv1A=
-github.com/skycoin/cx v0.7.6-0.20210417120210-c4beff307b5f h1:LziCPkVwEEUB+DVY2pe5yHnn5EAiIsgLhMl3+Le5DCY=
 github.com/skycoin/cx v0.7.6-0.20210417120210-c4beff307b5f/go.mod h1:hr0tS0TbCTeza5uDApGLfrd4v9Rzy+iYJsbS8OxjluM=
 github.com/skycoin/cx v0.7.6-0.20210422091605-2cf6a87e412e h1:kZz1efv+dduYyZHefDkRyotmH8i8krIfVvMWacZMu1I=
 github.com/skycoin/cx v0.7.6-0.20210422091605-2cf6a87e412e/go.mod h1:9piLQWpWwJICXgCSY47dTM7eUXeVvk/2dnatXNIWoLY=

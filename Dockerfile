@@ -1,11 +1,13 @@
-FROM golang:1.14
+FROM alpine:3.4
 
 WORKDIR /
 
 COPY ./go.* ./
 
-RUN go mod download
+COPY ./cx-evolves .
 
-COPY . .
+COPY ./server .
 
-CMD ./scripts/maze_benchmark.sh
+COPY ./scripts/maze_benchmark.sh .
+
+ENTRYPOINT ["sh","/maze_benchmark.sh"]
