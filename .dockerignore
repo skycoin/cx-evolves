@@ -1,0 +1,3 @@
+# Ignore histogram_data and results folder
+cmd/histogram_data/
+Results
