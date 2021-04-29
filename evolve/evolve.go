@@ -157,10 +157,15 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 				panic(err)
 			}
 		}
+
+		if (cfg.MazeBenchmark && c != 0 && c%cfg.EpochLength == 0) || (cfg.ConstantsBenchmark && c != 0 && c%100 == 0) {
+			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
+			pointsPlot(averageValues, averageXLabel, averageYLabel, graphTitle, saveDirectory+fmt.Sprintf("Generation_%v_", c)+"AverageFitness.png")
+		}
 	}
 
 	if cfg.PlotFitness {
-		saveGraphs(averageValues, mostFit, histoValues, saveDirectory)
+		saveGraphs(averageValues, mostFit, histoValues, saveDirectory, getBenchmarkName(&cfg))
 	}
 }
 

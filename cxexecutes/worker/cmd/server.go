@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"runtime"
 	"sync"
 
 	"github.com/henrylee2cn/erpc/v6"
@@ -18,7 +17,7 @@ func init() {
 }
 
 func main() {
-	runtime.GOMAXPROCS(1)
+	// runtime.GOMAXPROCS(1)
 	flag.Parse()
 	cxopcodes.RegisterOpcodes()
 	deployWorker(workers)
