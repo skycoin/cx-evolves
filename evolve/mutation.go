@@ -39,7 +39,7 @@ func randomMutation(pop *Population, sPrgrm []byte) {
 	numExprs := pop.ExpressionsCount
 	fns := pop.FunctionSet
 	randIdx := rand.Intn(len(pop.Individuals))
-	pop.Individuals[randIdx] = cxast.DeserializeCXProgramV2(sPrgrm)
+	pop.Individuals[randIdx] = cxast.DeserializeCXProgramV2(sPrgrm, false)
 	initSolution(pop.Individuals[randIdx], fnToEvolve, fns, numExprs)
 	adaptSolution(pop.Individuals[randIdx], fnToEvolve)
 	resetPrgrm(pop.Individuals[randIdx])

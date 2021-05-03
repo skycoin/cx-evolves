@@ -57,7 +57,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
-	sPrgrm := cxast.SerializeCXProgramV2(pop.Individuals[0], true)
+	sPrgrm := cxast.SerializeCXProgramV2(pop.Individuals[0], true, false)
 
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
@@ -219,7 +219,7 @@ func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) erro
 	}
 
 	// Save as serialized bytes.
-	astInBytes := cxast.SerializeCXProgramV2(cxprogram, false)
+	astInBytes := cxast.SerializeCXProgramV2(cxprogram, true, false)
 	if err := ioutil.WriteFile(saveASTDirectory+astName+"_serialized"+".ast", []byte(astInBytes), 0644); err != nil {
 		return err
 	}
