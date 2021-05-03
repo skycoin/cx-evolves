@@ -1,15 +1,27 @@
 package evolve
 
 import (
+	"fmt"
+
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 )
 
-func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory string) {
-	pointsPlot(aveFitnessValues, "Generation Number", "Ave Fitness", "Average Fitness Of Individuals In Generation N", saveDirectory+"AverageFitness.png")
-	pointsPlot(fittestValues, "Generation Number", "Fitness", "Fittest Per Generation N", saveDirectory+"FittestPerGeneration.png")
+const (
+	averageXLabel = "Generation Number"
+	averageYLabel = "Ave Fitness"
+	fittestXLabel = "Generation Number"
+	fittestYLabel = "Fitness"
+)
+
+func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory, benchmarkName string) {
+	averageGraphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", benchmarkName)
+	pointsPlot(aveFitnessValues, averageXLabel, averageYLabel, averageGraphTitle, saveDirectory+"AverageFitness.png")
+
+	fittestGraphTitle := fmt.Sprintf("Fittest Per Generation N (%v)", benchmarkName)
+	pointsPlot(fittestValues, fittestXLabel, fittestYLabel, fittestGraphTitle, saveDirectory+"FittestPerGeneration.png")
 	histogramPlot(histoValues, "Fitness Distribution of all programs across all generations", saveDirectory+"Histogram.png")
 }
 

@@ -11,50 +11,8 @@ func makeDirectory(cfg *EvolveConfig) string {
 	var dir string
 
 	if cfg.PlotFitness || cfg.SaveAST {
-		if cfg.MazeBenchmark {
-			// Unixtime-Maze-2x2
-			mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
-			if cfg.RandomMazeSize {
-				mazeSize = "random"
-			}
-
-			dir = fmt.Sprintf("./Results/%v-%v-%v/", time.Now().Unix(), "Maze", mazeSize)
-		}
-
-		if cfg.ConstantsBenchmark {
-			// Unixtime-Constants
-			dir = fmt.Sprintf("./Results/%v-Constants/", time.Now().Unix())
-		}
-
-		if cfg.EvensBenchmark {
-			// Unixtime-Evens
-			dir = fmt.Sprintf("./Results/%v-Evens/", time.Now().Unix())
-		}
-
-		if cfg.OddsBenchmark {
-			// Unixtime-Odds
-			dir = fmt.Sprintf("./Results/%v-Odds/", time.Now().Unix())
-		}
-
-		if cfg.PrimesBenchmark {
-			// Unixtime-Primes
-			dir = fmt.Sprintf("./Results/%v-Primes/", time.Now().Unix())
-		}
-
-		if cfg.CompositesBenchmark {
-			// Unixtime-Composites
-			dir = fmt.Sprintf("./Results/%v-Composites/", time.Now().Unix())
-		}
-
-		if cfg.RangeBenchmark {
-			// Unixtime-Range
-			dir = fmt.Sprintf("./Results/%v-Range/", time.Now().Unix())
-		}
-
-		if cfg.NetworkSimBenchmark {
-			// Unixtime-NetworkSim
-			dir = fmt.Sprintf("./Results/%v-NetworkSim/", time.Now().Unix())
-		}
+		name := getBenchmarkName(cfg)
+		dir = fmt.Sprintf("./Results/%v-%v/", time.Now().Unix(), name)
 
 		// create directory
 		_ = os.Mkdir(dir, 0700)
@@ -64,6 +22,48 @@ func makeDirectory(cfg *EvolveConfig) string {
 		}
 	}
 	return dir
+}
+
+func getBenchmarkName(cfg *EvolveConfig) string {
+	var name string
+	if cfg.MazeBenchmark {
+		// Maze-2x2
+		mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
+		if cfg.RandomMazeSize {
+			mazeSize = "random"
+		}
+
+		name = fmt.Sprintf("%v-%v", "Maze", mazeSize)
+	}
+
+	if cfg.ConstantsBenchmark {
+		name = "Constants"
+	}
+
+	if cfg.EvensBenchmark {
+		name = "Evens"
+	}
+
+	if cfg.OddsBenchmark {
+		name = "Odds"
+	}
+
+	if cfg.PrimesBenchmark {
+		name = "Primes"
+	}
+
+	if cfg.CompositesBenchmark {
+		name = "Composites"
+	}
+
+	if cfg.RangeBenchmark {
+		name = "Range"
+	}
+
+	if cfg.NetworkSimBenchmark {
+		name = "NetworkSim"
+	}
+	return name
 }
 
 func setEpochLength(cfg *EvolveConfig) {

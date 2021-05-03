@@ -128,3 +128,18 @@ For Network Simulator
 
 ### Notes
 1. If no arguments are specified, the program will run default values.
+
+### Build and Run Maze benchmarking in Docker Env
+
+First edit the ./scripts/maze_benchmark.sh to the benchmark options needed and the number of workers to deploy.
+Then use this command:
+```
+NAME=[Name for the docker image]
+MOUNT=[Local directory to mount the "Result" directory of the container, this is where the graphs and asts can be found] 
+make deploy 
+```
+
+Example
+```
+NAME=testbenchmark MOUNT=/Benchmarking/Results make deploy 
+```
