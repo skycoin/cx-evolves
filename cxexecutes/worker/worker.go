@@ -29,7 +29,7 @@ type ProgramWorker struct {
 
 func (pw *ProgramWorker) RunProgram(args *Args) (Result, *erpc.Status) {
 	prgrmInBytes := args.Program
-	prgrm := cxast.DeserializeCXProgramV2(prgrmInBytes)
+	prgrm := cxast.DeserializeCXProgramV2(prgrmInBytes, false)
 
 	prgrm.Memory = cxast.MakeProgram().Memory
 	injectMainInputs(prgrm, args.Inputs)
