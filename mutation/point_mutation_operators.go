@@ -3,7 +3,6 @@ package mutation
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"math/rand"
 
 	cxast "github.com/skycoin/cx/cx/ast"
@@ -57,11 +56,8 @@ func HalfI32Literal(cxprogram *cxast.CXProgram, pkg *cxast.CXPackage, cxarg *cxa
 	}
 
 	currentByts := cxprogram.Memory[argOffset : argOffset+cxarg.TotalSize]
-
-	fmt.Printf("value=%v\n", binary.LittleEndian.Uint32(currentByts))
 	// Divide the value by 2
 	newValue := (binary.LittleEndian.Uint32(currentByts)) / 2
-	fmt.Printf("new value=%v\n", newValue)
 
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, newValue)
