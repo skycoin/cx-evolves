@@ -30,6 +30,8 @@ type EvolveConfig struct {
 
 	NumberOfRounds int
 
+	ConstantsTarget int
+
 	UpperRange int
 	LowerRange int
 
