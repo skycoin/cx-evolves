@@ -12,9 +12,9 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 )
 
-// perByteEvaluation for evolve with constants, 1 i32 input, 1 i32 output
+// perByteEvaluation_Constants evolves with constants, 1 i32 input, 1 i32 output
 func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) float64 {
-	var total float64 = 0
+	var total int32 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
@@ -55,17 +55,33 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 
 		data := int(binary.BigEndian.Uint32(result.Output))
 
-		// squared error (output-target)^2
-		score := math.Pow(float64(int(data)-round), 2)
+		target := round
+		consTarg := cfg.ConstantsTarget
+		if consTarg != -1 {
+			target = consTarg
+		}
+		score := calculateConstantsScore(data, target, cfg)
 
 		// Check if overflowed
 		if total+score < total {
-			total = math.MaxFloat64
+			total = math.MaxInt32
 		} else {
 			total = total + score
 		}
 	}
 
 	cxast.PROGRAM = tmp
-	return total
+	return float64(total)
+}
+
+func calculateConstantsScore(data, target int, cfg *EvolveConfig) int32 {
+	// squared error (output-target)^2
+	score := int32(math.Pow(float64(data-target), 2))
+
+	// For 0-256 range benchmark
+	if (cfg.ConstantsTarget != -1) && target == 256 && data < target && data > 0 {
+		score = 0
+	}
+
+	return score
 }

@@ -38,6 +38,9 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 
 	if cfg.ConstantsBenchmark {
 		name = "Constants"
+		if cfg.ConstantsTarget != -1 {
+			name = fmt.Sprintf("%v-%v", name, cfg.ConstantsTarget)
+		}
 	}
 
 	if cfg.EvensBenchmark {
