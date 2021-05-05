@@ -1,11 +1,13 @@
-package evolve_test
+package mutation_test
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"reflect"
 	"testing"
 
-	"github.com/skycoin/cx-evolves/evolve"
+	"github.com/skycoin/cx-evolves/mutation"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxastapi "github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -23,7 +25,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 	}{
 		{
 			scenario:     "valid function name and operator name - i16.add",
-			program:      generateSampleProgram(t, "main", "TestFunction"),
+			program:      generateSampleStaticProgram(t, "main", "TestFunction", false),
 			functionName: "TestFunction",
 			operatorName: "i16.add",
 			wantLines:    []int{0, 1},
@@ -31,7 +33,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 		},
 		{
 			scenario:     "valid function name and operator name - i32.add",
-			program:      generateSampleProgram(t, "main", "TestFunction"),
+			program:      generateSampleStaticProgram(t, "main", "TestFunction", false),
 			functionName: "TestFunction",
 			operatorName: "i32.add",
 			wantLines:    []int{2},
@@ -39,7 +41,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 		},
 		{
 			scenario:     "valid function name and operator name - jmp",
-			program:      generateSampleProgram(t, "main", "TestFunction"),
+			program:      generateSampleStaticProgram(t, "main", "TestFunction", false),
 			functionName: "TestFunction",
 			operatorName: "jmp",
 			wantLines:    []int{0, 1, 2},
@@ -47,7 +49,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 		},
 		{
 			scenario:     "valid function name but invalid operator name",
-			program:      generateSampleProgram(t, "main", "TestFunction"),
+			program:      generateSampleStaticProgram(t, "main", "TestFunction", false),
 			functionName: "TestFunction",
 			operatorName: "i256.div",
 			wantLines:    []int{},
@@ -55,7 +57,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 		},
 		{
 			scenario:     "valid operator name but invalid function name",
-			program:      generateSampleProgram(t, "main", "TestFunction"),
+			program:      generateSampleStaticProgram(t, "main", "TestFunction", false),
 			functionName: "Unknown",
 			operatorName: "i32.sub",
 			wantLines:    []int{},
@@ -65,7 +67,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			gotLines, err := evolve.GetCompatiblePositionForOperator(tc.program, tc.functionName, tc.operatorName)
+			gotLines, err := mutation.GetCompatiblePositionForOperator(tc.program, tc.functionName, tc.operatorName)
 			gotErr := err != nil
 			wantErr := tc.wantErr != nil
 			if gotErr != wantErr {
@@ -82,7 +84,7 @@ func TestGetCompatiblePositionForOperator(t *testing.T) {
 func TestReplaceArgInput(t *testing.T) {
 	pkgName := "main"
 	fnName := "TestFunction"
-	cxProgram := generateSampleProgram(t, pkgName, fnName)
+	cxProgram := generateSampleStaticProgram(t, pkgName, fnName, false)
 	fn, err := cxastapi.FindFunction(cxProgram, fnName)
 	if err != nil {
 		t.Fatalf("error in finding function")
@@ -121,7 +123,7 @@ func TestReplaceArgInput(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			err := evolve.ReplaceArgInput(tc.cxExpr, tc.argIndex, tc.argToPut)
+			err := mutation.ReplaceArgInput(tc.cxExpr, tc.argIndex, tc.argToPut)
 			gotErr := err != nil
 			wantErr := tc.wantErr != nil
 			if gotErr != wantErr {
@@ -143,7 +145,7 @@ func TestReplaceArgInput(t *testing.T) {
 // 				0.- Expression: z i16 = add(x i16, y i16)
 // 				1.- Expression: z i16 = sub(x i16, y i16)
 // 				2.- Expression: z i32 = mul(x i32, y i32)
-func generateSampleProgram(t *testing.T, pkgName, fnName string) *cxast.CXProgram {
+func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiteral bool) *cxast.CXProgram {
 	var cxProgram *cxast.CXProgram
 
 	// Needed for AddNativeExpressionToFunction
@@ -221,9 +223,14 @@ func generateSampleProgram(t *testing.T, pkgName, fnName string) *cxast.CXProgra
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "y", cxconstants.TYPE_I32, 2)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
+	if withLiteral {
+		buf := new(bytes.Buffer)
+		var num int32 = 6
+		binary.Write(buf, binary.LittleEndian, num)
+		err = cxastapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
+		if err != nil {
+			t.Errorf("want no error, got %v", err)
+		}
 	}
 
 	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", cxconstants.TYPE_I32, 2)

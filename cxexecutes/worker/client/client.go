@@ -29,7 +29,7 @@ func CallWorker(cWorker CallWorkerConfig, workerAddr string, result *worker.Resu
 	defer sess.Close()
 
 	args := &worker.Args{
-		Program:      cxast.SerializeCXProgramV2(cWorker.Program, false),
+		Program:      cxast.SerializeCXProgramV2(cWorker.Program, true, false),
 		Inputs:       cWorker.Input,
 		OutputOffset: cWorker.OutputArg.Offset,
 		OutputSize:   cWorker.OutputArg.TotalSize,

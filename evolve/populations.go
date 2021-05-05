@@ -33,10 +33,10 @@ func MakePopulation(populationSize int) *Population {
 // InitIndividuals initializes the `Individuals` in a `Population` using a `CXProgram` which works as a template. In the end, all the `Individuals` in `pop` will be exact copies of `initPrgrm` (but not pointers to the same object).
 func (pop *Population) InitIndividuals(initPrgrm *cxast.CXProgram) {
 	// Serializing root CX program to create copies of it.
-	sPrgrm := cxast.SerializeCXProgramV2(initPrgrm, true)
+	sPrgrm := cxast.SerializeCXProgramV2(initPrgrm, true, false)
 
 	for i := 0; i < len(pop.Individuals); i++ {
-		pop.Individuals[i] = cxast.DeserializeCXProgramV2(sPrgrm)
+		pop.Individuals[i] = cxast.DeserializeCXProgramV2(sPrgrm, false)
 	}
 }
 

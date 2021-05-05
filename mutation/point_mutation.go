@@ -1,12 +1,56 @@
-package evolve
+package mutation
 
 import (
 	"errors"
+	"fmt"
 
-	copier "github.com/jinzhu/copier"
+	"github.com/jinzhu/copier"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxastapi "github.com/skycoin/cx/cx/astapi"
 )
+
+type MutationHandler func(cxprogram *cxast.CXProgram, pkg *cxast.CXPackage, cxarg *cxast.CXArgument)
+
+var (
+	PointMutationOperators map[int]MutationHandler
+	MutationOpNames        map[int]string
+	MutationOpCodes        map[string]int
+)
+
+const (
+	MOP_INSERT_RAND_I8_AS__I32_LIT = iota + 1
+	MOP_INSERT_RAND_I16_AS_I32_LIT
+	MOP_INSERT_RAND__I32_LIT
+	MOP_HALF_I32_LIT
+	MOP_DOUBLE_I32_LIT
+	MOP_ZERO_I32_LIT
+	MOP_ADD_ONE_I32_LIT
+	MOP_ADD_RAND_I32_LIT
+	MOP_SUB_ONE_I32_LIT
+	MOP_SUB_RAND_I32_LIT
+	MOP_BIT_OR_I32_LIT
+	MOP_BIT_AND_I32_LIT
+	MOP_BIT_XOR_I32_LIT
+	MOP_OR_I32_LIT
+	MOP_AND_I32_LIT
+	MOP_XOR_I32_LIT
+	MOP_BIT_ROTATE_LEFT_I32_LIT
+	MOP_BIT_ROTATE_RIGHT_I32_LIT
+	MOP_SHIFT_BIT_LEFT_I32_LIT
+	MOP_SHIFT_BIT_RIGHT_I32_LIT
+)
+
+// RegisterMutationOperator
+func RegisterMutationOperator(code int, name string, handler MutationHandler) {
+	// Check if duplicate
+	if PointMutationOperators[code] != nil {
+		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, MutationOpNames[code]))
+	}
+
+	PointMutationOperators[code] = handler
+	MutationOpNames[code] = name
+	MutationOpCodes[name] = code
+}
 
 // GetCompatiblePositionForOperator returns list of line numbers where the operator can be inserted to.
 func GetCompatiblePositionForOperator(cxprogram *cxast.CXProgram, fnName, operatorName string) ([]int, error) {
