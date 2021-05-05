@@ -33,6 +33,8 @@ var (
 
 	numberOfRounds int
 
+	constantsTarget int
+
 	upperRange int
 	lowerRange int
 
@@ -197,6 +199,13 @@ func main() {
 				Destination: &numberOfRounds,
 			},
 			&cli.IntFlag{
+				Name:        "target constants",
+				Aliases:     []string{"constants-target"},
+				Usage:       "target number for constants benchmarking",
+				Value:       -1,
+				Destination: &constantsTarget,
+			},
+			&cli.IntFlag{
 				Name:        "Population Size",
 				Aliases:     []string{"population"},
 				Usage:       "population size",
@@ -312,6 +321,8 @@ func Evolve() {
 		MazeHeight: mazeHeight,
 
 		NumberOfRounds: numberOfRounds,
+
+		ConstantsTarget: constantsTarget,
 
 		UpperRange: upperRange,
 		LowerRange: lowerRange,
