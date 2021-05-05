@@ -1,32 +1,24 @@
 # Installation
 
-- Install and setup go 1.13 and above.
+- Install and setup go 1.14 and above.
 - Install CX (https://github.com/skycoin/cx).
 - `git pull` your CX repository so you have the latest CX version.
 - Make sure `go module` is enabled. Install go dependencies by running:
 ```
-$go get -u ./...
 $go mod verify 
 $go mod tidy
 $go mod download
 ```
 
-# High priority tasks
-- [ ] Maze
-- [ ] Snake
-- [ ] Tic-Tac-Toe
-- [ ] Multi-armed bandit
-- [ ] Rock, paper & scissors
-
-# Low priority tasks
-- [ ] Time-series mean estimation
-- [ ] Time-series variance estimation
-- [ ] Time-series covariance estimation
-- [ ] Stock market simulator
-- [ ] Committee of experts
-- [ ] Linear feedback shift register prediction
-- [ ] Non-linear feedback shift register prediction
-- [ ] Check if a number is prime
+# Benchmarks
+- [x] Maze
+- [x] Constants
+- [x] Evens
+- [x] Odds
+- [x] Primes
+- [x] Composites
+- [x] Network Simulator
+- [x] Range
 
 ### Summary
 
@@ -82,6 +74,9 @@ go run main.go
 <!-- Set if benchmark is either constants, evens, odds, primes, composites, range, or network simulator -->
 --rounds=[Number of rounds per program]
 
+<!-- Set if benchmark is constants -->
+--constants-target=[target number for constants benchmark]
+
 ```
 
 ### Example Benchmarking
@@ -99,6 +94,13 @@ go run main.go --range=true --upper-range=9 --lower-range=2 --rounds=10 --name=R
 For Constants
 ```
 go run main.go --constants=true --rounds=10 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+```
+
+For Constants with explicit target
+```
+go run main.go --constants=true --rounds=10 --constants-target=5 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+
+Note: For constants benchmarking 0-256 range, use --constants-target=256.
 ```
 
 For Odds
@@ -143,3 +145,20 @@ Example
 ```
 NAME=testbenchmark MOUNT=/Benchmarking/Results make deploy 
 ```
+
+# High priority tasks
+- [x] Maze
+- [ ] Snake
+- [ ] Tic-Tac-Toe
+- [ ] Multi-armed bandit
+- [ ] Rock, paper & scissors
+
+# Low priority tasks
+- [ ] Time-series mean estimation
+- [ ] Time-series variance estimation
+- [ ] Time-series covariance estimation
+- [ ] Stock market simulator
+- [ ] Committee of experts
+- [ ] Linear feedback shift register prediction
+- [ ] Non-linear feedback shift register prediction
+- [x] Check if a number is prime
