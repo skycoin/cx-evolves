@@ -10,22 +10,15 @@ $go mod tidy
 $go mod download
 ```
 
-# High priority tasks
+# Benchmarks
 - [x] Maze
-- [ ] Snake
-- [ ] Tic-Tac-Toe
-- [ ] Multi-armed bandit
-- [ ] Rock, paper & scissors
-
-# Low priority tasks
-- [ ] Time-series mean estimation
-- [ ] Time-series variance estimation
-- [ ] Time-series covariance estimation
-- [ ] Stock market simulator
-- [ ] Committee of experts
-- [ ] Linear feedback shift register prediction
-- [ ] Non-linear feedback shift register prediction
-- [x] Check if a number is prime
+- [x] Constants
+- [x] Evens
+- [x] Odds
+- [x] Primes
+- [x] Composites
+- [x] Network Simulator
+- [x] Range
 
 ### Summary
 
@@ -152,3 +145,20 @@ Example
 ```
 NAME=testbenchmark MOUNT=/Benchmarking/Results make deploy 
 ```
+
+# High priority tasks
+- [x] Maze
+- [ ] Snake
+- [ ] Tic-Tac-Toe
+- [ ] Multi-armed bandit
+- [ ] Rock, paper & scissors
+
+# Low priority tasks
+- [ ] Time-series mean estimation
+- [ ] Time-series variance estimation
+- [ ] Time-series covariance estimation
+- [ ] Stock market simulator
+- [ ] Committee of experts
+- [ ] Linear feedback shift register prediction
+- [ ] Non-linear feedback shift register prediction
+- [x] Check if a number is prime
