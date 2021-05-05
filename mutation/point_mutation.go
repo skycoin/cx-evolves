@@ -62,16 +62,13 @@ func GetCompatiblePositionForOperator(cxprogram *cxast.CXProgram, fnName, operat
 		return []int{}, errors.New("standard library function not found")
 	}
 
-	// Check if operatorFn has an output or not.
-	hasOutput := false
-	if len(operatorFn.Outputs) > 0 {
-		hasOutput = true
-	}
-
 	fn, err := cxastapi.FindFunction(cxprogram, fnName)
 	if err != nil {
 		return []int{}, errors.New("function not found")
 	}
+
+	// Check if operatorFn has an output or not.
+	hasOutput := len(operatorFn.Outputs) > 0
 
 	for i, expr := range fn.Expressions {
 		if !hasOutput {

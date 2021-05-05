@@ -1,11 +1,9 @@
 # Ignore all Emacs backup files.
 *~
+.DS_Store
 
 # Ignore binary file, in case we generate it under this directory.
 evolve/evolve
-
-# Ignore Emacs backup files.
-*~
 
 # Ignore vendor files
 vendor/
