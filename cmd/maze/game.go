@@ -1,7 +1,6 @@
 package maze
 
 import (
-	"fmt"
 	"time"
 
 	"gonum.org/v1/plot/plotter"
@@ -32,8 +31,8 @@ func (game *Game) Init(w, h int) {
 
 func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) (AgentInput, error)) (int, error) {
 	var moves int
-	var reachTime time.Duration
-	var stopTime time.Duration
+	// var reachTime time.Duration
+	// var stopTime time.Duration
 	var histoValues plotter.Values
 	var gameMove *GameMove
 	var movedToAWall bool
@@ -64,7 +63,7 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) (Ag
 		currPos := game.maze.Start
 		gameMove.AgentPosition = currPos
 		gameMove.MazeData = game.maze
-		startTime := time.Now()
+		// startTime := time.Now()
 
 		for !reachedGoal {
 			agentInput, err := InputCallback(player, gameMove)
@@ -129,31 +128,31 @@ func (game *Game) MazeGame(numberOfRuns int, player func(gameMove *GameMove) (Ag
 
 			if *currPos == *goalPos {
 				reachedGoal = true
-				reachTime = time.Since(startTime)
+				// reachTime = time.Since(startTime)
 			}
 
 			if moves > maxMoves {
-				stopTime = time.Since(startTime)
+				// stopTime = time.Since(startTime)
 				break
 			}
 
 			gameMove.PrevInput = agentInput.Move
 		}
 
-		if reachedGoal {
-			fmt.Println("-------------------------------------------")
-			fmt.Printf("Run Number: %v\n", run+1)
-			fmt.Printf("You have reached the main goal! congrats!\n")
-			fmt.Printf("Time it took to reach the goal: %v\n", reachTime)
-			fmt.Printf("Moves it took you to reach goal: %v\n", moves)
-		} else {
-			fmt.Println("-------------------------------------------")
-			fmt.Printf("Run Number: %v\n", run+1)
-			fmt.Printf("Sorry, you have not reached the goal\n")
-			fmt.Printf("Moves reached more than %v which is 100 times greater than maze size\n", maxMoves)
-			fmt.Printf("Moves you took: %v\n", moves)
-			fmt.Printf("Time you took: %v\n", stopTime)
-		}
+		// if reachedGoal {
+		// 	fmt.Println("-------------------------------------------")
+		// 	fmt.Printf("Run Number: %v\n", run+1)
+		// 	fmt.Printf("You have reached the main goal! congrats!\n")
+		// 	fmt.Printf("Time it took to reach the goal: %v\n", reachTime)
+		// 	fmt.Printf("Moves it took you to reach goal: %v\n", moves)
+		// } else {
+		// 	fmt.Println("-------------------------------------------")
+		// 	fmt.Printf("Run Number: %v\n", run+1)
+		// 	fmt.Printf("Sorry, you have not reached the goal\n")
+		// 	fmt.Printf("Moves reached more than %v which is 100 times greater than maze size\n", maxMoves)
+		// 	fmt.Printf("Moves you took: %v\n", moves)
+		// 	fmt.Printf("Time you took: %v\n", stopTime)
+		// }
 		if game.PlotHistogram {
 			histoValues = append(histoValues, float64(moves))
 		}
