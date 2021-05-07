@@ -19,3 +19,7 @@ build: build-env
 
 deploy:build deploy-env
 	docker run -it --rm --name cxevolves-run -v $(MOUNT):/Results cxevolves/$(NAME):latest
+
+push-docker: build-env build
+	docker tag cxevolves/$(NAME):latest kenje4090/kenjecxevolves 
+	docker push kenje4090/kenjecxevolves:latest
