@@ -14,7 +14,6 @@ go run cmd/server.go -port=[port number for worker to use]
 
 ### Example
 
-For Maze
 ```
 go run cmd/server.go -port=9090
 ```
