@@ -13,7 +13,7 @@ import (
 )
 
 // perByteEvaluation for evolve with prime numbers, 1 i32 input, 1 i32 output
-func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) float64 {
+func perByteEvaluation_Primes(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) float64 {
 	var points int64 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind

@@ -13,7 +13,7 @@ import (
 )
 
 // perByteEvaluation_Constants evolves with constants, 1 i32 input, 1 i32 output
-func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) float64 {
+func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) float64 {
 	var total int32 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
@@ -41,6 +41,8 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 			inps[b] = inp[b]
 		}
 
+		// startWorkerTime := time.Now()
+		// fmt.Printf("start worker run\n")
 		var result worker.Result
 		workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
 		workerclient.CallWorker(
@@ -53,6 +55,7 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 			&result,
 		)
 
+		// fmt.Printf("end worker run=%v\n", time.Since(startWorkerTime))
 		data := int(binary.BigEndian.Uint32(result.Output))
 
 		target := round
@@ -74,7 +77,7 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 	return float64(total)
 }
 
-func calculateConstantsScore(data, target int, cfg *EvolveConfig) int32 {
+func calculateConstantsScore(data, target int, cfg EvolveConfig) int32 {
 	// squared error (output-target)^2
 	score := int32(math.Pow(float64(data-target), 2))
 

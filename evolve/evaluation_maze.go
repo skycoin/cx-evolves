@@ -13,7 +13,7 @@ import (
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) (float64, error) {
+func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) (float64, error) {
 	player := func(gameMove *maze.GameMove) (maze.AgentInput, error) {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
