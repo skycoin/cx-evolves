@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"runtime"
 	"sync"
 
@@ -11,50 +12,51 @@ import (
 	cxopcodes "github.com/skycoin/cx/cx/opcodes"
 )
 
-var workers int
+var portNum int
 
 func init() {
-	flag.IntVar(&workers, "workers", 1, "number of workers")
+	flag.IntVar(&portNum, "port", 9090, "port number for worker to use")
 }
 
 func main() {
 	runtime.GOMAXPROCS(1)
 	flag.Parse()
 	cxopcodes.RegisterOpcodes()
-	deployWorker(workers)
+	deployWorker(portNum)
 }
 
-func deployWorker(workers int) {
+func deployWorker(portNum int) {
+	erpc.SetLoggerLevel("OFF")()
 	// graceful
 	go erpc.GraceSignal()
 
 	wg := new(sync.WaitGroup)
 
-	for i := 0; i < workers; i++ {
-		wg.Add(1)
-		portNumber := worker.BasePortNumber + i
-		go func() {
-			// server peer
-			srv := erpc.NewPeer(erpc.PeerConfig{
-				CountTime:   true,
-				ListenPort:  uint16(portNumber),
-				PrintDetail: false,
-			})
-			srv.SetTLSConfig(erpc.GenerateTLSConfigForServer())
+	wg.Add(1)
 
-			// router
-			srv.RouteCall(new(worker.ProgramWorker))
+	go func() {
+		// server peer
+		srv := erpc.NewPeer(erpc.PeerConfig{
+			CountTime:   true,
+			ListenPort:  uint16(portNum),
+			PrintDetail: false,
+		})
+		srv.SetTLSConfig(erpc.GenerateTLSConfigForServer())
 
-			// listen and serve
-			err := srv.ListenAndServe()
-			if err != nil {
-				panic(err)
-			}
-			wg.Done()
-		}()
+		// router
+		srv.RouteCall(new(worker.ProgramWorker))
 
-		erpc.GetLogger().Printf("listen and serve: %v", portNumber)
-		erpc.FlushLogger()
-	}
+		// listen and serve
+		err := srv.ListenAndServe()
+		if err != nil {
+			panic(err)
+		}
+		wg.Done()
+	}()
+
+	// erpc.GetLogger().Printf("listen and serve: %v", portNum)
+	fmt.Printf("listen and serve: %v\n", portNum)
+	// erpc.FlushLogger()
+
 	wg.Wait()
 }

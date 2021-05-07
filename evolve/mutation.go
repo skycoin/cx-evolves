@@ -3,7 +3,10 @@ package evolve
 import (
 	"math/rand"
 
+	cxmutation "github.com/skycoin/cx-evolves/mutation"
 	cxast "github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/astapi"
+	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
 // Codes associated to each of the mutation functions.
@@ -34,17 +37,6 @@ const (
 // 	fn.Expressions[mirrorIdx] = tmpExpr
 // }
 
-func randomMutation(pop *Population, sPrgrm []byte) {
-	fnToEvolve := pop.FunctionToEvolve
-	numExprs := pop.ExpressionsCount
-	fns := pop.FunctionSet
-	randIdx := rand.Intn(len(pop.Individuals))
-	pop.Individuals[randIdx] = cxast.DeserializeCXProgramV2(sPrgrm, false)
-	initSolution(pop.Individuals[randIdx], fnToEvolve, fns, numExprs)
-	adaptSolution(pop.Individuals[randIdx], fnToEvolve)
-	resetPrgrm(pop.Individuals[randIdx])
-}
-
 // func bitflipMutation(fn *cxcore.CXFunction, fnBag []*cxcore.CXFunction) {
 // 	rndExprIdx := rand.Intn(len(fn.Expressions))
 // 	rndFn := getRandFn(fnBag)
@@ -66,3 +58,42 @@ func randomMutation(pop *Population, sPrgrm []byte) {
 // 	// fn.Expressions[rndExprIdx] = expr
 // 	fn.Expressions = exprs
 // }
+
+func randomMutation(pop *Population, sPrgrm []byte) {
+	fnToEvolve := pop.FunctionToEvolve
+	numExprs := pop.ExpressionsCount
+	fns := pop.FunctionSet
+	randIdx := rand.Intn(len(pop.Individuals))
+	pop.Individuals[randIdx] = cxast.DeserializeCXProgramV2(sPrgrm, true)
+	initSolution(pop.Individuals[randIdx], fnToEvolve, fns, numExprs)
+	adaptSolution(pop.Individuals[randIdx], fnToEvolve)
+	resetPrgrm(pop.Individuals[randIdx])
+}
+
+func pointMutation(pop *Population) {
+	// Choose random individual to apply the point mutation
+	randIdx := rand.Intn(len(pop.Individuals))
+	ind := pop.Individuals[randIdx]
+
+	// Get the main package of the individual
+	mainPkg, err := astapi.FindPackage(ind, "main")
+	if err != nil {
+		panic(err)
+	}
+
+	// Choose random point mutation operator
+	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
+	mutate := pointOpFns[cxmutation.GetRandIndex()]
+
+	// Choose random arg to apply the point mutation
+	argsList, err := cxmutation.GetCompatibleArgsForPointMutation(ind, pop.FunctionToEvolve.Name, cxconstants.TYPE_I32)
+	if err != nil {
+		panic(err)
+	}
+	randIdx = rand.Intn(len(argsList))
+
+	// fmt.Printf("program mem len=%v\n", len(ind.Memory))
+	// fmt.Printf("arg=%+v\n", argsList[randIdx])
+	// Apply point mutation operator
+	mutate(ind, mainPkg, argsList[randIdx])
+}

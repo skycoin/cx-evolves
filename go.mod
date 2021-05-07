@@ -3,6 +3,7 @@ module github.com/skycoin/cx-evolves
 go 1.16
 
 require (
+	github.com/frankban/quicktest v1.12.1 // indirect
 	github.com/henrylee2cn/erpc/v6 v6.3.5
 	github.com/jinzhu/copier v0.2.5
 	github.com/sirupsen/logrus v1.8.0

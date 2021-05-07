@@ -11,7 +11,7 @@ import (
 )
 
 // perByteEvaluation for evolve with network sim, 1 i32 input, 1 i32 output
-func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg *EvolveConfig) float64 {
+func perByteEvaluation_NetworkSim(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) float64 {
 	var score int = 0
 	for rounds := 0; rounds < cfg.NumberOfRounds; rounds++ {
 		// Generate random Input

@@ -6,6 +6,7 @@ import (
 	"math"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
@@ -59,16 +60,24 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	numIter := pop.Iterations
 	solProt := pop.FunctionToEvolve
 	fnToEvolveName := solProt.Name
-	sPrgrm := cxast.SerializeCXProgramV2(pop.Individuals[0], true, false)
+	sPrgrm := cxast.SerializeCXProgramV2(pop.Individuals[0], true, true)
 
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
 
+	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
 	availPorts = append(availPorts, availWorkers...)
+	availPortsCh := make(chan int, len(availPorts))
+	go func() {
+		for _, val := range availPorts {
+			availPortsCh <- val
+		}
+	}()
 
 	// Evolution process.
 	for c := 0; c < int(numIter); c++ {
+		startTimeGeneration := time.Now()
 		// Maze Creation if Maze Benchmark
 		if cfg.MazeBenchmark {
 			generateNewMaze(c, &cfg, &game)
@@ -111,39 +120,37 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = child2
 		randomMutation(pop, sPrgrm)
 
+		// Point Mutation
+		pointMutation(pop)
+
 		// Replacing individuals in population.
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
 
-		runtime.GOMAXPROCS(4)
+		runtime.GOMAXPROCS(48)
 		// Evaluation process.
 		for i := range pop.Individuals {
-			// Wait until ports are available.
-			for len(availPorts) == 0 {
-			}
-
-			// Get port number from the first index and
-			// remove it from list of available ports.
-			portNum := availPorts[0]
-			availPorts = RemoveIndex(availPorts, 0)
-			cfg.WorkerPortNum = portNum
-
 			wg.Add(1)
-			go func(j int, availPorts *[]int, portNum int) {
+			go func(j int) {
 				defer wg.Done()
 
-				pop.Individuals[j].PrintProgram()
-				output[j], err = RunBenchmark(pop.Individuals[j], solProt, &cfg)
+				// Get worker port number from
+				// avail ports channel.
+				currPortNum := <-availPortsCh
+				cfg.WorkerPortNum = currPortNum
+
+				// pop.Individuals[j].PrintProgram()
+				output[j], err = RunBenchmark(pop.Individuals[j], solProt, cfg)
 				if err != nil {
 					output[j] = float64(math.MaxInt32)
 				}
 
 				// Append back the worker port number used so that
 				// it can be used by another go routine.
-				*availPorts = append(*availPorts, portNum)
+				availPortsCh <- currPortNum
 
-				fmt.Printf("output of program[%v]:%v\n", j, output[j])
-			}(i, &availPorts, portNum)
+				// fmt.Printf("output of program[%v]:%v\n", j, output[j])
+			}(i)
 		}
 		wg.Wait()
 
@@ -164,6 +171,8 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
 			pointsPlot(averageValues, averageXLabel, averageYLabel, graphTitle, saveDirectory+fmt.Sprintf("Generation_%v_", c)+"AverageFitness.png")
 		}
+
+		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
 	}
 
 	if cfg.PlotFitness {
@@ -171,7 +180,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}
 }
 
-func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg *EvolveConfig) (intOut float64, err error) {
+func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (intOut float64, err error) {
 	if cfg.MazeBenchmark {
 		intOut, err = mazeMovesEvaluation(cxprogram, solProt, cfg)
 		if err != nil {
