@@ -2,12 +2,6 @@
 
 CX executes worker executes the cx program and send back the output. 
 
-The base port number is 9090. 
-So for example, when deploying three workers, these are their port numbers:
-first worker - 9090
-second worker - 9091
-third worker - 9092
-
 ### Deployment of Worker
 For more information, run
 ```
@@ -15,14 +9,14 @@ go run cmd/server.go help
 ```
 
 ```
-go run cmd/server.go -workers=[number of workers to deploy]
+go run cmd/server.go -port=[port number for worker to use]
 ```
 
 ### Example
 
 For Maze
 ```
-go run cmd/server.go -workers=3
+go run cmd/server.go -port=9090
 ```
 
 ### Notes
