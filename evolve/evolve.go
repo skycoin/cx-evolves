@@ -121,7 +121,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		randomMutation(pop, sPrgrm)
 
 		// Point Mutation
-		// pointMutation(pop)
+		pointMutation(pop)
 
 		// Replacing individuals in population.
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
