@@ -12,9 +12,9 @@ import (
 type MutationHandler func(cxprogram *cxast.CXProgram, pkg *cxast.CXPackage, cxarg *cxast.CXArgument)
 
 var (
-	PointMutationOperators map[int]MutationHandler
-	MutationOpNames        map[int]string
-	MutationOpCodes        map[string]int
+	PointMutationOperators = map[int]MutationHandler{}
+	MutationOpNames        = map[int]string{}
+	MutationOpCodes        = map[string]int{}
 )
 
 const (
@@ -109,4 +109,25 @@ func ReplaceArgInput(expr *cxast.CXExpression, argIndex int, argToPut *cxast.CXA
 	expr.Inputs[argIndex] = &arg
 
 	return nil
+}
+
+// GetCompatibleArgsForPointMutation returns list of cx arguments where the point mutation can be applied to.
+func GetCompatibleArgsForPointMutation(cxprogram *cxast.CXProgram, fnName string, argType int) ([]*cxast.CXArgument, error) {
+	var args []*cxast.CXArgument
+
+	fn, err := cxastapi.FindFunction(cxprogram, fnName)
+	if err != nil {
+		return []*cxast.CXArgument{}, errors.New("function not found")
+	}
+
+	for _, expr := range fn.Expressions {
+		for _, arg := range expr.Inputs {
+			if arg.Type == argType {
+				args = append(args, arg)
+				break
+			}
+		}
+	}
+
+	return args, nil
 }

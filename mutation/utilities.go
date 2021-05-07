@@ -18,3 +18,22 @@ func GenerateRandomBytes(size int) (blk []byte, err error) {
 	}
 	return
 }
+
+func GetMutationOperatorFunctionSet(fnNames []string) (fns []MutationHandler) {
+	for _, fnName := range fnNames {
+		fn := PointMutationOperators[MutationOpCodes[fnName]]
+		if fn == nil {
+			panic("mutation operator function not found.")
+		}
+
+		fns = append(fns, fn)
+	}
+	return fns
+}
+
+func GetAllMutationOperatorFunctionSet() (fns []MutationHandler) {
+	for _, fn := range PointMutationOperators {
+		fns = append(fns, fn)
+	}
+	return fns
+}
