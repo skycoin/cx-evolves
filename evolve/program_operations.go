@@ -3,6 +3,7 @@ package evolve
 import (
 	copier "github.com/jinzhu/copier"
 
+	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
@@ -119,7 +120,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 		}
 	}
 
-	GenerateRandomExpressions(&newFn, &newPkg, fns, numExprs)
+	cxgenerator.GenerateRandomExpressions(&newFn, &newPkg, fns, numExprs)
 }
 
 func resetPrgrm(prgrm *cxast.CXProgram) {

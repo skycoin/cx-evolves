@@ -1,6 +1,7 @@
 package evolve
 
 import (
+	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
@@ -42,7 +43,7 @@ func (pop *Population) InitIndividuals(initPrgrm *cxast.CXProgram) {
 
 // InitFunctionSet gathers the functions contained in `prgrm` named by `fnNames`.
 func (pop *Population) InitFunctionSet(fnNames []string) {
-	pop.FunctionSet = GetFunctionSet(fnNames)
+	pop.FunctionSet = cxgenerator.GetFunctionSet(fnNames)
 }
 
 // InitFunctionsToEvolve initializes the `FunctionToEvolve` in each of the individuals in a `Population`, so each individual has a `FunctionToEvolve` with a random set of expressions.

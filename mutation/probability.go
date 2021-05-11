@@ -1,7 +1,6 @@
 package mutation
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -36,5 +35,5 @@ func NewProbability(numberOfOptions int) {
 	for i := 1; i < numberOfOptions; i++ {
 		cdf[i] = cdf[i-1] + pdf[i]
 	}
-	fmt.Println(cdf)
+	// fmt.Println(cdf)
 }
