@@ -1,26 +1,24 @@
-package evolve
+package tasks
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
 
-	"github.com/skycoin/cx-evolves/cxexecutes/worker"
-	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
-// perByteEvaluation_Constants evolves with constants, 1 i32 input, 1 i32 output
-func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) float64 {
+// Constants_V1 evolves with constants, 1 i32 input, 1 i32 output
+func Constants_V1(ind *cxast.CXProgram, solPrototype EvolveSolProto, cfg TaskConfig) (float64, error) {
 	var total int32 = 0
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
-	for c := 0; c < len(solPrototype.Inputs); c++ {
-		inpFullByteSize += solPrototype.Inputs[c].TotalSize
+	for c := 0; c < len(solPrototype.InpsSize); c++ {
+		inpFullByteSize += solPrototype.InpsSize[c]
 	}
 
 	// We'll store the `i`th inputs on `inps`.
@@ -41,22 +39,14 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 			inps[b] = inp[b]
 		}
 
-		// startWorkerTime := time.Now()
-		// fmt.Printf("start worker run\n")
-		var result worker.Result
-		workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
-		workerclient.CallWorker(
-			workerclient.CallWorkerConfig{
-				Program:   ind,
-				Input:     inps,
-				OutputArg: solPrototype.Outputs[0],
-			},
-			workerAddr,
-			&result,
-		)
+		injectMainInputs(ind, inps)
+		err := cxexecute.RunCompiled(ind, 0, nil)
+		if err != nil {
+			panic(err)
+		}
 
-		// fmt.Printf("end worker run=%v\n", time.Since(startWorkerTime))
-		data := int(binary.BigEndian.Uint32(result.Output))
+		byteOut := ind.Memory[solPrototype.OutOffset : solPrototype.OutOffset+solPrototype.OutSize]
+		data := int(binary.BigEndian.Uint32(byteOut))
 
 		target := round
 		consTarg := cfg.ConstantsTarget
@@ -74,10 +64,10 @@ func perByteEvaluation_Constants(ind *cxast.CXProgram, solPrototype *cxast.CXFun
 	}
 
 	cxast.PROGRAM = tmp
-	return float64(total)
+	return float64(total), nil
 }
 
-func calculateConstantsScore(data, target int, cfg EvolveConfig) int32 {
+func calculateConstantsScore(data, target int, cfg TaskConfig) int32 {
 	// squared error (output-target)^2
 	score := int32(math.Pow(float64(data-target), 2))
 

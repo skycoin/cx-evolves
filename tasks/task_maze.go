@@ -1,4 +1,4 @@
-package evolve
+package tasks
 
 import (
 	"encoding/binary"
@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"github.com/skycoin/cx-evolves/cmd/maze"
-	"github.com/skycoin/cx-evolves/cxexecutes/worker"
-	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxast "github.com/skycoin/cx/cx/ast"
+	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 // Evaluate Program as the Maze Player
-func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, cfg EvolveConfig) (float64, error) {
+func Maze_V1(ind *cxast.CXProgram, solPrototype EvolveSolProto, cfg TaskConfig) (float64, error) {
+	var game maze.Game
+	generateMaze(cfg, &game)
+
 	player := func(gameMove *maze.GameMove) (maze.AgentInput, error) {
 		agentInput := maze.AgentInput{
 			PassMazeData:             true,
@@ -22,7 +24,7 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, c
 		}
 		options := []int{maze.Up, maze.Down, maze.Left, maze.Right}
 
-		move, err := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove), cfg.WorkerPortNum)
+		move, err := perByteEvaluationMaze(ind, solPrototype, MazeEncodeParam(gameMove))
 		if err != nil {
 			return maze.AgentInput{}, err
 		}
@@ -32,7 +34,7 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, c
 		return agentInput, nil
 	}
 
-	moves, err := cfg.MazeGame.MazeGame(1, player)
+	moves, err := game.MazeGame(1, player)
 	if err != nil {
 		return 0, err
 	}
@@ -40,14 +42,14 @@ func mazeMovesEvaluation(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, c
 }
 
 // perByteEvaluation for evolve with maze, 13 i32 input, 1 i32 output
-func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction, inputs [][]byte, portNumber int) (int, error) {
+func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype EvolveSolProto, inputs [][]byte) (int, error) {
 	var move int
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
 	inpFullByteSize := 0
-	for c := 0; c < len(solPrototype.Inputs); c++ {
-		inpFullByteSize += solPrototype.Inputs[c].TotalSize
+	for c := 0; c < len(solPrototype.InpsSize); c++ {
+		inpFullByteSize += solPrototype.InpsSize[c]
 	}
 
 	// We'll store the `i`th inputs on `inps`.
@@ -57,7 +59,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 
 	for c := 0; c < len(inputs); c++ {
 		// The size of the input.
-		inpSize := solPrototype.Inputs[c].TotalSize
+		inpSize := solPrototype.InpsSize[c]
 		// The bytes representing the input.
 		inp := inputs[c]
 
@@ -70,18 +72,14 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype *cxast.CXFunction,
 		inpsOff += inpSize
 	}
 
-	var result worker.Result
-	workerAddr := fmt.Sprintf(":%v", portNumber)
-	workerclient.CallWorker(
-		workerclient.CallWorkerConfig{
-			Program:   ind,
-			Input:     inps,
-			OutputArg: solPrototype.Outputs[0],
-		},
-		workerAddr,
-		&result,
-	)
-	move = int(binary.BigEndian.Uint32(result.Output))
+	injectMainInputs(ind, inps)
+	err := cxexecute.RunCompiled(ind, 0, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	byteOut := ind.Memory[solPrototype.OutOffset : solPrototype.OutOffset+solPrototype.OutSize]
+	move = int(binary.BigEndian.Uint32(byteOut))
 
 	cxast.PROGRAM = tmp
 	return move, nil
@@ -176,17 +174,17 @@ func MazeEncodeParam(param *maze.GameMove) [][]byte {
 
 }
 
-func generateNewMaze(generationCount int, cfg *EvolveConfig, game *maze.Game) {
-	if generationCount%cfg.EpochLength == 0 || generationCount == 0 {
-		if cfg.RandomMazeSize {
-			setRandomMazeSize(cfg)
-		}
+func generateMaze(cfg TaskConfig, game *maze.Game) {
+	rand.Seed(cfg.RandSeed)
 
-		game.Init(cfg.MazeWidth, cfg.MazeHeight)
+	if cfg.RandomMazeSize {
+		setRandomMazeSize(cfg)
 	}
+
+	game.Init(cfg.MazeWidth, cfg.MazeHeight)
 }
 
-func setRandomMazeSize(cfg *EvolveConfig) {
+func setRandomMazeSize(cfg TaskConfig) {
 	rand.Seed(time.Now().Unix())
 	randOptions := []int{2, 3, 4, 5, 6, 7, 8}
 	size := randOptions[rand.Int()%len(randOptions)]

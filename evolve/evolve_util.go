@@ -1,10 +1,14 @@
 package evolve
 
 import (
-	"encoding/binary"
 	"fmt"
 	"os"
 	"time"
+
+	crypto_rand "crypto/rand"
+	"encoding/binary"
+
+	"github.com/skycoin/cx-evolves/tasks"
 )
 
 func makeDirectory(cfg *EvolveConfig) string {
@@ -60,7 +64,7 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 	}
 
 	if cfg.RangeBenchmark {
-		name = "Range"
+		name = fmt.Sprintf("%v-%v-%v", "Range", cfg.LowerRange, cfg.UpperRange)
 	}
 
 	if cfg.NetworkSimBenchmark {
@@ -75,8 +79,30 @@ func setEpochLength(cfg *EvolveConfig) {
 	}
 }
 
-func toByteArray(i int32) []byte {
-	arr := make([]byte, 4)
-	binary.BigEndian.PutUint32(arr, uint32(i))
-	return arr
+func generateNewSeed(generationCount int, cfg EvolveConfig) int64 {
+	if generationCount%cfg.EpochLength == 0 || generationCount == 0 {
+		var b [8]byte
+		_, err := crypto_rand.Read(b[:])
+		if err != nil {
+			panic("cannot seed math/rand package with cryptographically secure random number generator")
+		}
+		return int64(binary.LittleEndian.Uint64(b[:]))
+	}
+	return cfg.RandSeed
+}
+
+func setTaskParams(cfg EvolveConfig) tasks.TaskConfig {
+	// Set Task Cfg
+	taskCfg := tasks.TaskConfig{
+		NumberOfRounds:  cfg.NumberOfRounds,
+		ConstantsTarget: cfg.ConstantsTarget,
+		UpperRange:      cfg.UpperRange,
+		LowerRange:      cfg.LowerRange,
+		RandSeed:        cfg.RandSeed,
+		MazeWidth:       cfg.MazeWidth,
+		MazeHeight:      cfg.MazeHeight,
+		RandomMazeSize:  cfg.RandomMazeSize,
+	}
+
+	return taskCfg
 }
