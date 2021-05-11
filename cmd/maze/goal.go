@@ -1,10 +1,5 @@
 package maze
 
-import (
-	"fmt"
-	"time"
-)
-
 // Distance between cells.
 // Used for Dijkstra's algo for finding farthest point from goal point.
 const (
@@ -14,7 +9,7 @@ const (
 // SetGoalPoint sets maze goal point by using djikstra's algorithm to find farthest
 // point from the starting point.
 func (maze *Maze) SetGoalPoint() {
-	startTime := time.Now()
+	// startTime := time.Now()
 	var GoalPoint Point
 	var maxDistance int
 	var pathValues []int
@@ -27,12 +22,12 @@ func (maze *Maze) SetGoalPoint() {
 	maze.UpdateValue(&pathValues, *maze.Start, *maze.Start, &GoalPoint, &maxDistance)
 	maze.Goal = &GoalPoint
 	maze.CurrentMove = maxDistance
-	totalTime := time.Since(startTime)
+	// totalTime := time.Since(startTime)
 
-	fmt.Printf("Total time to get furthest point: %v\n", totalTime)
-	fmt.Printf("Start Point: %v\n", maze.Start)
-	fmt.Printf("Goal Point: %v\n", GoalPoint)
-	fmt.Printf("Minimum moves: %v\n", maxDistance)
+	// fmt.Printf("Total time to get furthest point: %v\n", totalTime)
+	// fmt.Printf("Start Point: %v\n", maze.Start)
+	// fmt.Printf("Goal Point: %v\n", GoalPoint)
+	// fmt.Printf("Minimum moves: %v\n", maxDistance)
 }
 
 //  UpdateValue is a recursion implementation for dijkstra's algorithm for the maze.

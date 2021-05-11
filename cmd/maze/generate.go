@@ -1,9 +1,7 @@
 package maze
 
 import (
-	"fmt"
 	"math/rand"
-	"time"
 )
 
 // Maze cell configurations
@@ -48,7 +46,7 @@ type Maze struct {
 // NewMaze creates a new maze.
 // The starting point is set randomly.
 func NewMaze(height int, width int) *Maze {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 
 	cells := make([]int, width*height)
 	start := &Point{
@@ -66,7 +64,7 @@ func NewMaze(height int, width int) *Maze {
 
 //  Generate generates a maze.
 func (maze *Maze) Generate() {
-	startTime := time.Now()
+	// startTime := time.Now()
 	point := maze.Start
 	stack := []*Point{maze.Start}
 	for len(stack) > 0 {
@@ -85,8 +83,8 @@ func (maze *Maze) Generate() {
 			}
 		}
 	}
-	totalTime := time.Since(startTime)
-	fmt.Printf("Total time to Generate Maze: %v\n", totalTime)
+	// totalTime := time.Since(startTime)
+	// fmt.Printf("Total time to Generate Maze: %v\n", totalTime)
 }
 
 // Next advances the maze path randomly and returns the new point
@@ -132,7 +130,7 @@ func StartMaze(width, height int) *Maze {
 	maze := NewMaze(height, width)
 	maze.Generate()
 	maze.ValidateMaze()
-	maze.PrintMaze()
+	// maze.PrintMaze()
 	maze.SetGoalPoint()
 
 	return maze

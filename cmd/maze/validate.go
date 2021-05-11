@@ -1,14 +1,12 @@
 package maze
 
-import "fmt"
-
 // Validates the maze.
 // If the cell is open to the NORTH, the cell on its NORTH must be open to the SOUTH,
 // if the cell is open to the SOUTH, the cell on its SOUTH must be open to the NORTH.
 // if the cell is open to the EAST, the cell on its EAST must be open to the WEST, and
 // if the cell is open to the WEST, the cell on its WEST must be open to the EAST,
 func (maze *Maze) ValidateMaze() {
-	fmt.Printf("Validating Maze...\n")
+	// fmt.Printf("Validating Maze...\n")
 	var point Point
 	for y := 0; y < maze.Height; y++ {
 		for x := 0; x < maze.Width; x++ {
@@ -61,6 +59,6 @@ func (maze *Maze) ValidateMaze() {
 			}
 		}
 	}
-	fmt.Printf("Finished...\n")
-	fmt.Printf("Maze is valid.\n")
+	// fmt.Printf("Finished...\n")
+	// fmt.Printf("Maze is valid.\n")
 }
