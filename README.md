@@ -11,14 +11,17 @@ $go mod download
 ```
 
 # Benchmarks
-- [x] Maze
-- [x] Constants
-- [x] Evens
-- [x] Odds
-- [x] Primes
-- [x] Composites
-- [x] Network Simulator
-- [x] Range
+| Task Name             | Task Code Name      |
+| --------------------- |:-------------------:| 
+| [x] Maze              | "maze"              |
+| [x] Constants         | "constants"         |  
+| [x] Evens             | "evens"             |
+| [x] Odds              | "odds"              |
+| [x] Primes            | "primes"            |
+| [x] Composites        | "composites"        |
+| [x] Network Simulator | "network_simulator" |
+| [x] Range             | "range"             |
+
 
 ### Summary
 
@@ -32,7 +35,7 @@ go run main.go help
 
 ```
 go run main.go 
---name=[Name of generated program]
+--task=[Name of task to benchmark (in lower case--refer to task code name above)]
 --population=[Population size or number of programs generated per generation]
 --generations=[number of generations]
 --expressions=[number of expressions a generated program can have]
@@ -42,32 +45,12 @@ go run main.go
 --workers=[number of workers available to use, if not set default is 1]
 
 <!-- Set if maze benchmark -->
---maze=[set true if benchmark evolve with maze]
 -W=[width of the maze to solve] 
 -H=[height of maze to solve]  
 --random-maze-size=[set true if generated maze for every N epochs will have random sizes (NxN 2,3,4,5,6,7, or 8)]
 --epoch-length=[Maze changes for every N generation(Example. Epochs=5, maze changes every 5 generations)]
 
-<!-- Set if constants benchmark -->
---constants=[set true if benchmark evolve with constants]
-
-<!-- Set if evens benchmark -->
---evens=[set true if benchmark evolve with evens]
-
-<!-- Set if odds benchmark -->
---odds=[set true if benchmark evolve with odds]
-
-<!-- Set if primes benchmark -->
---primes=[set true if benchmark evolve with primes]
-
-<!-- Set if composites benchmark -->
---composites=[set true if benchmark evolve with composites]
-
-<!-- Set if network simulator benchmark -->
---network-sim=[set true if benchmark evolve with network simulator]
-
 <!-- Set if range benchmark -->
---range=[set true if benchmark evolve with range]
 --upper-range=[upper range (int) for range benchmark]
 --lower-range=[lower range (int) for range benchmark]
 
@@ -83,49 +66,49 @@ go run main.go
 
 For Maze
 ```
-go run main.go --maze=true --name=MazeRunner -W=2 -H=2 --random-maze-size=false --population=50 --generations=100 --expressions=30 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=maze -W=2 -H=2 --random-maze-size=false --population=50 --generations=100 --expressions=30 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Range
 ```
-go run main.go --range=true --upper-range=9 --lower-range=2 --rounds=10 --name=Range --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=range --upper-range=9 --lower-range=2 --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Constants
 ```
-go run main.go --constants=true --rounds=10 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=constants --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Constants with explicit target
 ```
-go run main.go --constants=true --rounds=10 --constants-target=5 --name=Constants --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=constants --rounds=10 --constants-target=5 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 
 Note: For constants benchmarking 0-256 range, use --constants-target=256.
 ```
 
 For Odds
 ```
-go run main.go --odds=true --rounds=10 --name=Odds --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=odds --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Evens
 ```
-go run main.go --evens=true --rounds=10 --name=Evens --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=evens --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Primes
 ```
-go run main.go --primes=true --rounds=10 --name=Primes --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --tasks=primes --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Composites
 ```
-go run main.go --composites=true --rounds=10 --name=Composites --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
+go run main.go --task=composites --rounds=10 --population=300 --generations=1000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1
 ```
 
 For Network Simulator
 ```
- go run main.go --network-sim=true --rounds=20 --name=NetworkSimulator --population=300 --generations=2000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1  
+ go run main.go --task=network_simulator --rounds=20 --population=300 --generations=2000 --expressions=30 --graphs=true --ast=false --use-log-fitness=false --workers=1  
 ```
 
 ### Notes

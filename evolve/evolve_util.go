@@ -30,7 +30,7 @@ func makeDirectory(cfg *EvolveConfig) string {
 
 func getBenchmarkName(cfg *EvolveConfig) string {
 	var name string
-	if cfg.MazeBenchmark {
+	if cfg.TaskName == "maze" {
 		// Maze-2x2
 		mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
 		if cfg.RandomMazeSize {
@@ -40,34 +40,34 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 		name = fmt.Sprintf("%v-%v", "Maze", mazeSize)
 	}
 
-	if cfg.ConstantsBenchmark {
+	if cfg.TaskName == "constants" {
 		name = "Constants"
 		if cfg.ConstantsTarget != -1 {
 			name = fmt.Sprintf("%v-%v", name, cfg.ConstantsTarget)
 		}
 	}
 
-	if cfg.EvensBenchmark {
+	if cfg.TaskName == "evens" {
 		name = "Evens"
 	}
 
-	if cfg.OddsBenchmark {
+	if cfg.TaskName == "odds" {
 		name = "Odds"
 	}
 
-	if cfg.PrimesBenchmark {
+	if cfg.TaskName == "primes" {
 		name = "Primes"
 	}
 
-	if cfg.CompositesBenchmark {
+	if cfg.TaskName == "composites" {
 		name = "Composites"
 	}
 
-	if cfg.RangeBenchmark {
+	if cfg.TaskName == "range" {
 		name = fmt.Sprintf("%v-%v-%v", "Range", cfg.LowerRange, cfg.UpperRange)
 	}
 
-	if cfg.NetworkSimBenchmark {
+	if cfg.TaskName == "network_simulator" {
 		name = "NetworkSim"
 	}
 	return name

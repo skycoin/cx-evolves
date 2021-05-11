@@ -1,14 +1,7 @@
 package evolve
 
 type EvolveConfig struct {
-	MazeBenchmark       bool
-	ConstantsBenchmark  bool
-	EvensBenchmark      bool
-	OddsBenchmark       bool
-	PrimesBenchmark     bool
-	CompositesBenchmark bool
-	RangeBenchmark      bool
-	NetworkSimBenchmark bool
+	TaskName string
 
 	MazeHeight     int
 	MazeWidth      int

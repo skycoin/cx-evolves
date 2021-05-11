@@ -91,7 +91,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
 
-		if cfg.MazeBenchmark {
+		if cfg.TaskName == "maze" {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
@@ -136,7 +136,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			}
 		}
 
-		if (cfg.MazeBenchmark && c != 0 && c%cfg.EpochLength == 0) || (cfg.ConstantsBenchmark && c != 0 && c%100 == 0) {
+		if (cfg.TaskName == "maze" && c != 0 && c%cfg.EpochLength == 0) || (cfg.TaskName == "constants" && c != 0 && c%100 == 0) {
 			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
 			cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
 				Values:       averageValues,
@@ -157,46 +157,13 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 
 func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (output float64, err error) {
 	var result worker.Result
-	var TaskName string
 	var VersionNum int = 1
-
-	if cfg.MazeBenchmark {
-		TaskName = "maze"
-	}
-
-	if cfg.ConstantsBenchmark {
-		TaskName = "constants"
-	}
-
-	if cfg.EvensBenchmark {
-		TaskName = "evens"
-	}
-
-	if cfg.OddsBenchmark {
-		TaskName = "odds"
-	}
-
-	if cfg.PrimesBenchmark {
-		TaskName = "primes"
-	}
-
-	if cfg.CompositesBenchmark {
-		TaskName = "composites"
-	}
-
-	if cfg.RangeBenchmark {
-		TaskName = "range"
-	}
-
-	if cfg.NetworkSimBenchmark {
-		TaskName = "network_simulator"
-	}
 
 	taskCfg := setTaskParams(cfg)
 	workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
 	workerclient.CallWorker(
 		workerclient.CallWorkerConfig{
-			Task:    TaskName,
+			Task:    cfg.TaskName,
 			Version: VersionNum,
 			Program: cxprogram,
 			SolProt: solProt,

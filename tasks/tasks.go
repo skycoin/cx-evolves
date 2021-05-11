@@ -48,6 +48,8 @@ func GetTaskEvaluator(name string, version int) TaskEvaluator {
 		case 1:
 			return Range_V1
 		}
+	default:
+		panic("task does not exist: check the spelling of task input")
 	}
 
 	return nil
