@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RunProgram     = "/program_worker/run_program"
+	RunProgram     = "/program_worker/run_task_evaluator"
 	BasePortNumber = 9090
 )
 
@@ -28,7 +28,7 @@ type ProgramWorker struct {
 	erpc.CallCtx
 }
 
-func (pw *ProgramWorker) RunProgram(args *Args) (Result, *erpc.Status) {
+func (pw *ProgramWorker) RunTaskEvaluator(args *Args) (Result, *erpc.Status) {
 	prgrmInBytes := args.Program
 	prgrm := cxast.DeserializeCXProgramV2(prgrmInBytes, false)
 	prgrm.Memory = cxast.MakeProgram().Memory
