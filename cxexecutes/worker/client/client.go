@@ -5,13 +5,16 @@ import (
 
 	"github.com/henrylee2cn/erpc/v6"
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
+	"github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 )
 
 type CallWorkerConfig struct {
-	Program   *cxast.CXProgram
-	Input     []byte
-	OutputArg *cxast.CXArgument
+	Task    string
+	Version int
+	Program *cxast.CXProgram
+	SolProt *cxast.CXFunction
+	TaskCfg tasks.TaskConfig
 }
 
 func CallWorker(cWorker CallWorkerConfig, workerAddr string, result *worker.Result) {
@@ -25,14 +28,25 @@ func CallWorker(cWorker CallWorkerConfig, workerAddr string, result *worker.Resu
 	if !stat.OK() {
 		erpc.Fatalf("%v", stat)
 	}
-
 	defer sess.Close()
 
+	// Extract solution prototype info
+	solProto := tasks.EvolveSolProto{
+		OutOffset: cWorker.SolProt.Outputs[0].Offset,
+		OutSize:   cWorker.SolProt.Outputs[0].TotalSize,
+	}
+	solProto.InpsSize = make([]int, len(cWorker.SolProt.Inputs))
+	for i := 0; i < len(cWorker.SolProt.Inputs); i++ {
+		solProto.InpsSize[i] = cWorker.SolProt.Inputs[i].TotalSize
+	}
+
+	// Set worker args
 	args := &worker.Args{
-		Program:      cxast.SerializeCXProgramV2(cWorker.Program, true, false),
-		Inputs:       cWorker.Input,
-		OutputOffset: cWorker.OutputArg.Offset,
-		OutputSize:   cWorker.OutputArg.TotalSize,
+		Task:    cWorker.Task,
+		Version: cWorker.Version,
+		Program: cxast.SerializeCXProgramV2(cWorker.Program, true, false),
+		SolProt: solProto,
+		Cfg:     cWorker.TaskCfg,
 	}
 
 	stat = sess.Call(
@@ -44,7 +58,6 @@ func CallWorker(cWorker CallWorkerConfig, workerAddr string, result *worker.Resu
 	if !stat.OK() {
 		erpc.Fatalf("%v", stat)
 	}
-
 }
 
 // Push push handler

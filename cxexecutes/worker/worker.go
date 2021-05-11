@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/henrylee2cn/erpc/v6"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
-	cxexecute "github.com/skycoin/cx/cx/execute"
 )
 
 const (
@@ -14,14 +14,15 @@ const (
 )
 
 type Args struct {
-	Program      []byte
-	Inputs       []byte
-	OutputOffset int
-	OutputSize   int
+	Task    string
+	Version int
+	Program []byte
+	Cfg     cxtasks.TaskConfig
+	SolProt cxtasks.EvolveSolProto
 }
 
 type Result struct {
-	Output []byte
+	Output float64
 }
 type ProgramWorker struct {
 	erpc.CallCtx
@@ -30,29 +31,18 @@ type ProgramWorker struct {
 func (pw *ProgramWorker) RunProgram(args *Args) (Result, *erpc.Status) {
 	prgrmInBytes := args.Program
 	prgrm := cxast.DeserializeCXProgramV2(prgrmInBytes, false)
-
 	prgrm.Memory = cxast.MakeProgram().Memory
-	injectMainInputs(prgrm, args.Inputs)
-	err := cxexecute.RunCompiled(prgrm, 0, nil)
+
+	evaluate := cxtasks.GetTaskEvaluator(args.Task, args.Version)
+	output, err := evaluate(prgrm, args.SolProt, args.Cfg)
 	if err != nil {
 		return Result{}, erpc.NewStatus(1, fmt.Sprintf("%v", err))
 	}
-
-	byteOut := prgrm.Memory[args.OutputOffset : args.OutputOffset+args.OutputSize]
 	res := Result{
-		Output: byteOut,
+		Output: output,
 	}
 
 	return res, nil
-}
-
-// injectMainInputs injects `inps` at the beginning of `prgrm`'s memory,
-// which should always represent the memory sent to the first expression contained
-// in `prgrm`'s `main`'s function.
-func injectMainInputs(prgrm *cxast.CXProgram, inps []byte) {
-	for i := 0; i < len(inps); i++ {
-		prgrm.Memory[i] = inps[i]
-	}
 }
 
 func GetAvailableWorkers(numberOfAvailableWorkers int) []int {
