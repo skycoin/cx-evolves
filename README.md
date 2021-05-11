@@ -11,16 +11,16 @@ $go mod download
 ```
 
 # Benchmarks
-| Task Name             | Task Code Name      |
-| --------------------- |:-------------------:| 
-| [x] Maze              | "maze"              |
-| [x] Constants         | "constants"         |  
-| [x] Evens             | "evens"             |
-| [x] Odds              | "odds"              |
-| [x] Primes            | "primes"            |
-| [x] Composites        | "composites"        |
-| [x] Network Simulator | "network_simulator" |
-| [x] Range             | "range"             |
+| Task Name          | Task Code Name      |
+| ------------------ |:-------------------:| 
+|  Maze              | "maze"              |
+|  Constants         | "constants"         |  
+|  Evens             | "evens"             |
+|  Odds              | "odds"              |
+|  Primes            | "primes"            |
+|  Composites        | "composites"        |
+|  Network Simulator | "network_simulator" |
+|  Range             | "range"             |
 
 
 ### Summary
@@ -114,10 +114,12 @@ For Network Simulator
 ### Notes
 1. If no arguments are specified, the program will run default values.
 
-### Build and Run Maze benchmarking in Docker Env
+# Benchmarking in Docker Env
 
 First edit the ./scripts/maze_benchmark.sh to the benchmark options needed and the number of workers to deploy.
 Then use this command:
+
+To build and run
 ```
 NAME=[Name for the docker image]
 MOUNT=[Local directory to mount the "Result" directory of the container, this is where the graphs and asts can be found] 
@@ -127,6 +129,17 @@ make deploy
 Example
 ```
 NAME=testbenchmark MOUNT=/Benchmarking/Results make deploy 
+```
+
+To build and push to dockerhub
+```
+NAME=[Name for the docker image]
+make push-docker
+```
+
+Example
+```
+NAME=testbenchmark make push-docker
 ```
 
 # High priority tasks
