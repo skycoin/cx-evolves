@@ -30,16 +30,7 @@ func CallWorker(cWorker CallWorkerConfig, workerAddr string, result *worker.Resu
 	}
 	defer sess.Close()
 
-	// Extract solution prototype info
-	solProto := tasks.EvolveSolProto{
-		OutOffset: cWorker.SolProt.Outputs[0].Offset,
-		OutSize:   cWorker.SolProt.Outputs[0].TotalSize,
-	}
-	solProto.InpsSize = make([]int, len(cWorker.SolProt.Inputs))
-	for i := 0; i < len(cWorker.SolProt.Inputs); i++ {
-		solProto.InpsSize[i] = cWorker.SolProt.Inputs[i].TotalSize
-	}
-
+	solProto := extractSolutionProtoInfo(cWorker)
 	// Set worker args
 	args := &worker.Args{
 		Task:    cWorker.Task,
@@ -69,4 +60,17 @@ type Push struct {
 func (p *Push) Status(arg *string) *erpc.Status {
 	erpc.Printf("%s", *arg)
 	return nil
+}
+
+func extractSolutionProtoInfo(cWorker CallWorkerConfig) tasks.EvolveSolProto {
+	solProto := tasks.EvolveSolProto{
+		OutOffset: cWorker.SolProt.Outputs[0].Offset,
+		OutSize:   cWorker.SolProt.Outputs[0].TotalSize,
+	}
+	solProto.InpsSize = make([]int, len(cWorker.SolProt.Inputs))
+	for i := 0; i < len(cWorker.SolProt.Inputs); i++ {
+		solProto.InpsSize[i] = cWorker.SolProt.Inputs[i].TotalSize
+	}
+
+	return solProto
 }
