@@ -10,6 +10,7 @@ import (
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 	cxactions "github.com/skycoin/cx/cxparser/actions"
@@ -96,6 +97,24 @@ func InitialProgram() *cxast.CXProgram {
 	cxparsing.AddInitFunction(prgrm)
 
 	return prgrm
+}
+
+func setInputOutputSignature() {
+	// Set input and output signature based on what to benchmark
+	if cxtasks.IsMazeTask(taskName) {
+		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
+		outputSignature = []string{"i32"}
+	}
+	if cxtasks.IsConstantsTask(taskName) ||
+		cxtasks.IsEvensTask(taskName) ||
+		cxtasks.IsOddsTask(taskName) ||
+		cxtasks.IsPrimesTask(taskName) ||
+		cxtasks.IsCompositesTask(taskName) ||
+		cxtasks.IsRangeTask(taskName) ||
+		cxtasks.IsNetworkSimulatorTask(taskName) {
+		inputSignature = []string{"i32"}
+		outputSignature = []string{"i32"}
+	}
 }
 
 func main() {
@@ -214,15 +233,7 @@ func Evolve() {
 	// Setting seed so results vary every time we run the example.
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	// Set input and output signature based on what to benchmark
-	if taskName == "maze" {
-		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
-		outputSignature = []string{"i32"}
-	}
-	if taskName == "constants" || taskName == "evens" || taskName == "odds" || taskName == "primes" || taskName == "composites" || taskName == "range" || taskName == "network_simulator" {
-		inputSignature = []string{"i32"}
-		outputSignature = []string{"i32"}
-	}
+	setInputOutputSignature()
 	functionToEvolve = taskName
 
 	// We create an initial CX program, with a

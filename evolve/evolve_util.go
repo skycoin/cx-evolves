@@ -8,8 +8,12 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/binary"
 
-	"github.com/skycoin/cx-evolves/tasks"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 )
+
+func RemoveIndex(s []int, index int) []int {
+	return append(s[:index], s[index+1:]...)
+}
 
 func makeDirectory(cfg *EvolveConfig) string {
 	var dir string
@@ -20,17 +24,15 @@ func makeDirectory(cfg *EvolveConfig) string {
 
 		// create directory
 		_ = os.Mkdir(dir, 0700)
+		_ = os.Mkdir(dir+"AST/", 0700)
 
-		if cfg.SaveAST {
-			_ = os.Mkdir(dir+"AST/", 0700)
-		}
 	}
 	return dir
 }
 
 func getBenchmarkName(cfg *EvolveConfig) string {
 	var name string
-	if cfg.TaskName == "maze" {
+	if cxtasks.IsMazeTask(cfg.TaskName) {
 		// Maze-2x2
 		mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
 		if cfg.RandomMazeSize {
@@ -40,34 +42,34 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 		name = fmt.Sprintf("%v-%v", "Maze", mazeSize)
 	}
 
-	if cfg.TaskName == "constants" {
+	if cxtasks.IsConstantsTask(cfg.TaskName) {
 		name = "Constants"
 		if cfg.ConstantsTarget != -1 {
 			name = fmt.Sprintf("%v-%v", name, cfg.ConstantsTarget)
 		}
 	}
 
-	if cfg.TaskName == "evens" {
+	if cxtasks.IsEvensTask(cfg.TaskName) {
 		name = "Evens"
 	}
 
-	if cfg.TaskName == "odds" {
+	if cxtasks.IsOddsTask(cfg.TaskName) {
 		name = "Odds"
 	}
 
-	if cfg.TaskName == "primes" {
+	if cxtasks.IsPrimesTask(cfg.TaskName) {
 		name = "Primes"
 	}
 
-	if cfg.TaskName == "composites" {
+	if cxtasks.IsCompositesTask(cfg.TaskName) {
 		name = "Composites"
 	}
 
-	if cfg.TaskName == "range" {
+	if cxtasks.IsRangeTask(cfg.TaskName) {
 		name = fmt.Sprintf("%v-%v-%v", "Range", cfg.LowerRange, cfg.UpperRange)
 	}
 
-	if cfg.TaskName == "network_simulator" {
+	if cxtasks.IsNetworkSimulatorTask(cfg.TaskName) {
 		name = "NetworkSim"
 	}
 	return name
@@ -91,9 +93,9 @@ func generateNewSeed(generationCount int, cfg EvolveConfig) int64 {
 	return cfg.RandSeed
 }
 
-func setTaskParams(cfg EvolveConfig) tasks.TaskConfig {
+func setTaskParams(cfg EvolveConfig) cxtasks.TaskConfig {
 	// Set Task Cfg
-	taskCfg := tasks.TaskConfig{
+	taskCfg := cxtasks.TaskConfig{
 		NumberOfRounds:  cfg.NumberOfRounds,
 		ConstantsTarget: cfg.ConstantsTarget,
 		UpperRange:      cfg.UpperRange,

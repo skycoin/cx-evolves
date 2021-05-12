@@ -11,6 +11,7 @@ import (
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
 	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxplotter "github.com/skycoin/cx-evolves/plotter"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
@@ -45,7 +46,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}()
 
 	// Evolution process.
-	for c := 0; c < int(numIter); c++ {
+	for c := 0; c < numIter; c++ {
 		startTimeGeneration := time.Now()
 
 		// Selection process.
@@ -85,13 +86,13 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		randomMutation(pop, sPrgrm)
 
 		// Point Mutation
-		// pointMutation(pop)
+		pointMutation(pop)
 
 		// Replacing individuals in population.
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
 
-		if cfg.TaskName == "maze" {
+		if cxtasks.IsMazeTask(cfg.TaskName) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
@@ -136,7 +137,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			}
 		}
 
-		if (cfg.TaskName == "maze" && c != 0 && c%cfg.EpochLength == 0) || (cfg.TaskName == "constants" && c != 0 && c%100 == 0) {
+		if (cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%cfg.EpochLength == 0) || (!cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%100 == 0) {
 			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
 			cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
 				Values:       averageValues,
@@ -195,40 +196,4 @@ func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) erro
 	}
 
 	return nil
-}
-
-func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit, averageValues *[]float64, cfg *EvolveConfig, popuSize int) error {
-	var total float64 = 0
-	var fittest float64 = output[0]
-	for z := 0; z < len(output); z++ {
-		fitness := output[z]
-		total = total + fitness
-
-		// Get Best fitness per generation
-		if fitness < fittest {
-			fittest = fitness
-			*fittestIndex = z
-		}
-
-		// Add fitness for histogram
-		*histoValues = append(*histoValues, float64(fitness))
-	}
-
-	ave := total / float64(popuSize)
-	fmt.Printf("Average score=%v\n", ave)
-	if cfg.UseAntiLog2 {
-		ave = math.Pow(2, ave)
-		fittest = math.Pow(2, fittest)
-	}
-
-	// Add average values for Average fitness graph
-	*averageValues = append(*averageValues, ave)
-
-	// Add fittest values for Fittest per generation graph
-	*mostFit = append(*mostFit, fittest)
-	return nil
-}
-
-func RemoveIndex(s []int, index int) []int {
-	return append(s[:index], s[index+1:]...)
 }
