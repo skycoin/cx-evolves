@@ -5,7 +5,7 @@ set -m
 
 if [ "$WORKERS" == "" ]
 then
-	WORKERS=100
+	WORKERS=500
 fi
 
 # Start workers and put it in background
@@ -18,4 +18,4 @@ done
 
   
 # Start the main process
-./cx-evolves --maze=true --name=MazeRunner -W=2 -H=2 --random-maze-size=false --population=100 --generations=1000 --expressions=50 --epoch-length=10 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS
+./cx-evolves --task=maze -W=2 -H=2 --random-maze-size=false --population=500 --generations=20000 --expressions=50 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS
