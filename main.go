@@ -10,6 +10,7 @@ import (
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 	cxactions "github.com/skycoin/cx/cxparser/actions"
@@ -18,14 +19,7 @@ import (
 
 // Maze and Output Configuration
 var (
-	mazeBenchmark       bool
-	constantsBenchmark  bool
-	evensBenchmark      bool
-	oddsBenchmark       bool
-	primesBenchmark     bool
-	compositesBenchmark bool
-	rangeBenchmark      bool
-	networkSimBenchmark bool
+	taskName string
 
 	// Maze Config
 	mazeWidth      int
@@ -105,72 +99,35 @@ func InitialProgram() *cxast.CXProgram {
 	return prgrm
 }
 
+func setInputOutputSignature() {
+	// Set input and output signature based on what to benchmark
+	if cxtasks.IsMazeTask(taskName) {
+		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
+		outputSignature = []string{"i32"}
+	}
+	if cxtasks.IsConstantsTask(taskName) ||
+		cxtasks.IsEvensTask(taskName) ||
+		cxtasks.IsOddsTask(taskName) ||
+		cxtasks.IsPrimesTask(taskName) ||
+		cxtasks.IsCompositesTask(taskName) ||
+		cxtasks.IsRangeTask(taskName) ||
+		cxtasks.IsNetworkSimulatorTask(taskName) {
+		inputSignature = []string{"i32"}
+		outputSignature = []string{"i32"}
+	}
+}
+
 func main() {
 	EvolveApp := &cli.App{
 		Name:    "Evolve with Maze",
 		Version: "1.0.0",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:        "maze benchmark",
-				Aliases:     []string{"m"},
-				Usage:       "set true if benchmark evolve with maze",
-				Destination: &mazeBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "constants benchmark",
-				Aliases:     []string{"cons"},
-				Usage:       "set true if benchmark evolve with constants",
-				Destination: &constantsBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "evens benchmark",
-				Aliases:     []string{"even"},
-				Usage:       "set true if benchmark evolve with evens",
-				Destination: &evensBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "odds benchmark",
-				Aliases:     []string{"odd"},
-				Usage:       "set true if benchmark evolve with odds",
-				Destination: &oddsBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "primes benchmark",
-				Aliases:     []string{"prime"},
-				Usage:       "set true if benchmark evolve with primes",
-				Destination: &primesBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "composites benchmark",
-				Aliases:     []string{"composite"},
-				Usage:       "set true if benchmark evolve with composites",
-				Destination: &compositesBenchmark,
-			},
-			&cli.BoolFlag{
-				Name:        "range benchmark",
-				Aliases:     []string{"range-benchmark"},
-				Usage:       "set true if benchmark evolve with range",
-				Destination: &rangeBenchmark,
-			},
-			&cli.IntFlag{
-				Name:        "upper range",
-				Aliases:     []string{"upper-range"},
-				Usage:       "upper range for range benchmarking",
-				Value:       9,
-				Destination: &upperRange,
-			},
-			&cli.IntFlag{
-				Name:        "lower range",
-				Aliases:     []string{"lower-range"},
-				Usage:       "lower range for range benchmarking",
-				Value:       2,
-				Destination: &lowerRange,
-			},
-			&cli.BoolFlag{
-				Name:        "network simulator benchmark",
-				Aliases:     []string{"network-sim"},
-				Usage:       "set true if benchmark evolve with network simulator",
-				Destination: &networkSimBenchmark,
+			&cli.StringFlag{
+				Name:        "Task Name",
+				Value:       "maze",
+				Aliases:     []string{"task"},
+				Usage:       "Name of task to benchmark",
+				Destination: &taskName,
 			},
 			&cli.BoolFlag{
 				Name:        "log 2 for fitness",
@@ -241,13 +198,6 @@ func main() {
 				Value:       1,
 				Destination: &workersAvailable,
 			},
-			&cli.StringFlag{
-				Name:        "Generated Program Name",
-				Value:       "MazeRunner",
-				Aliases:     []string{"name"},
-				Usage:       "Name of program to evolve",
-				Destination: &functionToEvolve,
-			},
 			&cli.BoolFlag{
 				Name:        "Random Maze Size",
 				Aliases:     []string{"random-maze-size"},
@@ -283,15 +233,8 @@ func Evolve() {
 	// Setting seed so results vary every time we run the example.
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	// Set input and output signature based on what to benchmark
-	if mazeBenchmark {
-		inputSignature = []string{"i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32"}
-		outputSignature = []string{"i32"}
-	}
-	if constantsBenchmark || evensBenchmark || oddsBenchmark || primesBenchmark || compositesBenchmark || rangeBenchmark || networkSimBenchmark {
-		inputSignature = []string{"i32"}
-		outputSignature = []string{"i32"}
-	}
+	setInputOutputSignature()
+	functionToEvolve = taskName
 
 	// We create an initial CX program, with a
 	initPrgrm := InitialProgram()
@@ -316,14 +259,7 @@ func Evolve() {
 
 	// Evolving the population. The errors between the real and simulated data will be printed to standard output.
 	pop.Evolve(evolve.EvolveConfig{
-		ConstantsBenchmark:  constantsBenchmark,
-		MazeBenchmark:       mazeBenchmark,
-		EvensBenchmark:      evensBenchmark,
-		OddsBenchmark:       oddsBenchmark,
-		PrimesBenchmark:     primesBenchmark,
-		CompositesBenchmark: compositesBenchmark,
-		RangeBenchmark:      rangeBenchmark,
-		NetworkSimBenchmark: networkSimBenchmark,
+		TaskName: taskName,
 
 		MazeWidth:  mazeWidth,
 		MazeHeight: mazeHeight,

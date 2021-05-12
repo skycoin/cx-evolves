@@ -8,42 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/skycoin/cx-evolves/cmd/maze"
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
+	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
+	cxplotter "github.com/skycoin/cx-evolves/plotter"
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
-
-type EvolveConfig struct {
-	MazeBenchmark       bool
-	ConstantsBenchmark  bool
-	EvensBenchmark      bool
-	OddsBenchmark       bool
-	PrimesBenchmark     bool
-	CompositesBenchmark bool
-	RangeBenchmark      bool
-	NetworkSimBenchmark bool
-
-	MazeGame       *maze.Game
-	MazeHeight     int
-	MazeWidth      int
-	RandomMazeSize bool
-
-	NumberOfRounds int
-
-	ConstantsTarget int
-
-	UpperRange int
-	LowerRange int
-
-	EpochLength int
-	PlotFitness bool
-	SaveAST     bool
-	UseAntiLog2 bool
-
-	WorkerPortNum    int
-	WorkersAvailable int
-}
 
 // Used for concurrent output evaluation
 var wg = sync.WaitGroup{}
@@ -53,7 +24,6 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	var averageValues []float64
 	var mostFit []float64
 	var availPorts []int
-	var game maze.Game
 	var saveDirectory string
 
 	output := make([]float64, pop.PopulationSize)
@@ -76,13 +46,8 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}()
 
 	// Evolution process.
-	for c := 0; c < int(numIter); c++ {
+	for c := 0; c < numIter; c++ {
 		startTimeGeneration := time.Now()
-		// Maze Creation if Maze Benchmark
-		if cfg.MazeBenchmark {
-			generateNewMaze(c, &cfg, &game)
-			cfg.MazeGame = &game
-		}
 
 		// Selection process.
 		pop1Idx, pop2Idx := tournamentSelection(output, 0.5, true)
@@ -127,11 +92,15 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
 
+		if cxtasks.IsMazeTask(cfg.TaskName) {
+			cfg.RandSeed = generateNewSeed(c, cfg)
+		}
+
 		runtime.GOMAXPROCS(48)
 		// Evaluation process.
 		for i := range pop.Individuals {
 			wg.Add(1)
-			go func(j int) {
+			go func(j, genCount int, cfg EvolveConfig) {
 				defer wg.Done()
 
 				// Get worker port number from
@@ -142,6 +111,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 				// pop.Individuals[j].PrintProgram()
 				output[j], err = RunBenchmark(pop.Individuals[j], solProt, cfg)
 				if err != nil {
+					fmt.Printf("err=%v", err)
 					output[j] = float64(math.MaxInt32)
 				}
 
@@ -150,7 +120,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 				availPortsCh <- currPortNum
 
 				// fmt.Printf("output of program[%v]:%v\n", j, output[j])
-			}(i)
+			}(i, c, cfg)
 		}
 		wg.Wait()
 
@@ -160,16 +130,22 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			panic(err)
 		}
 
-		if cfg.SaveAST {
+		if cfg.SaveAST || c == numIter-1 {
 			err := SaveAST(pop.Individuals[fittestIndex], saveDirectory, c)
 			if err != nil {
 				panic(err)
 			}
 		}
 
-		if (cfg.MazeBenchmark && c != 0 && c%cfg.EpochLength == 0) || (cfg.ConstantsBenchmark && c != 0 && c%100 == 0) {
+		if (cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%cfg.EpochLength == 0) || (!cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%100 == 0) {
 			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
-			pointsPlot(averageValues, averageXLabel, averageYLabel, graphTitle, saveDirectory+fmt.Sprintf("Generation_%v_", c)+"AverageFitness.png")
+			cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
+				Values:       averageValues,
+				Xlabel:       averageXLabel,
+				Ylabel:       averageYLabel,
+				Title:        graphTitle,
+				SaveLocation: saveDirectory + fmt.Sprintf("Generation_%v_", c) + "AverageFitness.png",
+			})
 		}
 
 		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
@@ -180,42 +156,26 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}
 }
 
-func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (intOut float64, err error) {
-	if cfg.MazeBenchmark {
-		intOut, err = mazeMovesEvaluation(cxprogram, solProt, cfg)
-		if err != nil {
-			return 0, err
-		}
-	}
+func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (output float64, err error) {
+	var result worker.Result
+	var VersionNum int = 1
 
-	if cfg.ConstantsBenchmark {
-		intOut = perByteEvaluation_Constants(cxprogram, solProt, cfg)
-	}
+	taskCfg := setTaskParams(cfg)
+	workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
+	workerclient.CallWorker(
+		workerclient.CallWorkerConfig{
+			Task:    cfg.TaskName,
+			Version: VersionNum,
+			Program: cxprogram,
+			SolProt: solProt,
+			TaskCfg: taskCfg,
+		},
+		workerAddr,
+		&result,
+	)
 
-	if cfg.EvensBenchmark {
-		intOut = perByteEvaluation_Evens(cxprogram, solProt, cfg)
-	}
-
-	if cfg.OddsBenchmark {
-		intOut = perByteEvaluation_Odds(cxprogram, solProt, cfg)
-	}
-
-	if cfg.PrimesBenchmark {
-		intOut = perByteEvaluation_Primes(cxprogram, solProt, cfg)
-	}
-
-	if cfg.CompositesBenchmark {
-		intOut = perByteEvaluation_Composites(cxprogram, solProt, cfg)
-	}
-
-	if cfg.RangeBenchmark {
-		intOut = perByteEvaluation_Range(cxprogram, solProt, cfg)
-	}
-
-	if cfg.NetworkSimBenchmark {
-		intOut = perByteEvaluation_NetworkSim(cxprogram, solProt, cfg)
-	}
-	return intOut, nil
+	output = result.Output
+	return output, nil
 }
 
 func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) error {
@@ -236,40 +196,4 @@ func SaveAST(cxprogram *cxast.CXProgram, saveDir string, generationNum int) erro
 	}
 
 	return nil
-}
-
-func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit, averageValues *[]float64, cfg *EvolveConfig, popuSize int) error {
-	var total float64 = 0
-	var fittest float64 = output[0]
-	for z := 0; z < len(output); z++ {
-		fitness := output[z]
-		total = total + fitness
-
-		// Get Best fitness per generation
-		if fitness < fittest {
-			fittest = fitness
-			*fittestIndex = z
-		}
-
-		// Add fitness for histogram
-		*histoValues = append(*histoValues, float64(fitness))
-	}
-
-	ave := total / float64(popuSize)
-
-	if cfg.UseAntiLog2 {
-		ave = math.Pow(2, ave)
-		fittest = math.Pow(2, fittest)
-	}
-
-	// Add average values for Average fitness graph
-	*averageValues = append(*averageValues, ave)
-
-	// Add fittest values for Fittest per generation graph
-	*mostFit = append(*mostFit, fittest)
-	return nil
-}
-
-func RemoveIndex(s []int, index int) []int {
-	return append(s[:index], s[index+1:]...)
 }

@@ -2,11 +2,9 @@ package evolve
 
 import (
 	"fmt"
+	"math"
 
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/plotutil"
-	"gonum.org/v1/plot/vg"
+	cxplotter "github.com/skycoin/cx-evolves/plotter"
 )
 
 const (
@@ -16,55 +14,60 @@ const (
 	fittestYLabel = "Fitness"
 )
 
+func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit, averageValues *[]float64, cfg *EvolveConfig, popuSize int) error {
+	var total float64 = 0
+	var fittest float64 = output[0]
+	for z := 0; z < len(output); z++ {
+		fitness := output[z]
+		total = total + fitness
+
+		// Get Best fitness per generation
+		if fitness < fittest {
+			fittest = fitness
+			*fittestIndex = z
+		}
+
+		// Add fitness for histogram
+		*histoValues = append(*histoValues, float64(fitness))
+	}
+
+	ave := total / float64(popuSize)
+	fmt.Printf("Average score=%v\n", ave)
+	if cfg.UseAntiLog2 {
+		ave = math.Pow(2, ave)
+		fittest = math.Pow(2, fittest)
+	}
+
+	// Add average values for Average fitness graph
+	*averageValues = append(*averageValues, ave)
+
+	// Add fittest values for Fittest per generation graph
+	*mostFit = append(*mostFit, fittest)
+	return nil
+}
+
 func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory, benchmarkName string) {
 	averageGraphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", benchmarkName)
-	pointsPlot(aveFitnessValues, averageXLabel, averageYLabel, averageGraphTitle, saveDirectory+"AverageFitness.png")
+	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
+		Values:       aveFitnessValues,
+		Xlabel:       averageXLabel,
+		Ylabel:       averageYLabel,
+		Title:        averageGraphTitle,
+		SaveLocation: saveDirectory + "AverageFitness.png",
+	})
 
 	fittestGraphTitle := fmt.Sprintf("Fittest Per Generation N (%v)", benchmarkName)
-	pointsPlot(fittestValues, fittestXLabel, fittestYLabel, fittestGraphTitle, saveDirectory+"FittestPerGeneration.png")
-	histogramPlot(histoValues, "Fitness Distribution of all programs across all generations", saveDirectory+"Histogram.png")
-}
+	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
+		Values:       fittestValues,
+		Xlabel:       fittestXLabel,
+		Ylabel:       fittestYLabel,
+		Title:        fittestGraphTitle,
+		SaveLocation: saveDirectory + "FittestPerGeneration.png",
+	})
 
-func pointsPlot(values []float64, Xlabel, Ylabel, title, saveLocation string) {
-	p := plot.New()
-
-	p.Title.Text = title
-	p.X.Label.Text = Xlabel
-	p.Y.Label.Text = Ylabel
-
-	err := plotutil.AddLinePoints(p,
-		"line", Points(values))
-	if err != nil {
-		panic(err)
-	}
-
-	// Save the plot to a PNG file.
-	if err := p.Save(4*vg.Inch, 4*vg.Inch, saveLocation); err != nil {
-		panic(err)
-	}
-}
-
-// Points returns plotter x, y points.
-func Points(values []float64) plotter.XYs {
-	pts := make(plotter.XYs, len(values))
-	for i := range pts {
-		pts[i].X = float64(i)
-		pts[i].Y = values[i]
-	}
-	return pts
-}
-
-func histogramPlot(values plotter.Values, title, saveLocation string) {
-	p := plot.New()
-	p.Title.Text = title
-
-	hist, err := plotter.NewHist(values, 500)
-	if err != nil {
-		panic(err)
-	}
-	p.Add(hist)
-
-	if err := p.Save(8*vg.Inch, 8*vg.Inch, saveLocation); err != nil {
-		panic(err)
-	}
+	cxplotter.HistogramPlot(cxplotter.HistoPlotCfg{
+		Values:       histoValues,
+		Title:        "Fitness Distribution of all programs across all generations",
+		SaveLocation: saveDirectory + "Histogram.png",
+	})
 }

@@ -1,20 +1,17 @@
 package mutation_test
 
 import (
-	"bytes"
 	"encoding/binary"
 	"testing"
 
-	cxevolves "github.com/skycoin/cx-evolves/evolve"
+	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
-	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 func TestPointMutationOperator_InsertI32Literal_1Byte(t *testing.T) {
-	prgrm := generateRandomProgram(t, false)
+	prgrm := cxgenerator.GenerateSampleProgram(t, false)
 
 	mainPkg, err := astapi.FindPackage(prgrm, "main")
 	if err != nil {
@@ -68,7 +65,7 @@ func TestPointMutationOperator_InsertI32Literal_1Byte(t *testing.T) {
 }
 
 func TestPointMutationOperator_InsertI32Literal_2Bytes(t *testing.T) {
-	prgrm := generateRandomProgram(t, false)
+	prgrm := cxgenerator.GenerateSampleProgram(t, false)
 
 	mainPkg, err := astapi.FindPackage(prgrm, "main")
 	if err != nil {
@@ -117,7 +114,7 @@ func TestPointMutationOperator_InsertI32Literal_2Bytes(t *testing.T) {
 }
 
 func TestPointMutationOperator_InsertI32Literal_4Bytes(t *testing.T) {
-	prgrm := generateRandomProgram(t, false)
+	prgrm := cxgenerator.GenerateSampleProgram(t, false)
 
 	mainPkg, err := astapi.FindPackage(prgrm, "main")
 	if err != nil {
@@ -946,54 +943,6 @@ func TestPointMutationOperator_ShiftOneBitRightI32Literal(t *testing.T) {
 			}
 		})
 	}
-}
-
-func generateRandomProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
-	var cxProgram *cxast.CXProgram
-
-	// Needed for AddNativeExpressionToFunction
-	// because of dependency on cxast.OpNames
-	cxparsingcompletor.InitCXCore()
-	cxProgram = cxast.MakeProgram()
-
-	err := astapi.AddEmptyPackage(cxProgram, "main")
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddEmptyFunctionToPackage(cxProgram, "main", "TestFunction")
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I32)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-	functionSetNames := []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
-	fns := cxevolves.GetFunctionSet(functionSetNames)
-
-	fn, _ := cxProgram.GetFunction("TestFunction", "main")
-	pkg, _ := cxProgram.GetPackage("main")
-	cxevolves.GenerateRandomExpressions(fn, pkg, fns, 30)
-
-	if withLiteral {
-		buf := new(bytes.Buffer)
-		var num int32 = 5
-		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
-		if err != nil {
-			t.Errorf("want no error, got %v", err)
-		}
-	}
-
-	cxProgram.PrintProgram()
-	return cxProgram
 }
 
 func printDataInfo(t *testing.T, length int, value []byte) {

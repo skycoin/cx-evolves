@@ -11,4 +11,4 @@ COPY ./server .
 COPY ./scripts/maze_benchmark.sh .
 COPY ./scripts/constants_benchmark.sh .
 
-ENTRYPOINT ["sh","/maze_benchmark.sh"]
+ENTRYPOINT ["sh","/constants_benchmark.sh"]

@@ -1,11 +1,19 @@
 package evolve
 
 import (
-	"encoding/binary"
 	"fmt"
 	"os"
 	"time"
+
+	crypto_rand "crypto/rand"
+	"encoding/binary"
+
+	cxtasks "github.com/skycoin/cx-evolves/tasks"
 )
+
+func RemoveIndex(s []int, index int) []int {
+	return append(s[:index], s[index+1:]...)
+}
 
 func makeDirectory(cfg *EvolveConfig) string {
 	var dir string
@@ -16,17 +24,15 @@ func makeDirectory(cfg *EvolveConfig) string {
 
 		// create directory
 		_ = os.Mkdir(dir, 0700)
+		_ = os.Mkdir(dir+"AST/", 0700)
 
-		if cfg.SaveAST {
-			_ = os.Mkdir(dir+"AST/", 0700)
-		}
 	}
 	return dir
 }
 
 func getBenchmarkName(cfg *EvolveConfig) string {
 	var name string
-	if cfg.MazeBenchmark {
+	if cxtasks.IsMazeTask(cfg.TaskName) {
 		// Maze-2x2
 		mazeSize := fmt.Sprintf("%vx%v", cfg.MazeWidth, cfg.MazeHeight)
 		if cfg.RandomMazeSize {
@@ -36,34 +42,34 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 		name = fmt.Sprintf("%v-%v", "Maze", mazeSize)
 	}
 
-	if cfg.ConstantsBenchmark {
+	if cxtasks.IsConstantsTask(cfg.TaskName) {
 		name = "Constants"
 		if cfg.ConstantsTarget != -1 {
 			name = fmt.Sprintf("%v-%v", name, cfg.ConstantsTarget)
 		}
 	}
 
-	if cfg.EvensBenchmark {
+	if cxtasks.IsEvensTask(cfg.TaskName) {
 		name = "Evens"
 	}
 
-	if cfg.OddsBenchmark {
+	if cxtasks.IsOddsTask(cfg.TaskName) {
 		name = "Odds"
 	}
 
-	if cfg.PrimesBenchmark {
+	if cxtasks.IsPrimesTask(cfg.TaskName) {
 		name = "Primes"
 	}
 
-	if cfg.CompositesBenchmark {
+	if cxtasks.IsCompositesTask(cfg.TaskName) {
 		name = "Composites"
 	}
 
-	if cfg.RangeBenchmark {
-		name = "Range"
+	if cxtasks.IsRangeTask(cfg.TaskName) {
+		name = fmt.Sprintf("%v-%v-%v", "Range", cfg.LowerRange, cfg.UpperRange)
 	}
 
-	if cfg.NetworkSimBenchmark {
+	if cxtasks.IsNetworkSimulatorTask(cfg.TaskName) {
 		name = "NetworkSim"
 	}
 	return name
@@ -75,8 +81,30 @@ func setEpochLength(cfg *EvolveConfig) {
 	}
 }
 
-func toByteArray(i int32) []byte {
-	arr := make([]byte, 4)
-	binary.BigEndian.PutUint32(arr, uint32(i))
-	return arr
+func generateNewSeed(generationCount int, cfg EvolveConfig) int64 {
+	if generationCount%cfg.EpochLength == 0 || generationCount == 0 {
+		var b [8]byte
+		_, err := crypto_rand.Read(b[:])
+		if err != nil {
+			panic("cannot seed math/rand package with cryptographically secure random number generator")
+		}
+		return int64(binary.LittleEndian.Uint64(b[:]))
+	}
+	return cfg.RandSeed
+}
+
+func setTaskParams(cfg EvolveConfig) cxtasks.TaskConfig {
+	// Set Task Cfg
+	taskCfg := cxtasks.TaskConfig{
+		NumberOfRounds:  cfg.NumberOfRounds,
+		ConstantsTarget: cfg.ConstantsTarget,
+		UpperRange:      cfg.UpperRange,
+		LowerRange:      cfg.LowerRange,
+		RandSeed:        cfg.RandSeed,
+		MazeWidth:       cfg.MazeWidth,
+		MazeHeight:      cfg.MazeHeight,
+		RandomMazeSize:  cfg.RandomMazeSize,
+	}
+
+	return taskCfg
 }
