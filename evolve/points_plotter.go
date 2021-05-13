@@ -12,62 +12,71 @@ const (
 	averageYLabel = "Ave Fitness"
 	fittestXLabel = "Generation Number"
 	fittestYLabel = "Fitness"
+
+	averageTitle = "Average Fitness Of Individuals"
+	fittestTitle = "Fittest Per Generation N"
+	histoTitle   = "Fitness Distribution of all programs across all generations"
+
+	averageFileExtension = "AverageFitness.png"
+	fittestFileExtension = "FittestPerGeneration.png"
+	histoFileExtension   = "Histogram.png"
+	boxPlotExtension     = "BoxPlot.png"
 )
 
-func UpdateGraphValues(output []float64, fittestIndex *int, histoValues, mostFit, averageValues *[]float64, cfg *EvolveConfig, popuSize int) error {
+func UpdateGraphValues(cfg GraphCfg) error {
 	var total float64 = 0
-	var fittest float64 = output[0]
-	for z := 0; z < len(output); z++ {
-		fitness := output[z]
+	var fittest float64 = cfg.Output[0]
+	for z := 0; z < len(cfg.Output); z++ {
+		fitness := cfg.Output[z]
 		total = total + fitness
 
 		// Get Best fitness per generation
 		if fitness < fittest {
 			fittest = fitness
-			*fittestIndex = z
+			*cfg.FittestIndex = z
 		}
 
 		// Add fitness for histogram
-		*histoValues = append(*histoValues, float64(fitness))
+		*cfg.HistoValues = append(*cfg.HistoValues, float64(fitness))
 	}
 
-	ave := total / float64(popuSize)
+	ave := total / float64(cfg.PopuSize)
 	fmt.Printf("Average score=%v\n", ave)
-	if cfg.UseAntiLog2 {
+	if cfg.EvolveCfg.UseAntiLog2 {
 		ave = math.Pow(2, ave)
 		fittest = math.Pow(2, fittest)
 	}
 
 	// Add average values for Average fitness graph
-	*averageValues = append(*averageValues, ave)
+	*cfg.AverageValues = append(*cfg.AverageValues, ave)
 
 	// Add fittest values for Fittest per generation graph
-	*mostFit = append(*mostFit, fittest)
+	*cfg.MostFit = append(*cfg.MostFit, fittest)
 	return nil
 }
 
 func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory, benchmarkName string) {
-	averageGraphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", benchmarkName)
+	averageGraphTitle := fmt.Sprintf(averageTitle+" (%v)", benchmarkName)
 	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
 		Values:       aveFitnessValues,
 		Xlabel:       averageXLabel,
 		Ylabel:       averageYLabel,
 		Title:        averageGraphTitle,
-		SaveLocation: saveDirectory + "AverageFitness.png",
+		SaveLocation: saveDirectory + averageFileExtension,
 	})
 
-	fittestGraphTitle := fmt.Sprintf("Fittest Per Generation N (%v)", benchmarkName)
+	fittestGraphTitle := fmt.Sprintf(fittestTitle+" (%v)", benchmarkName)
 	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
 		Values:       fittestValues,
 		Xlabel:       fittestXLabel,
 		Ylabel:       fittestYLabel,
 		Title:        fittestGraphTitle,
-		SaveLocation: saveDirectory + "FittestPerGeneration.png",
+		SaveLocation: saveDirectory + fittestFileExtension,
 	})
 
 	cxplotter.HistogramPlot(cxplotter.HistoPlotCfg{
 		Values:       histoValues,
-		Title:        "Fitness Distribution of all programs across all generations",
-		SaveLocation: saveDirectory + "Histogram.png",
+		Title:        histoTitle,
+		SaveLocation: saveDirectory + histoFileExtension,
 	})
 }

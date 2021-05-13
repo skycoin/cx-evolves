@@ -24,3 +24,13 @@ type EvolveConfig struct {
 
 	RandSeed int64
 }
+
+type GraphCfg struct {
+	Output        []float64
+	FittestIndex  *int
+	HistoValues   *[]float64
+	MostFit       *[]float64
+	AverageValues *[]float64
+	EvolveCfg     *EvolveConfig
+	PopuSize      int
+}

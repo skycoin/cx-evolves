@@ -35,6 +35,10 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
 
+	// Create box plot
+	boxPlotTitle := fmt.Sprintf("Box Plot"+" (%v)", getBenchmarkName(&cfg))
+	evolveBoxPlot := cxplotter.NewBoxPlot(boxPlotTitle, fittestXLabel, fittestYLabel)
+
 	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
 	availPorts = append(availPorts, availWorkers...)
@@ -86,7 +90,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		randomMutation(pop, sPrgrm)
 
 		// Point Mutation
-		pointMutation(pop)
+		// pointMutation(pop)
 
 		// Replacing individuals in population.
 		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
@@ -125,11 +129,25 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		wg.Wait()
 
 		var fittestIndex int = 0
-		err = UpdateGraphValues(output, &fittestIndex, &histoValues, &mostFit, &averageValues, &cfg, pop.PopulationSize)
+		err = UpdateGraphValues(GraphCfg{
+			Output:        output,
+			FittestIndex:  &fittestIndex,
+			HistoValues:   &histoValues,
+			MostFit:       &mostFit,
+			AverageValues: &averageValues,
+			EvolveCfg:     &cfg,
+			PopuSize:      pop.PopulationSize,
+		})
 		if err != nil {
 			panic(err)
 		}
 
+		cxplotter.AddDataToBoxPlot(evolveBoxPlot, output, c)
+		// For now only latest 10 generations to show on the graph.
+		if (c+10)%cfg.EpochLength == 0 {
+			// Reset Box Plot
+			evolveBoxPlot = cxplotter.ResetBoxPlot(evolveBoxPlot)
+		}
 		if cfg.SaveAST || c == numIter-1 {
 			err := SaveAST(pop.Individuals[fittestIndex], saveDirectory, c)
 			if err != nil {
@@ -138,14 +156,17 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		}
 
 		if (cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%cfg.EpochLength == 0) || (!cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%100 == 0) {
-			graphTitle := fmt.Sprintf("Average Fitness Of Individuals (%v)", getBenchmarkName(&cfg))
+			graphTitle := fmt.Sprintf(averageTitle+" (%v)", getBenchmarkName(&cfg))
 			cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
 				Values:       averageValues,
 				Xlabel:       averageXLabel,
 				Ylabel:       averageYLabel,
 				Title:        graphTitle,
-				SaveLocation: saveDirectory + fmt.Sprintf("Generation_%v_", c) + "AverageFitness.png",
+				SaveLocation: saveDirectory + fmt.Sprintf("Generation_%v_", c) + averageFileExtension,
 			})
+
+			// Save Box Plot
+			cxplotter.SaveBoxPlot(evolveBoxPlot, saveDirectory+fmt.Sprintf("Generation_%v_", c)+boxPlotExtension)
 		}
 
 		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
