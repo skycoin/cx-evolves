@@ -89,20 +89,19 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = child2
 
 		// if random-search is true, there will be no mutation.
-		if !cfg.RandomSearch {
+		if cfg.RandomSearch {
+			// Replace tournament loser with new generated program.
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+		} else {
 			randomMutation(pop, sPrgrm)
-		}
 
-		// Point Mutation
-		// pointMutation(pop)
+			// Point Mutation
+			// pointMutation(pop)
 
-		if !cfg.RandomSearch {
 			// Replacing individuals in population.
 			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
-		} else {
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
 		}
 
 		if cxtasks.IsMazeTask(cfg.TaskName) {
