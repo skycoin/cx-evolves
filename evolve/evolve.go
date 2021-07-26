@@ -96,9 +96,14 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		// Point Mutation
 		// pointMutation(pop)
 
-		// Replacing individuals in population.
-		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
-		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+		if !cfg.RandomSearch {
+			// Replacing individuals in population.
+			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
+			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+		} else {
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+		}
 
 		if cxtasks.IsMazeTask(cfg.TaskName) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
