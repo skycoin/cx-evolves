@@ -22,6 +22,8 @@ type EvolveConfig struct {
 	WorkerPortNum    int
 	WorkersAvailable int
 
+	RandomSearch bool
+
 	RandSeed int64
 }
 

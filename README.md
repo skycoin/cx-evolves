@@ -43,6 +43,7 @@ go run main.go
 --ast=[Set true if best ASTs per generation will be saved]
 --use-log-fitness=[Set true if fitness will be fitness(log base 2)]
 --workers=[number of workers available to use, if not set default is 1]
+--random-search=[set true to have no mutation on individuals]
 
 <!-- Set if maze benchmark -->
 -W=[width of the maze to solve] 

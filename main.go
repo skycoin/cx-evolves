@@ -39,6 +39,8 @@ var (
 	logFitness  bool
 
 	workersAvailable int
+
+	randomSearch bool
 )
 
 // Evolve Configuration
@@ -216,6 +218,12 @@ func main() {
 				Usage:       "set true if best ASTs per generation should be saved to a file",
 				Destination: &saveAST,
 			},
+			&cli.BoolFlag{
+				Name:        "RandomSearch",
+				Aliases:     []string{"random-search"},
+				Usage:       "set true to have no mutation on individuals",
+				Destination: &randomSearch,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			Evolve()
@@ -278,5 +286,7 @@ func Evolve() {
 		UseAntiLog2:    logFitness,
 
 		WorkersAvailable: workersAvailable,
+
+		RandomSearch: randomSearch,
 	})
 }

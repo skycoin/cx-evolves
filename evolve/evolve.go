@@ -87,7 +87,11 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = dead2Idx
 		_ = child1
 		_ = child2
-		randomMutation(pop, sPrgrm)
+
+		// if random-search is true, there will be no mutation.
+		if !cfg.RandomSearch {
+			randomMutation(pop, sPrgrm)
+		}
 
 		// Point Mutation
 		// pointMutation(pop)
