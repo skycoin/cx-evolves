@@ -72,6 +72,10 @@ func getBenchmarkName(cfg *EvolveConfig) string {
 	if cxtasks.IsNetworkSimulatorTask(cfg.TaskName) {
 		name = "NetworkSim"
 	}
+
+	if cfg.Version != 1 {
+		name = name + fmt.Sprintf("-%v", cfg.Version)
+	}
 	return name
 }
 
