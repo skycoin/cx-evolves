@@ -23,8 +23,8 @@ func makeDirectory(cfg *EvolveConfig) string {
 		dir = fmt.Sprintf("./Results/%v-%v/", time.Now().Unix(), name)
 
 		// create directory
-		_ = os.Mkdir(dir, 0700)
-		_ = os.Mkdir(dir+"AST/", 0700)
+		_ = os.Mkdir(dir, 0777)
+		_ = os.Mkdir(dir+"AST/", 0777)
 
 	}
 	return dir
