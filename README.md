@@ -11,16 +11,17 @@ $go mod download
 ```
 
 # Benchmarks
-| Task Name          | Task Code Name      |
-| ------------------ |:-------------------:| 
-|  Maze              | "maze"              |
-|  Constants         | "constants"         |  
-|  Evens             | "evens"             |
-|  Odds              | "odds"              |
-|  Primes            | "primes"            |
-|  Composites        | "composites"        |
-|  Network Simulator | "network_simulator" |
-|  Range             | "range"             |
+| Task Name              | Task Code Name      | Task Version |
+| ---------------------- |:-------------------:|:------------:| 
+|  Maze                  | "maze"              |      1       |
+|  Constants             | "constants"         |      1       | 
+|  Evens                 | "evens"             |      1       |
+|  Evens greater than 0  | "evens"             |      2       |
+|  Odds                  | "odds"              |      1       |
+|  Primes                | "primes"            |      1       |
+|  Composites            | "composites"        |      1       |
+|  Network Simulator     | "network_simulator" |      1       |
+|  Range                 | "range"             |      1       |
 
 
 ### Summary
@@ -36,6 +37,7 @@ go run main.go help
 ```
 go run main.go 
 --task=[Name of task to benchmark (in lower case--refer to task code name above)]
+--task-version=[Task vesion value, defualt is 1]
 --population=[Population size or number of programs generated per generation]
 --generations=[number of generations]
 --expressions=[number of expressions a generated program can have]

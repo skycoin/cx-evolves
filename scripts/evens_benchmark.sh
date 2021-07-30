@@ -2,7 +2,7 @@
   
 # turn on bash's job control
 set -m
-
+  
 if [ "$WORKERS" == "" ]
 then
 	WORKERS=500
@@ -17,5 +17,6 @@ while [ "$i" -lt $WORKERS ]; do
 done 
 
   
+  
 # Start the main process
-./cx-evolves --task=maze -W=1 -H=5 --random-maze-size=false --population=500 --generations=500000 --expressions=50 --epoch-length=100 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS
+./cx-evolves --task=evens --rounds=10 --population=500 --generations=500000 --expressions=50 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS

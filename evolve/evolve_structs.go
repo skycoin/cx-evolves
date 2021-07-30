@@ -2,6 +2,7 @@ package evolve
 
 type EvolveConfig struct {
 	TaskName string
+	Version  int
 
 	MazeHeight     int
 	MazeWidth      int

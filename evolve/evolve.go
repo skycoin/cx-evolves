@@ -97,7 +97,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			randomMutation(pop, sPrgrm)
 
 			// Point Mutation
-			// pointMutation(pop)
+			pointMutation(pop)
 
 			// Replacing individuals in population.
 			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
@@ -187,14 +187,13 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 
 func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (output float64, err error) {
 	var result worker.Result
-	var VersionNum int = 1
 
 	taskCfg := setTaskParams(cfg)
 	workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
 	workerclient.CallWorker(
 		workerclient.CallWorkerConfig{
 			Task:    cfg.TaskName,
-			Version: VersionNum,
+			Version: cfg.Version,
 			Program: cxprogram,
 			SolProt: solProt,
 			TaskCfg: taskCfg,

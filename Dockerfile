@@ -10,5 +10,6 @@ COPY ./server .
 
 COPY ./scripts/maze_benchmark.sh .
 COPY ./scripts/constants_benchmark.sh .
+COPY ./scripts/evens_benchmark.sh .
 
 ENTRYPOINT ["sh","/constants_benchmark.sh"]

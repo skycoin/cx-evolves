@@ -19,7 +19,8 @@ import (
 
 // Maze and Output Configuration
 var (
-	taskName string
+	taskName    string
+	taskVersion int
 
 	// Maze Config
 	mazeWidth      int
@@ -130,6 +131,13 @@ func main() {
 				Aliases:     []string{"task"},
 				Usage:       "Name of task to benchmark",
 				Destination: &taskName,
+			},
+			&cli.IntFlag{
+				Name:        "TaskVersion",
+				Aliases:     []string{"task-version"},
+				Usage:       "version of task",
+				Value:       1,
+				Destination: &taskVersion,
 			},
 			&cli.BoolFlag{
 				Name:        "log 2 for fitness",
@@ -268,6 +276,7 @@ func Evolve() {
 	// Evolving the population. The errors between the real and simulated data will be printed to standard output.
 	pop.Evolve(evolve.EvolveConfig{
 		TaskName: taskName,
+		Version:  taskVersion,
 
 		MazeWidth:  mazeWidth,
 		MazeHeight: mazeHeight,

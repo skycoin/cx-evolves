@@ -52,6 +52,8 @@ func GetTaskEvaluator(name string, version int) TaskEvaluator {
 		switch version {
 		case 1:
 			return Evens_V1
+		case 2:
+			return Evens_V2
 		}
 	case TaskName[Task_Network_Simulator]:
 		switch version {
