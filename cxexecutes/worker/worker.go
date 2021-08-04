@@ -31,7 +31,9 @@ type ProgramWorker struct {
 func (pw *ProgramWorker) RunTaskEvaluator(args *Args) (Result, *erpc.Status) {
 	prgrmInBytes := args.Program
 	prgrm := cxast.DeserializeCXProgramV2(prgrmInBytes, false)
-	prgrm.Memory = cxast.MakeProgram().Memory
+	if prgrm.Memory == nil {
+		prgrm.Memory = cxast.MakeProgram().Memory
+	}
 
 	evaluate := cxtasks.GetTaskEvaluator(args.Task, args.Version)
 	output, err := evaluate(prgrm, args.SolProt, args.Cfg)

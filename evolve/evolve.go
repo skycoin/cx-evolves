@@ -108,7 +108,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
-		runtime.GOMAXPROCS(48)
+		runtime.GOMAXPROCS(64)
 		// Evaluation process.
 		for i := range pop.Individuals {
 			wg.Add(1)

@@ -19,4 +19,4 @@ done
   
   
 # Start the main process
-./cx-evolves --task=evens --task-version=2 --rounds=10 --population=500 --generations=500000 --expressions=50 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS
+./cx-evolves --task=evens --task-version=2 --rounds=10 --population=500 --generations=500000 --expressions=50 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS --epoch-length=100

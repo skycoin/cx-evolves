@@ -7,7 +7,6 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxparseractions "github.com/skycoin/cx/cxparser/actions"
 )
 
 // InsertI32Literal inserts a random n byte i32 literal as replacement for cxarg.
@@ -20,15 +19,14 @@ func InsertI32Literal(n int, cxprogram *cxast.CXProgram, pkg *cxast.CXPackage, c
 
 	// Initialize prereq for WritePrimary()
 	cxprogram.CurrentPackage = pkg
-	cxparseractions.AST = cxprogram
 
 	// create literal arg
-	litArg := cxparseractions.WritePrimary(cxconstants.TYPE_I32, byts, false)
+	litArg := WriteLiteralArg(cxprogram, cxconstants.TYPE_I32, byts, false)
 	arg := litArg[0].Outputs[0]
 	arg.ArgDetails.Package = pkg
 
 	// replace cxarg with new literal arg
-	*cxarg = *arg
+	cxarg = arg
 }
 
 // InsertI32Literal_1Byte inserts a random 1 byte i32 literal as replacement for cxarg.
