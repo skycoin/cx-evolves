@@ -19,4 +19,4 @@ done
   
   
 # Start the main process
-./cx-evolves --task=constants --rounds=10 --constants-target=5 --population=500 --generations=20000 --expressions=100 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS
+./cx-evolves --task=constants --rounds=10 --constants-target=6 --population=500 --generations=500000 --expressions=50 --graphs=true --ast=false --use-log-fitness=false --workers=$WORKERS

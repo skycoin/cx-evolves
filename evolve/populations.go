@@ -60,9 +60,7 @@ func (pop *Population) InitFunctionsToEvolve(fnName string) {
 
 	for i := 0; i < len(pop.Individuals); i++ {
 		// Initialize solution with random expressions.
-		initSolution(pop.Individuals[i], fnToEvolve, fns, numExprs)
-		adaptSolution(pop.Individuals[i], fnToEvolve)
-		resetPrgrm(pop.Individuals[i])
+		GenerateNewIndividualWithRandomExpressions(pop.Individuals[i], fnToEvolve, fns, numExprs)
 	}
 }
 

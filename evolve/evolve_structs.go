@@ -2,6 +2,7 @@ package evolve
 
 type EvolveConfig struct {
 	TaskName string
+	Version  int
 
 	MazeHeight     int
 	MazeWidth      int
@@ -21,6 +22,8 @@ type EvolveConfig struct {
 
 	WorkerPortNum    int
 	WorkersAvailable int
+
+	RandomSearch bool
 
 	RandSeed int64
 }

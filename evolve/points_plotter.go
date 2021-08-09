@@ -3,24 +3,22 @@ package evolve
 import (
 	"fmt"
 	"math"
-
-	cxplotter "github.com/skycoin/cx-evolves/plotter"
 )
 
 const (
-	averageXLabel = "Generation Number"
-	averageYLabel = "Ave Fitness"
-	fittestXLabel = "Generation Number"
-	fittestYLabel = "Fitness"
+// averageXLabel = "Generation Number"
+// averageYLabel = "Ave Fitness"
+// fittestXLabel = "Generation Number"
+// fittestYLabel = "Fitness"
 
-	averageTitle = "Average Fitness Of Individuals"
-	fittestTitle = "Fittest Per Generation N"
-	histoTitle   = "Fitness Distribution of all programs across all generations"
+// averageTitle = "Average Fitness Of Individuals"
+// fittestTitle = "Fittest Per Generation N"
+// histoTitle   = "Fitness Distribution of all programs across all generations"
 
-	averageFileExtension = "AverageFitness.png"
-	fittestFileExtension = "FittestPerGeneration.png"
-	histoFileExtension   = "Histogram.png"
-	boxPlotExtension     = "BoxPlot.png"
+// averageFileExtension = "AverageFitness.png"
+// fittestFileExtension = "FittestPerGeneration.png"
+// histoFileExtension   = "Histogram.png"
+// boxPlotExtension     = "BoxPlot.png"
 )
 
 func UpdateGraphValues(cfg GraphCfg) error {
@@ -55,28 +53,28 @@ func UpdateGraphValues(cfg GraphCfg) error {
 	return nil
 }
 
-func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory, benchmarkName string) {
-	averageGraphTitle := fmt.Sprintf(averageTitle+" (%v)", benchmarkName)
-	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
-		Values:       aveFitnessValues,
-		Xlabel:       averageXLabel,
-		Ylabel:       averageYLabel,
-		Title:        averageGraphTitle,
-		SaveLocation: saveDirectory + averageFileExtension,
-	})
+// func saveGraphs(aveFitnessValues, fittestValues, histoValues []float64, saveDirectory, benchmarkName string) {
+// 	averageGraphTitle := fmt.Sprintf(averageTitle+" (%v)", benchmarkName)
+// 	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
+// 		Values:       aveFitnessValues,
+// 		Xlabel:       averageXLabel,
+// 		Ylabel:       averageYLabel,
+// 		Title:        averageGraphTitle,
+// 		SaveLocation: saveDirectory + averageFileExtension,
+// 	})
 
-	fittestGraphTitle := fmt.Sprintf(fittestTitle+" (%v)", benchmarkName)
-	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
-		Values:       fittestValues,
-		Xlabel:       fittestXLabel,
-		Ylabel:       fittestYLabel,
-		Title:        fittestGraphTitle,
-		SaveLocation: saveDirectory + fittestFileExtension,
-	})
+// 	fittestGraphTitle := fmt.Sprintf(fittestTitle+" (%v)", benchmarkName)
+// 	cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
+// 		Values:       fittestValues,
+// 		Xlabel:       fittestXLabel,
+// 		Ylabel:       fittestYLabel,
+// 		Title:        fittestGraphTitle,
+// 		SaveLocation: saveDirectory + fittestFileExtension,
+// 	})
 
-	cxplotter.HistogramPlot(cxplotter.HistoPlotCfg{
-		Values:       histoValues,
-		Title:        histoTitle,
-		SaveLocation: saveDirectory + histoFileExtension,
-	})
-}
+// 	cxplotter.HistogramPlot(cxplotter.HistoPlotCfg{
+// 		Values:       histoValues,
+// 		Title:        histoTitle,
+// 		SaveLocation: saveDirectory + histoFileExtension,
+// 	})
+// }

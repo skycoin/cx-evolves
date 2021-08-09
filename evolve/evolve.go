@@ -3,6 +3,7 @@ package evolve
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
 	"runtime"
 	"sync"
@@ -20,11 +21,10 @@ import (
 var wg = sync.WaitGroup{}
 
 func (pop *Population) Evolve(cfg EvolveConfig) {
-	var histoValues []float64
-	var averageValues []float64
-	var mostFit []float64
 	var availPorts []int
 	var saveDirectory string
+	var plotData cxplotter.PlotData
+	plotData.Title = getBenchmarkName(&cfg)
 
 	output := make([]float64, pop.PopulationSize)
 	numIter := pop.Iterations
@@ -35,9 +35,11 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
 
-	// Create box plot
-	boxPlotTitle := fmt.Sprintf("Box Plot"+" (%v)", getBenchmarkName(&cfg))
-	evolveBoxPlot := cxplotter.NewBoxPlot(boxPlotTitle, fittestXLabel, fittestYLabel)
+	logF, err := setupLogger(fmt.Sprintf("%v-log", time.Now().Format(time.RFC3339)), saveDirectory)
+	if err != nil {
+		panic(err)
+	}
+	log.SetOutput(logF)
 
 	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
@@ -50,7 +52,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	}()
 
 	// Evolution process.
-	for c := 0; c < numIter; c++ {
+	for c := 1; c <= numIter; c++ {
 		startTimeGeneration := time.Now()
 
 		// Selection process.
@@ -59,21 +61,25 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 
 		pop1MainPkg, err := pop.Individuals[pop1Idx].GetPackage(cxconstants.MAIN_PKG)
 		if err != nil {
+			log.Printf("error get package: %v", err)
 			panic(err)
 		}
 
 		parent1, err := pop1MainPkg.GetFunction(fnToEvolveName)
 		if err != nil {
+			log.Printf("error get function: %v", err)
 			panic(err)
 		}
 
 		pop2MainPkg, err := pop.Individuals[pop2Idx].GetPackage(cxconstants.MAIN_PKG)
 		if err != nil {
+			log.Printf("error get package: %v", err)
 			panic(err)
 		}
 
 		parent2, err := pop2MainPkg.GetFunction(fnToEvolveName)
 		if err != nil {
+			log.Printf("error get function: %v", err)
 			panic(err)
 		}
 
@@ -87,20 +93,28 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		_ = dead2Idx
 		_ = child1
 		_ = child2
-		randomMutation(pop, sPrgrm)
 
-		// Point Mutation
-		// pointMutation(pop)
+		// if random-search is true, there will be no mutation.
+		if cfg.RandomSearch {
+			// Replace tournament loser with new generated program.
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+		} else {
+			randomMutation(pop, sPrgrm)
 
-		// Replacing individuals in population.
-		replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
-		replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+			// Point Mutation
+			pointMutation(pop)
+
+			// Replacing individuals in population.
+			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
+			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+		}
 
 		if cxtasks.IsMazeTask(cfg.TaskName) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
-		runtime.GOMAXPROCS(48)
+		runtime.GOMAXPROCS(64)
 		// Evaluation process.
 		for i := range pop.Individuals {
 			wg.Add(1)
@@ -115,7 +129,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 				// pop.Individuals[j].PrintProgram()
 				output[j], err = RunBenchmark(pop.Individuals[j], solProt, cfg)
 				if err != nil {
-					fmt.Printf("err=%v", err)
+					log.Printf("error run benchmark: %v", err)
 					output[j] = float64(math.MaxInt32)
 				}
 
@@ -128,65 +142,34 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		}
 		wg.Wait()
 
-		var fittestIndex int = 0
-		err = UpdateGraphValues(GraphCfg{
-			Output:        output,
-			FittestIndex:  &fittestIndex,
-			HistoValues:   &histoValues,
-			MostFit:       &mostFit,
-			AverageValues: &averageValues,
-			EvolveCfg:     &cfg,
-			PopuSize:      pop.PopulationSize,
-		})
+		// Update data points values
+		err = cxplotter.UpdateDataPoints(&plotData, c, output, saveDirectory)
 		if err != nil {
+			log.Printf("error updating data points: %v", err)
 			panic(err)
 		}
 
-		cxplotter.AddDataToBoxPlot(evolveBoxPlot, output, c)
-		// For now only latest 10 generations to show on the graph.
-		if (c+10)%cfg.EpochLength == 0 {
-			// Reset Box Plot
-			evolveBoxPlot = cxplotter.ResetBoxPlot(evolveBoxPlot)
-		}
 		if cfg.SaveAST || c == numIter-1 {
-			err := SaveAST(pop.Individuals[fittestIndex], saveDirectory, c)
+			err := SaveAST(pop.Individuals[getFittestIndex(output)], saveDirectory, c)
 			if err != nil {
+				log.Printf("error saving ast: %v", err)
 				panic(err)
 			}
 		}
 
-		if (cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%cfg.EpochLength == 0) || (!cxtasks.IsMazeTask(cfg.TaskName) && c != 0 && c%100 == 0) {
-			graphTitle := fmt.Sprintf(averageTitle+" (%v)", getBenchmarkName(&cfg))
-			cxplotter.PointsPlot(cxplotter.PointsPlotCfg{
-				Values:       averageValues,
-				Xlabel:       averageXLabel,
-				Ylabel:       averageYLabel,
-				Title:        graphTitle,
-				SaveLocation: saveDirectory + fmt.Sprintf("Generation_%v_", c) + averageFileExtension,
-			})
-
-			// Save Box Plot
-			cxplotter.SaveBoxPlot(evolveBoxPlot, saveDirectory+fmt.Sprintf("Generation_%v_", c)+boxPlotExtension)
-		}
-
 		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
-	}
-
-	if cfg.PlotFitness {
-		saveGraphs(averageValues, mostFit, histoValues, saveDirectory, getBenchmarkName(&cfg))
 	}
 }
 
 func RunBenchmark(cxprogram *cxast.CXProgram, solProt *cxast.CXFunction, cfg EvolveConfig) (output float64, err error) {
 	var result worker.Result
-	var VersionNum int = 1
 
 	taskCfg := setTaskParams(cfg)
 	workerAddr := fmt.Sprintf(":%v", cfg.WorkerPortNum)
 	workerclient.CallWorker(
 		workerclient.CallWorkerConfig{
 			Task:    cfg.TaskName,
-			Version: VersionNum,
+			Version: cfg.Version,
 			Program: cxprogram,
 			SolProt: solProt,
 			TaskCfg: taskCfg,

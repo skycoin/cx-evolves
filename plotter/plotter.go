@@ -13,3 +13,17 @@ func Points(values []float64) plotter.XYs {
 	}
 	return pts
 }
+
+func UpdateDataPoints(plotData *PlotData, generation int, output []float64, saveDirectory string) error {
+	plotDataPoints := PlotDataPoints{
+		Generation: generation,
+	}
+	plotDataPoints.Output = append(plotDataPoints.Output, output...)
+	plotData.Data = append(plotData.Data, plotDataPoints)
+
+	err := SavePlotGraphDataToJSON(*plotData, saveDirectory+"data_points")
+	if err != nil {
+		return err
+	}
+	return nil
+}

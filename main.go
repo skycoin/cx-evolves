@@ -19,7 +19,8 @@ import (
 
 // Maze and Output Configuration
 var (
-	taskName string
+	taskName    string
+	taskVersion int
 
 	// Maze Config
 	mazeWidth      int
@@ -39,6 +40,8 @@ var (
 	logFitness  bool
 
 	workersAvailable int
+
+	randomSearch bool
 )
 
 // Evolve Configuration
@@ -129,6 +132,13 @@ func main() {
 				Usage:       "Name of task to benchmark",
 				Destination: &taskName,
 			},
+			&cli.IntFlag{
+				Name:        "TaskVersion",
+				Aliases:     []string{"task-version"},
+				Usage:       "version of task",
+				Value:       1,
+				Destination: &taskVersion,
+			},
 			&cli.BoolFlag{
 				Name:        "log 2 for fitness",
 				Aliases:     []string{"use-log-fitness"},
@@ -216,6 +226,12 @@ func main() {
 				Usage:       "set true if best ASTs per generation should be saved to a file",
 				Destination: &saveAST,
 			},
+			&cli.BoolFlag{
+				Name:        "RandomSearch",
+				Aliases:     []string{"random-search"},
+				Usage:       "set true to have no mutation on individuals",
+				Destination: &randomSearch,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			Evolve()
@@ -260,6 +276,7 @@ func Evolve() {
 	// Evolving the population. The errors between the real and simulated data will be printed to standard output.
 	pop.Evolve(evolve.EvolveConfig{
 		TaskName: taskName,
+		Version:  taskVersion,
 
 		MazeWidth:  mazeWidth,
 		MazeHeight: mazeHeight,
@@ -278,5 +295,7 @@ func Evolve() {
 		UseAntiLog2:    logFitness,
 
 		WorkersAvailable: workersAvailable,
+
+		RandomSearch: randomSearch,
 	})
 }
