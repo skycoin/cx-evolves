@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+
+		<fieldset>
+			<h2>CX-Evolves Plotter</h2>
+		  
+			<label for="graph">Choose a graph:</label>
+			<select name="graph" id="graph">
+			 <option value="averageFitness">Average Fitness</option>
+			 <option value="fittestFitness">Fittest Per Generation</option>
+			 <option value="histogram">Histogram</option>
+			 <option value="boxAndWhisker">Box and Whiskers</option>
+			</select><br>
+
+			<label for="generationStart">Generation Start:</label>
+			<input type="text" id="generationStart" name="generationStart" value="0"><br>
+			<label for="generationEnd">Generation End (0 means max):</label>
+			<input type="text" id="generationEnd" name="generationEnd" value="0"><br>
+
+			<input type='file' id='fileinput'>
+			<input type='button' id='btnLoad' value='Generate' onclick='loadFile();'>
+		</fieldset>
+	  </form>
+	  
+
+
+
+	  <script src="https://www.gstatic.com/charts/loader.js"></script>
+	  <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+	  <script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
+
+
+
+
+
+	  <script type="text/javascript">
+			function loadFile() {
+		  var input, file, fr;
+	  
+		  if (typeof window.FileReader !== 'function') {
+			alert("The file API isn't supported on this browser yet.");
+			return;
+		  }
+	  
+		  input = document.getElementById('fileinput');
+		  if (!input) {
+			alert("Um, couldn't find the fileinput element.");
+		  }
+		  else if (!input.files) {
+			alert("This browser doesn't seem to support the `files` property of file inputs.");
+		  }
+		  else if (!input.files[0]) {
+			alert("Please select a file before clicking 'Load'");
+		  }
+		  else {
+			file = input.files[0];
+			fr = new FileReader();
+			fr.onload = receivedText;
+			fr.readAsText(file);
+		  }
+	  
+		  function receivedText(e) {
+			let lines = e.target.result;
+			var newArr = JSON.parse(lines); 
+
+			makeGraph(newArr);
+		  }
+		}
+	
+	function makeGraph(jsonData) {	
+		var select = document.getElementById('graph');
+		var value = select.options[select.selectedIndex].value;
+
+		var generationStart=parseInt(document.getElementById("generationStart").value, 10);
+		var generationEnd=parseInt(document.getElementById("generationEnd").value, 10);
+
+		if (generationEnd===0){
+			generationEnd=jsonData.data.length
+		}
+		if (value==="averageFitness"){
+			/////////////////////AVERAGE FITNESS GRAPH//////////////////////////////////
+			 var xdata=[];
+			 var ydata=[];
+
+			var options = {
+				series: [{
+					name: "Fitness",
+					data: ydata
+				}],
+				chart: {
+				height: 700,
+				type: 'line',
+				zoom: {
+					enabled: false
+				}
+				},
+				dataLabels: {
+				enabled: false
+				},
+				stroke: {
+				curve: 'straight'
+				},
+				title: {
+				text: "Average Fitness ("+jsonData.title+")",
+				align: 'center'
+				},
+				grid: {
+				row: {
+					colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+					opacity: 0.5
+				},
+				},
+				xaxis: {
+				tickAmount:10,
+				categories: xdata,
+				title: {
+						text: 'Generation'
+					},
+				},
+				yaxis: {
+				title: {
+						text: 'Fitness'
+					}
+				}
+			};
+			// Average Fitness
+			// for (var i = generationStart; i < generationEnd; i++) {
+			// 	var sum = 0;
+			// 	for( var count = 0; count < jsonData.data[i].output.length; count++ ){
+			// 		sum += parseInt( jsonData.data[i].output[count], 10 );
+			// 	}
+			// 	var avg = sum/jsonData.data[i].output.length;
+
+			// 	xdata.push(jsonData.data[i].generation);
+			// 	ydata.push(avg);
+			// }
+			var chart = new ApexCharts(document.querySelector("#chart"), options);
+			//chart.render();
+	
+			/////////////////////AVERAGE FITNESS GRAPH//////////////////////////////////
+			google.charts.load('current', {'packages':['line']});
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+
+			var data = new google.visualization.DataTable();
+			data.addColumn('number', 'Generations');
+			data.addColumn('number', 'Fitness');
+
+			// Average Fitness
+			for (var i = generationStart; i < generationEnd; i++) {
+				var sum = 0;
+				for( var count = 0; count < jsonData.data[i].output.length; count++ ){
+					sum += parseInt( jsonData.data[i].output[count], 10 );
+				}
+				var avg = sum/jsonData.data[i].output.length;
+
+				data.addRows([[jsonData.data[i].generation,  avg]]);
+			}
+	
+
+			var options = {
+				chart: {
+				title: "Average Fitness ("+jsonData.title+")",
+				align: "center",
+				},
+				width: 1800,
+				height: 500
+			};
+
+			var chart = new google.charts.Line(document.getElementById('chart_div'));
+
+			chart.draw(data, google.charts.Line.convertOptions(options));
+   			}
+		/////////////////////AVERAGE FITNESS GRAPH//////////////////////////////////
+		} else if (value==="boxAndWhisker"){
+			/////////////////////BOX AND WHISKERS GRAPH//////////////////////////////////
+			var BoxAndWhiskersDataPoints = new Array();
+			var BoxAndWhiskersChart = new CanvasJS.Chart("chartContainer", {
+						animationEnabled: true,
+						title:{
+							text: "Box and Whisker ("+jsonData.title+")"
+						},
+						axisY: {
+							title: "Fitness",
+							titleFontSize: 24,
+							//prefix: "$",
+							//interval: 40000
+							includeZero: true
+						},
+						axisX: {
+							title: "Generation",
+							titleFontSize: 24,
+							includeZero: true
+						},
+						data: [{
+							type: "boxAndWhisker",
+							upperBoxColor: "#FFC28D",
+							lowerBoxColor: "#9ECCB8",
+							color: "black",
+							//yValueFormatString: "$#,##0",
+							dataPoints: BoxAndWhiskersDataPoints
+						}]
+					});
+
+			const Median = arr => {
+				const mid = Math.floor(arr.length / 2),
+					nums = [...arr].sort((a, b) => a - b);
+				return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+				};
+
+			var boxCategories=[];
+			var boxData=[];
+			// Box and Whiskers
+			for (var i = generationStart; i < generationEnd; i++) {
+				var outputVal = [];
+				for( var count = 0; count < jsonData.data[i].output.length; count++ ){
+					outputVal.push(parseInt(jsonData.data[i].output[count], 10));
+				}
+				
+				outputVal.sort()
+				min=outputVal[0]
+				max=outputVal[(outputVal.length)-1]
+				med=Median(outputVal)
+				lq=Median(outputVal.slice(0,(outputVal.length)/2))
+				uq=Median(outputVal.slice((outputVal.length)/2,outputVal.length))
+				BoxAndWhiskersDataPoints.push({
+					label: jsonData.data[i].generation,
+					y:[min,lq,uq,max,med], 
+				});
+				boxCategories.push(jsonData.data[i].generation);
+				boxData.push([min,lq,med,uq,max]);
+			}
+
+			BoxAndWhiskersChart.render();
+
+
+			/////////////////////////////////////////////////////
+	
+			const el = document.getElementById('chart_div');
+			const data = {
+				categories: boxCategories,
+				series: [
+				{
+					name: 'Fitness',
+					data: boxData,
+				},
+				],
+			};
+			const options = {
+				chart: { title: "Box and Whisker ("+jsonData.title+")", width: 1800, height: 700},
+			};
+
+			const chart = toastui.Chart.boxPlotChart({ el, data, options });
+					
+		} else if (value==="fittestFitness"){
+			/////////////////////FITTEST PER GEN GRAPH//////////////////////////////////
+			var FittestDataPoints = [];
+
+			var FittestFitnessGraph = new CanvasJS.Chart("chartContainer", {
+				animationEnabled: true,  
+				title:{
+					text:"Fittest Per Generation ("+jsonData.title+")"
+				},
+				axisY: {
+					title: "Fitness",
+					//valueFormatString: "#0,,.",
+					//suffix: "mn",
+					stripLines: [{
+						//value: 3366500,
+						label: "Average"
+					}]
+				},
+				axisX: {
+					title: "Generation",
+					titleFontSize: 24,
+					includeZero: true
+				},
+				data: [{
+					type: "spline",
+					dataPoints: FittestDataPoints
+				}]
+			});
+
+			// Fittest Fitness
+			for (var i = generationStart; i < generationEnd; i++) {
+				var fittest = jsonData.data[i].output[0];
+				for( var count = 0; count < jsonData.data[i].output.length; count++ ){
+					fitnessOutput = parseInt( jsonData.data[i].output[count], 10 );
+					if (fitnessOutput<fittest){
+						fittest=fitnessOutput
+					}
+				}
+
+				FittestDataPoints.push({
+					x: jsonData.data[i].generation,
+					y: fittest,
+				});
+			}
+			FittestFitnessGraph.render();
+		} 
+					
+	} 
+		
+
+</script>
+</head>
+<body>
+	<div id="chart_div" style="height: 740px; max-width: 1840px; margin: 0px auto;"></div>
+<div id="chart" style="height: 740px; max-width: 1840px; margin: 0px auto;"></div>
+<div id="chartContainer" style="height: 740px; max-width: 1840px; margin: 0px auto;"></div>
+<script src="./canvasjs-3/jquery.canvasjs.min.js"></script>
+<script src="./canvasjs-3/canvasjs.min.js"></script>
+<script src="./apexcharts-bundle/dist/apexcharts.js"></script>
+<script src="./apexcharts-bundle/dist/apexcharts.min.js"></script>
+
+<script>
+  google.charts.load('current', {packages: ['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+</script>
+
+</body>
+</html>
