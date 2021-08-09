@@ -112,3 +112,29 @@ func setTaskParams(cfg EvolveConfig) cxtasks.TaskConfig {
 
 	return taskCfg
 }
+
+func getFittestIndex(fitness []float64) int {
+	var fittestIndex int
+	var fittest float64 = fitness[0]
+	for z := 0; z < len(fitness); z++ {
+		fitness := fitness[z]
+
+		// Get Best fitness per generation
+		if fitness < fittest {
+			fittest = fitness
+			fittestIndex = z
+		}
+	}
+
+	return fittestIndex
+}
+
+func setupLogger(logName string, directory string) (*os.File, error) {
+	f, err := os.OpenFile(directory+logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return f, nil
+}
