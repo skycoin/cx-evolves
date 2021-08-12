@@ -10,6 +10,7 @@ import (
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -260,7 +261,8 @@ func Evolve() {
 
 	// Initialize point operator probability
 	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
-	cxmutation.NewProbability(len(pointOpFns))
+	pointMutationOperatorCDF := cxprobability.NewProbability(len(pointOpFns))
+	mutationCrossoverCDF := cxprobability.NewProbability(2)
 
 	// Generate a population.
 	pop := evolve.MakePopulation(populationSize)
@@ -297,5 +299,8 @@ func Evolve() {
 		WorkersAvailable: workersAvailable,
 
 		RandomSearch: randomSearch,
+
+		PointMutationOperatorCDF: pointMutationOperatorCDF,
+		MutationCrossoverCDF:     mutationCrossoverCDF,
 	})
 }

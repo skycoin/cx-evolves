@@ -1,9 +1,9 @@
-package mutation_test
+package probability_test
 
 import (
 	"testing"
 
-	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 )
 
 func TestProbability(t *testing.T) {
@@ -31,7 +31,7 @@ func TestProbability(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			cxmutation.NewProbability(tc.numberOfOptions)
+			cdf := cxprobability.NewProbability(tc.numberOfOptions)
 
 			samples := []float32{}
 			for i := 0; i < tc.numberOfOptions; i++ {
@@ -39,7 +39,7 @@ func TestProbability(t *testing.T) {
 			}
 
 			for i := 0; i < tc.numberOfSamples; i++ {
-				samples[cxmutation.GetRandIndex()]++
+				samples[cxprobability.GetRandIndex(cdf)]++
 			}
 
 			// Total

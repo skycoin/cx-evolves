@@ -1,15 +1,10 @@
-package mutation
+package probability
 
 import (
 	"math/rand"
 )
 
-var (
-	pdf []float32 // probability density function
-	cdf []float32 // cummulative distribution function
-)
-
-func GetRandIndex() int {
+func GetRandIndex(cdf []float32) int {
 	r := rand.Float32()
 
 	idx := 0
@@ -19,12 +14,12 @@ func GetRandIndex() int {
 	return idx
 }
 
-func NewProbability(numberOfOptions int) {
+func NewProbability(numberOfOptions int) []float32 {
 	// Set density equally.
 	dist := float32(1) / float32(numberOfOptions)
 
-	pdf = []float32{}
-	cdf = []float32{}
+	pdf := []float32{} // probability density function
+	cdf := []float32{} // cummulative distribution function
 	for i := 0; i < numberOfOptions; i++ {
 		pdf = append(pdf, dist)
 		cdf = append(cdf, 0.00)
@@ -36,4 +31,5 @@ func NewProbability(numberOfOptions int) {
 		cdf[i] = cdf[i-1] + pdf[i]
 	}
 	// fmt.Println(cdf)
+	return cdf
 }

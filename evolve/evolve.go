@@ -12,6 +12,7 @@ import (
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
 	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxplotter "github.com/skycoin/cx-evolves/plotter"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -99,12 +100,12 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			// Replace tournament loser with new generated program.
 			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
 			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
-		} else {
+		} else if cxprobability.GetRandIndex(cfg.MutationCrossoverCDF) == 1 {
 			randomMutation(pop, sPrgrm)
 
 			// Point Mutation
-			pointMutation(pop)
-
+			pointMutation(pop, cfg.PointMutationOperatorCDF)
+		} else {
 			// Replacing individuals in population.
 			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
@@ -114,7 +115,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
-		runtime.GOMAXPROCS(64)
+		runtime.GOMAXPROCS(48)
 		// Evaluation process.
 		for i := range pop.Individuals {
 			wg.Add(1)
