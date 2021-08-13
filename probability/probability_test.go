@@ -27,6 +27,11 @@ func TestProbability(t *testing.T) {
 			percentProbability: []float32{10, 10, 10, 10, 10, 25, 5, 10, 10},
 			numberOfSamples:    201,
 		},
+		{
+			scenario:           "using equal density, 500 samples",
+			percentProbability: cxprobability.GetEqualDensity(20),
+			numberOfSamples:    201,
+		},
 	}
 
 	for _, tc := range tests {

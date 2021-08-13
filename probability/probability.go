@@ -35,7 +35,7 @@ func NewProbability(percentProbability []float32) []float32 {
 
 func GetEqualDensity(numberOfOptions int) []float32 {
 	// Set density equally.
-	dist := float32(1) / float32(numberOfOptions)
+	dist := float32(100) / float32(numberOfOptions)
 
 	pdf := []float32{} // probability density function
 	for i := 0; i < numberOfOptions; i++ {
