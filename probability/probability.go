@@ -14,14 +14,13 @@ func GetRandIndex(cdf []float32) int {
 	return idx
 }
 
-func NewProbability(numberOfOptions int) []float32 {
-	// Set density equally.
-	dist := float32(1) / float32(numberOfOptions)
+func NewProbability(percentProbability []float32) []float32 {
+	numberOfOptions := len(percentProbability)
 
 	pdf := []float32{} // probability density function
 	cdf := []float32{} // cummulative distribution function
 	for i := 0; i < numberOfOptions; i++ {
-		pdf = append(pdf, dist)
+		pdf = append(pdf, percentProbability[i]/100)
 		cdf = append(cdf, 0.00)
 	}
 
@@ -32,4 +31,16 @@ func NewProbability(numberOfOptions int) []float32 {
 	}
 	// fmt.Println(cdf)
 	return cdf
+}
+
+func GetEqualDensity(numberOfOptions int) []float32 {
+	// Set density equally.
+	dist := float32(1) / float32(numberOfOptions)
+
+	pdf := []float32{} // probability density function
+	for i := 0; i < numberOfOptions; i++ {
+		pdf = append(pdf, dist)
+	}
+
+	return pdf
 }
