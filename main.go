@@ -261,8 +261,9 @@ func Evolve() {
 
 	// Initialize point operator probability
 	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
-	pointMutationOperatorCDF := cxprobability.NewProbability(len(pointOpFns))
-	mutationCrossoverCDF := cxprobability.NewProbability(2)
+
+	pointMutationOperatorCDF := cxprobability.NewProbability(cxprobability.GetEqualDensity(len(pointOpFns)))
+	mutationCrossoverCDF := cxprobability.NewProbability([]float32{1, 50, 49})
 
 	// Generate a population.
 	pop := evolve.MakePopulation(populationSize)

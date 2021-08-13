@@ -100,15 +100,19 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 			// Replace tournament loser with new generated program.
 			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
 			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
-		} else if cxprobability.GetRandIndex(cfg.MutationCrossoverCDF) == 1 {
-			randomMutation(pop, sPrgrm)
-
-			// Point Mutation
-			pointMutation(pop, cfg.PointMutationOperatorCDF)
 		} else {
-			// Replacing individuals in population.
-			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
-			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+			mutationOption := cxprobability.GetRandIndex(cfg.MutationCrossoverCDF)
+			switch mutationOption {
+			case 1:
+				ReplaceIndividualWithRandom(pop, sPrgrm)
+			case 2:
+				// Point Mutation
+				pointMutation(pop, cfg.PointMutationOperatorCDF)
+			case 3:
+				// Replacing individuals in population.
+				replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
+				replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+			}
 		}
 
 		if cxtasks.IsMazeTask(cfg.TaskName) {
