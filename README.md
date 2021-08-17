@@ -37,7 +37,7 @@ go run main.go help
 ```
 go run main.go 
 --task=[Name of task to benchmark (in lower case--refer to task code name above)]
---task-version=[Task vesion value, defualt is 1]
+--task-version=[Task vesion value, default is 1]
 --population=[Population size or number of programs generated per generation]
 --generations=[number of generations]
 --expressions=[number of expressions a generated program can have]

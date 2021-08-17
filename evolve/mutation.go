@@ -60,7 +60,7 @@ const (
 // 	fn.Expressions = exprs
 // }
 
-func ReplaceIndividualWithRandom(pop *Population, sPrgrm []byte) {
+func ReplaceRandomIndividualWithRandom(pop *Population, sPrgrm []byte) {
 	fnToEvolve := pop.FunctionToEvolve
 	numExprs := pop.ExpressionsCount
 	fns := pop.FunctionSet

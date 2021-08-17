@@ -98,18 +98,17 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		// if random-search is true, there will be no mutation.
 		if cfg.RandomSearch {
 			// Replace tournament loser with new generated program.
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			ReplaceIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			ReplaceIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
 		} else {
 			mutationOption := cxprobability.GetRandIndex(cfg.MutationCrossoverCDF)
 			switch mutationOption {
 			case 1:
-				ReplaceIndividualWithRandom(pop, sPrgrm)
+				ReplaceRandomIndividualWithRandom(pop, sPrgrm)
 			case 2:
-				// Point Mutation
 				pointMutation(pop, cfg.PointMutationOperatorCDF)
 			case 3:
-				// Replacing individuals in population.
+				// Replace tournament losers with children of tournament winners.
 				replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 				replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
 			}

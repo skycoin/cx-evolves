@@ -167,7 +167,7 @@ func replaceSolution(ind *cxast.CXProgram, solutionName string, sol *cxast.CXFun
 	mainFn.Expressions[0].Operator = sol
 }
 
-func GenerateNewIndividualWithRandomExpressions(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*cxast.CXFunction, numExprs int) {
+func ReplaceIndividualWithRandomExpressions(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*cxast.CXFunction, numExprs int) {
 	initSolution(prgrm, fnToEvolve, fns, numExprs)
 	adaptSolution(prgrm, fnToEvolve)
 	resetPrgrm(prgrm)
