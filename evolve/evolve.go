@@ -40,7 +40,13 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	if err != nil {
 		panic(err)
 	}
+	defer logF.Close()
 	log.SetOutput(logF)
+
+	log.Printf("Benchmark config: %+v\n", cfg)
+	log.Printf("Generations: %v\n", pop.Iterations)
+	log.Printf("Population Size: %v\n", pop.PopulationSize)
+	log.Printf("Expressions count: %v\n", pop.ExpressionsCount)
 
 	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
