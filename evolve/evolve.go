@@ -36,7 +36,7 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
 
-	logF, err := setupLogger(fmt.Sprintf("%v-log", time.Now().Format(time.RFC3339)), saveDirectory)
+	logF, err := setupLogger(fmt.Sprintf("%v-log.txt", time.Now().Format(time.RFC3339)), saveDirectory)
 	if err != nil {
 		panic(err)
 	}
