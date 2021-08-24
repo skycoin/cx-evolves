@@ -27,6 +27,8 @@ type EvolveConfig struct {
 
 	RandSeed int64
 
+	SelectRankCutoff bool
+
 	PointMutationOperatorCDF []float32
 	MutationCrossoverCDF     []float32
 }

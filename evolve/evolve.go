@@ -24,8 +24,6 @@ var wg = sync.WaitGroup{}
 func (pop *Population) Evolve(cfg EvolveConfig) {
 	var availPorts []int
 	var saveDirectory string
-	var plotData cxplotter.PlotData
-	plotData.Title = getBenchmarkName(&cfg)
 
 	output := make([]float64, pop.PopulationSize)
 	numIter := pop.Iterations
@@ -47,6 +45,20 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	log.Printf("Generations: %v\n", pop.Iterations)
 	log.Printf("Population Size: %v\n", pop.PopulationSize)
 	log.Printf("Expressions count: %v\n", pop.ExpressionsCount)
+
+	// data points json
+	dataPtsSaveDir := saveDirectory + "data_points.json"
+	err = cxplotter.AppendToFile("", dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
+	}
+
+	err = cxplotter.AddTitleToJSON(getBenchmarkName(&cfg), dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
+	}
 
 	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
@@ -153,9 +165,16 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		wg.Wait()
 
 		// Update data points values
-		err = cxplotter.UpdateDataPoints(&plotData, c, output, saveDirectory)
+		if c > 1 {
+			err = cxplotter.AddCommaToJSON(dataPtsSaveDir)
+			if err != nil {
+				log.Printf("err: %v", err)
+				panic(err)
+			}
+		}
+		err = cxplotter.AddDataToJSON(cxplotter.PlotDataPoints{Generation: c, Output: output}, dataPtsSaveDir)
 		if err != nil {
-			log.Printf("error updating data points: %v", err)
+			log.Printf("err: %v", err)
 			panic(err)
 		}
 
@@ -168,6 +187,12 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		}
 
 		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
+	}
+
+	err = cxplotter.AddClosingToJSON(dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
 	}
 }
 
