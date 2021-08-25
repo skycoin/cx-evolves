@@ -129,11 +129,11 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		} else {
 			mutationOption := cxprobability.GetRandIndex(cfg.MutationCrossoverCDF)
 			switch mutationOption {
-			case 1:
+			case 0:
 				ReplaceRandomIndividualWithRandom(pop, sPrgrm)
-			case 2:
+			case 1:
 				pointMutation(pop, cfg.PointMutationOperatorCDF)
-			case 3:
+			case 2:
 				// Replace tournament losers with children of tournament winners.
 				replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
 				replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
