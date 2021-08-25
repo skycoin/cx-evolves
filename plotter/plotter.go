@@ -35,12 +35,12 @@ func AddTitleToJSON(title, saveDirectory string) error {
 	var plotData PlotData
 	plotData.Title = title
 
-	data, err := json.MarshalIndent(plotData, "", " ")
+	data, err := json.Marshal(plotData)
 	if err != nil {
 		return err
 	}
 
-	data = append(data[0:len(data)-6], []byte("[")...)
+	data = append(data[0:len(data)-5], []byte("[")...)
 	err = AppendToFile(string(data), saveDirectory)
 	if err != nil {
 		return err
@@ -50,12 +50,12 @@ func AddTitleToJSON(title, saveDirectory string) error {
 }
 
 func AddDataToJSON(dataPoints PlotDataPoints, saveDirectory string) error {
-	data, err := json.MarshalIndent(dataPoints, "", " ")
+	data, err := json.Marshal(dataPoints)
 	if err != nil {
 		return err
 	}
 
-	dataStr := "\n{" + string(data[1:len(data)-2]) + "\n}"
+	dataStr := "{" + string(data[1:len(data)-1]) + "}"
 	err = AppendToFile(string(dataStr), saveDirectory)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func AddCommaToJSON(saveDirectory string) error {
 }
 
 func AddClosingToJSON(saveDirectory string) error {
-	data := "\n]\n}"
+	data := "]}"
 	err := AppendToFile(string(data), saveDirectory)
 	if err != nil {
 		return err

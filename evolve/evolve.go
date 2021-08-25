@@ -106,13 +106,21 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		crossoverFn := pop.getCrossoverFn()
 		child1, child2 := crossoverFn(parent1, parent2)
 
-		// Mutation process.
-		_ = sPrgrm
-		_ = dead1Idx
-		_ = dead2Idx
-		_ = child1
-		_ = child2
+		if cfg.SelectRankCutoff {
+			currPortNum1 := <-availPortsCh
 
+			err = SelectRankCutoff(output[pop1Idx], output[pop2Idx], solProt, child1, child2, parent1, parent2, cfg, currPortNum1, sPrgrm)
+			if err != nil {
+				log.Printf("error select, rank, and cutoff: %v", err)
+				panic(err)
+			}
+
+			// Append back the worker port number used so that
+			// it can be used by another go routine.
+			availPortsCh <- currPortNum1
+		}
+
+		// Mutation process.
 		// if random-search is true, there will be no mutation.
 		if cfg.RandomSearch {
 			// Replace tournament loser with new generated program.

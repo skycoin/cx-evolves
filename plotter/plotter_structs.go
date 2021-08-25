@@ -29,8 +29,8 @@ type PlotData struct {
 }
 
 type PlotDataPoints struct {
-	Generation int       `json:"generation"`
-	Output     []float64 `json:"output"`
+	Generation int       `json:"g"`
+	Output     []float64 `json:"o"`
 }
 
 func SavePlotGraphDataToJSON(data PlotData, filename string) error {

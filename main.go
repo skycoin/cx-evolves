@@ -43,6 +43,8 @@ var (
 	workersAvailable int
 
 	randomSearch bool
+
+	selectRankCutoff bool
 )
 
 // Evolve Configuration
@@ -233,6 +235,12 @@ func main() {
 				Usage:       "set true to have no mutation on individuals",
 				Destination: &randomSearch,
 			},
+			&cli.BoolFlag{
+				Name:        "SelectRankCutoff",
+				Aliases:     []string{"select-rank-cutoff"},
+				Usage:       "set true if selection is select, rank, and cutoff",
+				Destination: &selectRankCutoff,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			Evolve()
@@ -263,7 +271,7 @@ func Evolve() {
 	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
 
 	pointMutationOperatorCDF := cxprobability.NewProbability(cxprobability.GetEqualDensity(len(pointOpFns)))
-	mutationCrossoverCDF := cxprobability.NewProbability([]float32{1, 50, 49})
+	mutationCrossoverCDF := cxprobability.NewProbability([]float32{1, 1, 98})
 
 	// Generate a population.
 	pop := evolve.MakePopulation(populationSize)
@@ -300,6 +308,8 @@ func Evolve() {
 		WorkersAvailable: workersAvailable,
 
 		RandomSearch: randomSearch,
+
+		SelectRankCutoff: selectRankCutoff,
 
 		PointMutationOperatorCDF: pointMutationOperatorCDF,
 		MutationCrossoverCDF:     mutationCrossoverCDF,

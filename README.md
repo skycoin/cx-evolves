@@ -46,6 +46,7 @@ go run main.go
 --use-log-fitness=[Set true if fitness will be fitness(log base 2)]
 --workers=[number of workers available to use, if not set default is 1]
 --random-search=[set true to have no mutation on individuals]
+--select-rank-cufoff=[set true if selection is select, rank, and cutoff]
 
 <!-- Set if maze benchmark -->
 -W=[width of the maze to solve] 
