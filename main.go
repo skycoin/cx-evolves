@@ -10,6 +10,7 @@ import (
 
 	evolve "github.com/skycoin/cx-evolves/evolve"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -42,6 +43,8 @@ var (
 	workersAvailable int
 
 	randomSearch bool
+
+	selectRankCutoff bool
 )
 
 // Evolve Configuration
@@ -232,6 +235,12 @@ func main() {
 				Usage:       "set true to have no mutation on individuals",
 				Destination: &randomSearch,
 			},
+			&cli.BoolFlag{
+				Name:        "SelectRankCutoff",
+				Aliases:     []string{"select-rank-cutoff"},
+				Usage:       "set true if selection is select, rank, and cutoff",
+				Destination: &selectRankCutoff,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			Evolve()
@@ -260,7 +269,9 @@ func Evolve() {
 
 	// Initialize point operator probability
 	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
-	cxmutation.NewProbability(len(pointOpFns))
+
+	pointMutationOperatorCDF := cxprobability.NewProbability(cxprobability.GetEqualDensity(len(pointOpFns)))
+	mutationCrossoverCDF := cxprobability.NewProbability([]float32{1, 1, 98})
 
 	// Generate a population.
 	pop := evolve.MakePopulation(populationSize)
@@ -297,5 +308,10 @@ func Evolve() {
 		WorkersAvailable: workersAvailable,
 
 		RandomSearch: randomSearch,
+
+		SelectRankCutoff: selectRankCutoff,
+
+		PointMutationOperatorCDF: pointMutationOperatorCDF,
+		MutationCrossoverCDF:     mutationCrossoverCDF,
 	})
 }

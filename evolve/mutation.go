@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -59,7 +60,7 @@ const (
 // 	fn.Expressions = exprs
 // }
 
-func randomMutation(pop *Population, sPrgrm []byte) {
+func ReplaceRandomIndividualWithRandom(pop *Population, sPrgrm []byte) {
 	fnToEvolve := pop.FunctionToEvolve
 	numExprs := pop.ExpressionsCount
 	fns := pop.FunctionSet
@@ -70,7 +71,7 @@ func randomMutation(pop *Population, sPrgrm []byte) {
 	resetPrgrm(pop.Individuals[randIdx])
 }
 
-func pointMutation(pop *Population) {
+func pointMutation(pop *Population, cdf []float32) {
 	// Choose random individual to apply the point mutation
 	randIdx := rand.Intn(len(pop.Individuals))
 	ind := pop.Individuals[randIdx]
@@ -83,7 +84,7 @@ func pointMutation(pop *Population) {
 
 	// Choose random point mutation operator
 	pointOpFns := cxmutation.GetAllMutationOperatorFunctionSet()
-	mutate := pointOpFns[cxmutation.GetRandIndex()]
+	mutate := pointOpFns[cxprobability.GetRandIndex(cdf)]
 
 	// Choose random arg to apply the point mutation
 	argsList, err := cxmutation.GetCompatibleArgsForPointMutation(ind, pop.FunctionToEvolve.Name, cxconstants.TYPE_I32)

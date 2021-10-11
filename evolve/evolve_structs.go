@@ -26,6 +26,11 @@ type EvolveConfig struct {
 	RandomSearch bool
 
 	RandSeed int64
+
+	SelectRankCutoff bool
+
+	PointMutationOperatorCDF []float32
+	MutationCrossoverCDF     []float32
 }
 
 type GraphCfg struct {

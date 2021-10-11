@@ -1,12 +1,11 @@
 package evolve
 
-// import (
-// 	"encoding/binary"
-// 	"fmt"
+import (
+	"log"
+	"math"
 
-// 	"github.com/skycoin/cx-evolves/cmd/maze"
-// 	cxcore "github.com/skycoin/cx/cx"
-// )
+	cxast "github.com/skycoin/cx/cx/ast"
+)
 
 // Codes associated to each of the mutation functions.
 const (
@@ -96,3 +95,41 @@ const (
 // 	cxcore.PROGRAM = tmp
 // 	return sum
 // }
+
+func SelectRankCutoff(parent1Fitness, parent2Fitness float64, solProt, child1, child2, parent1, parent2 *cxast.CXFunction, cfg EvolveConfig, currPortNum int, sPrgrm []byte) error {
+	// Create cx program for child1
+	child1Ind := cxast.DeserializeCXProgramV2(sPrgrm, true)
+	child2Ind := cxast.DeserializeCXProgramV2(sPrgrm, true)
+
+	replaceSolution(child1Ind, solProt.Name, child1)
+	replaceSolution(child2Ind, solProt.Name, child2)
+
+	cfg.WorkerPortNum = currPortNum
+
+	child1Fitness, err := RunBenchmark(child1Ind, solProt, cfg)
+	if err != nil {
+		log.Printf("error run benchmark: %v", err)
+		child1Fitness = float64(math.MaxInt32)
+	}
+
+	child2Fitness, err := RunBenchmark(child1Ind, solProt, cfg)
+	if err != nil {
+		log.Printf("error run benchmark: %v", err)
+		child2Fitness = float64(math.MaxInt32)
+	}
+
+	if child1Fitness < parent1Fitness || child1Fitness < parent2Fitness {
+		// Child is pruned, not added to population
+		child1 = parent1
+	}
+
+	if child2Fitness < parent1Fitness || child2Fitness < parent2Fitness {
+		// Child is pruned, not added to population
+		child2 = parent2
+	}
+
+	_ = child1
+	_ = child2
+
+	return nil
+}

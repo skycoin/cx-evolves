@@ -12,6 +12,7 @@ import (
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
 	workerclient "github.com/skycoin/cx-evolves/cxexecutes/worker/client"
 	cxplotter "github.com/skycoin/cx-evolves/plotter"
+	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -23,8 +24,6 @@ var wg = sync.WaitGroup{}
 func (pop *Population) Evolve(cfg EvolveConfig) {
 	var availPorts []int
 	var saveDirectory string
-	var plotData cxplotter.PlotData
-	plotData.Title = getBenchmarkName(&cfg)
 
 	output := make([]float64, pop.PopulationSize)
 	numIter := pop.Iterations
@@ -35,11 +34,31 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 	setEpochLength(&cfg)
 	saveDirectory = makeDirectory(&cfg)
 
-	logF, err := setupLogger(fmt.Sprintf("%v-log", time.Now().Format(time.RFC3339)), saveDirectory)
+	logF, err := setupLogger(fmt.Sprintf("%v-log.txt", time.Now().Format(time.RFC3339)), saveDirectory)
 	if err != nil {
 		panic(err)
 	}
+	defer logF.Close()
 	log.SetOutput(logF)
+
+	log.Printf("Benchmark config: %+v\n", cfg)
+	log.Printf("Generations: %v\n", pop.Iterations)
+	log.Printf("Population Size: %v\n", pop.PopulationSize)
+	log.Printf("Expressions count: %v\n", pop.ExpressionsCount)
+
+	// data points json
+	dataPtsSaveDir := saveDirectory + "data_points.json"
+	err = cxplotter.AppendToFile("", dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
+	}
+
+	err = cxplotter.AddTitleToJSON(getBenchmarkName(&cfg), dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
+	}
 
 	// Make worker ports channel
 	availWorkers := worker.GetAvailableWorkers(cfg.WorkersAvailable)
@@ -87,34 +106,45 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		crossoverFn := pop.getCrossoverFn()
 		child1, child2 := crossoverFn(parent1, parent2)
 
-		// Mutation process.
-		_ = sPrgrm
-		_ = dead1Idx
-		_ = dead2Idx
-		_ = child1
-		_ = child2
+		if cfg.SelectRankCutoff {
+			currPortNum1 := <-availPortsCh
 
+			err = SelectRankCutoff(output[pop1Idx], output[pop2Idx], solProt, child1, child2, parent1, parent2, cfg, currPortNum1, sPrgrm)
+			if err != nil {
+				log.Printf("error select, rank, and cutoff: %v", err)
+				panic(err)
+			}
+
+			// Append back the worker port number used so that
+			// it can be used by another go routine.
+			availPortsCh <- currPortNum1
+		}
+
+		// Mutation process.
 		// if random-search is true, there will be no mutation.
 		if cfg.RandomSearch {
 			// Replace tournament loser with new generated program.
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
-			GenerateNewIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			ReplaceIndividualWithRandomExpressions(pop.Individuals[dead1Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
+			ReplaceIndividualWithRandomExpressions(pop.Individuals[dead2Idx], pop.FunctionToEvolve, pop.FunctionSet, pop.ExpressionsCount)
 		} else {
-			randomMutation(pop, sPrgrm)
-
-			// Point Mutation
-			pointMutation(pop)
-
-			// Replacing individuals in population.
-			replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
-			replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+			mutationOption := cxprobability.GetRandIndex(cfg.MutationCrossoverCDF)
+			switch mutationOption {
+			case 0:
+				ReplaceRandomIndividualWithRandom(pop, sPrgrm)
+			case 1:
+				pointMutation(pop, cfg.PointMutationOperatorCDF)
+			case 2:
+				// Replace tournament losers with children of tournament winners.
+				replaceSolution(pop.Individuals[dead1Idx], fnToEvolveName, child1)
+				replaceSolution(pop.Individuals[dead2Idx], fnToEvolveName, child2)
+			}
 		}
 
 		if cxtasks.IsMazeTask(cfg.TaskName) {
 			cfg.RandSeed = generateNewSeed(c, cfg)
 		}
 
-		runtime.GOMAXPROCS(64)
+		runtime.GOMAXPROCS(48)
 		// Evaluation process.
 		for i := range pop.Individuals {
 			wg.Add(1)
@@ -143,9 +173,16 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		wg.Wait()
 
 		// Update data points values
-		err = cxplotter.UpdateDataPoints(&plotData, c, output, saveDirectory)
+		if c > 1 {
+			err = cxplotter.AddCommaToJSON(dataPtsSaveDir)
+			if err != nil {
+				log.Printf("err: %v", err)
+				panic(err)
+			}
+		}
+		err = cxplotter.AddDataToJSON(cxplotter.PlotDataPoints{Generation: c, Output: output}, dataPtsSaveDir)
 		if err != nil {
-			log.Printf("error updating data points: %v", err)
+			log.Printf("err: %v", err)
 			panic(err)
 		}
 
@@ -158,6 +195,12 @@ func (pop *Population) Evolve(cfg EvolveConfig) {
 		}
 
 		fmt.Printf("Time to finish generation[%v]=%v\n", c, time.Since(startTimeGeneration))
+	}
+
+	err = cxplotter.AddClosingToJSON(dataPtsSaveDir)
+	if err != nil {
+		log.Printf("err: %v", err)
+		panic(err)
 	}
 }
 
