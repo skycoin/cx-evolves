@@ -3,6 +3,8 @@ package client
 import (
 	"time"
 
+	"github.com/skycoin/cx/cx/types"
+
 	"github.com/henrylee2cn/erpc/v6"
 	"github.com/skycoin/cx-evolves/cxexecutes/worker"
 	"github.com/skycoin/cx-evolves/tasks"
@@ -67,7 +69,7 @@ func extractSolutionProtoInfo(cWorker CallWorkerConfig) tasks.EvolveSolProto {
 		OutOffset: cWorker.SolProt.Outputs[0].Offset,
 		OutSize:   cWorker.SolProt.Outputs[0].TotalSize,
 	}
-	solProto.InpsSize = make([]int, len(cWorker.SolProt.Inputs))
+	solProto.InpsSize = make([]types.Pointer, len(cWorker.SolProt.Inputs))
 	for i := 0; i < len(cWorker.SolProt.Inputs); i++ {
 		solProto.InpsSize[i] = cWorker.SolProt.Inputs[i].TotalSize
 	}

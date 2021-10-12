@@ -4,10 +4,10 @@ import (
 	"encoding/binary"
 	"testing"
 
-	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxmutation "github.com/skycoin/cx-evolves/mutation"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
+	cxgenerator "github.com/skycoin/cx/cx/generator"
 )
 
 func TestPointMutationOperator_InsertI32Literal_1Byte(t *testing.T) {
@@ -38,7 +38,7 @@ func TestPointMutationOperator_InsertI32Literal_1Byte(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			// size will always be 4 bytes because data type is int 32.
 			dataSegSize := tc.program.DataSegmentSize
@@ -92,7 +92,7 @@ func TestPointMutationOperator_InsertI32Literal_2Bytes(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			// size will always be 4 bytes because data type is int 32.
 			dataSegSize := tc.program.DataSegmentSize
@@ -140,7 +140,7 @@ func TestPointMutationOperator_InsertI32Literal_4Bytes(t *testing.T) {
 			cxmutation.InsertI32Literal_4Bytes(tc.program, tc.pkg, tc.arg)
 			tc.program.PrintProgram()
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 
@@ -186,7 +186,7 @@ func TestPointMutationOperator_HalfI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -235,7 +235,7 @@ func TestPointMutationOperator_DoubleI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -284,7 +284,7 @@ func TestPointMutationOperator_ZeroI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -333,7 +333,7 @@ func TestPointMutationOperator_AddOneI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -382,7 +382,7 @@ func TestPointMutationOperator_AddRand1ByteI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -431,7 +431,7 @@ func TestPointMutationOperator_SubOneI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -480,7 +480,7 @@ func TestPointMutationOperator_SubRand1ByteI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -529,7 +529,7 @@ func TestPointMutationOperator_BitOrI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -573,7 +573,7 @@ func TestPointMutationOperator_BitAndI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -617,7 +617,7 @@ func TestPointMutationOperator_BitXorI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -661,7 +661,7 @@ func TestPointMutationOperator_BitRotateLeftI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -705,7 +705,7 @@ func TestPointMutationOperator_BitRotateRightI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -749,7 +749,7 @@ func TestPointMutationOperator_OrI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -793,7 +793,7 @@ func TestPointMutationOperator_AndI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -837,7 +837,7 @@ func TestPointMutationOperator_XorI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -881,7 +881,7 @@ func TestPointMutationOperator_ShiftOneBitLeftI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {
@@ -930,7 +930,7 @@ func TestPointMutationOperator_ShiftOneBitRightI32Literal(t *testing.T) {
 			tc.program.PrintProgram()
 
 			dataValue := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-			printDataInfo(t, tc.program.DataSegmentSize, dataValue)
+			printDataInfo(t, int(tc.program.DataSegmentSize), dataValue)
 
 			dataSegSize := tc.program.DataSegmentSize
 			if dataSegSize != 4 {

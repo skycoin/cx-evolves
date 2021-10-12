@@ -1,9 +1,9 @@
 package evolve
 
 import (
-	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxgenerator "github.com/skycoin/cx/cx/generator"
 )
 
 type Population struct {

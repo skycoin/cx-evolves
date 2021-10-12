@@ -6,6 +6,7 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxexecute "github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // NetworkSim_V1 for evolve with network sim, 1 i32 input, 1 i32 output
@@ -36,7 +37,7 @@ func perByteEvaluation_NetworkSim_Transmitter(ind *cxast.CXProgram, solPrototype
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}
@@ -69,7 +70,7 @@ func perByteEvaluation_NetworkSim_Receiver(ind *cxast.CXProgram, solPrototype Ev
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}

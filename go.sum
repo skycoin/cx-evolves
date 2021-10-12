@@ -296,7 +296,12 @@ github.com/sirupsen/logrus v1.8.0/go.mod h1:4GuYW9TZmE769R5STWrRakJc4UqQ3+QQ95fy
 github.com/skycoin/cx v0.7.6-0.20210417120210-c4beff307b5f/go.mod h1:hr0tS0TbCTeza5uDApGLfrd4v9Rzy+iYJsbS8OxjluM=
 github.com/skycoin/cx v0.7.6-0.20210503060553-8adf7a664643 h1:IKXklPtgVb4WmpSPvYhw/Ki/yxC8/bjqp28A78Ub39U=
 github.com/skycoin/cx v0.7.6-0.20210503060553-8adf7a664643/go.mod h1:GCeO3WmU3Zlk2hpKYQGkXwes0PGHPgcEQD6EtMHEB20=
+github.com/skycoin/cx v0.7.6-0.20210921161820-3fa8d08df53f h1:XIjcCQr4ro4eL5MF8CvqTQFBG39yA8pYNTEICyh0FXg=
+github.com/skycoin/cx v0.7.6-0.20210921161820-3fa8d08df53f/go.mod h1:fKBe1bFVHBUf/n/oOK0HVW/EU5Zh1WFv9hIZ4bO/DPc=
+github.com/skycoin/cx v0.7.6-0.20211012085730-d0815605a47d h1:y9OdNOdS0CfK8KkPV52jYym6vC+VcexCZwhwHVBx4m4=
+github.com/skycoin/cx v0.7.6-0.20211012085730-d0815605a47d/go.mod h1:mMh+NvgxVWHotPEYV6RlJWFObXLaE+UzKv7Z/kIUg0I=
 github.com/skycoin/cx-evolves v0.0.0-20210422070949-64c6ff70d91e/go.mod h1:iH0daCgutlw8pjMLcmmHNJ+5iZ1HanEdEGxnYORv5Cc=
+github.com/skycoin/cx-evolves v0.0.0-20210512170432-7af35fcf0611/go.mod h1:dsv+H5US7C+5DPD3d0kYbzh14qVKAd7PhpEHn/PMo2M=
 github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9 h1:DElGw1Fhj4amuW1KM5q8Xowosb3RiOQce0lDJw0Qv0Y=
 github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9/go.mod h1:OQz8NXVJUWEw7PWYASZ/1BIw5GXgVMTGvrCGDlZa9+k=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14 h1:A3h5e2AIp7vQTrJGeM/t+/gHs54R0VJ1Gtdb5jFvqyQ=

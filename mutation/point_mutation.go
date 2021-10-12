@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/copier"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxastapi "github.com/skycoin/cx/cx/astapi"
+	"github.com/skycoin/cx/cx/types"
 )
 
 type MutationHandler func(cxprogram *cxast.CXProgram, pkg *cxast.CXPackage, cxarg *cxast.CXArgument)
@@ -112,7 +113,7 @@ func ReplaceArgInput(expr *cxast.CXExpression, argIndex int, argToPut *cxast.CXA
 }
 
 // GetCompatibleArgsForPointMutation returns list of cx arguments where the point mutation can be applied to.
-func GetCompatibleArgsForPointMutation(cxprogram *cxast.CXProgram, fnName string, argType int) ([]*cxast.CXArgument, error) {
+func GetCompatibleArgsForPointMutation(cxprogram *cxast.CXProgram, fnName string, argType types.Code) ([]*cxast.CXArgument, error) {
 	var args []*cxast.CXArgument
 
 	fn, err := cxastapi.FindFunction(cxprogram, fnName)

@@ -9,6 +9,7 @@ import (
 	"github.com/skycoin/cx-evolves/cmd/maze"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxexecute "github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // Evaluate Program as the Maze Player
@@ -47,7 +48,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype EvolveSolProto, in
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}
@@ -55,7 +56,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype EvolveSolProto, in
 	// We'll store the `i`th inputs on `inps`.
 	inps := make([]byte, inpFullByteSize)
 	// `inpsOff` helps us keep track of what byte in `inps` we can write to.
-	inpsOff := 0
+	var inpsOff types.Pointer = 0
 
 	for c := 0; c < len(inputs); c++ {
 		// The size of the input.
@@ -65,7 +66,7 @@ func perByteEvaluationMaze(ind *cxast.CXProgram, solPrototype EvolveSolProto, in
 
 		// Copying the input `b`ytes.
 		for b := 0; b < len(inp); b++ {
-			inps[inpsOff+b] = inp[b]
+			inps[int(inpsOff)+b] = inp[b]
 		}
 
 		// Updating offset.

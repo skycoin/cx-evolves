@@ -8,6 +8,7 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxexecute "github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // Composites_V1 for evolve with composites numbers, 1 i32 input, 1 i32 output
@@ -16,7 +17,7 @@ func Composites_V1(ind *cxast.CXProgram, solPrototype EvolveSolProto, cfg TaskCo
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}

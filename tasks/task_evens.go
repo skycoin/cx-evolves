@@ -7,6 +7,7 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxexecute "github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // Evens_V1 for evolve with even numbers, 1 i32 input, 1 i32 output
@@ -15,7 +16,7 @@ func Evens_V1(ind *cxast.CXProgram, solPrototype EvolveSolProto, cfg TaskConfig)
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}
@@ -61,7 +62,7 @@ func Evens_V2(ind *cxast.CXProgram, solPrototype EvolveSolProto, cfg TaskConfig)
 	var tmp *cxast.CXProgram = cxast.PROGRAM
 	cxast.PROGRAM = ind
 
-	inpFullByteSize := 0
+	var inpFullByteSize types.Pointer = 0
 	for c := 0; c < len(solPrototype.InpsSize); c++ {
 		inpFullByteSize += solPrototype.InpsSize[c]
 	}
