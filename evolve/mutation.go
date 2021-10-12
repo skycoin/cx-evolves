@@ -7,7 +7,7 @@ import (
 	cxprobability "github.com/skycoin/cx-evolves/probability"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
-	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // Codes associated to each of the mutation functions.
@@ -87,7 +87,7 @@ func pointMutation(pop *Population, cdf []float32) {
 	mutate := pointOpFns[cxprobability.GetRandIndex(cdf)]
 
 	// Choose random arg to apply the point mutation
-	argsList, err := cxmutation.GetCompatibleArgsForPointMutation(ind, pop.FunctionToEvolve.Name, cxconstants.TYPE_I32)
+	argsList, err := cxmutation.GetCompatibleArgsForPointMutation(ind, pop.FunctionToEvolve.Name, types.I32)
 	if err != nil {
 		panic(err)
 	}

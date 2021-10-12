@@ -2,10 +2,10 @@ package evolve
 
 import (
 	copier "github.com/jinzhu/copier"
-
-	cxgenerator "github.com/skycoin/cx-evolves/generator"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxgenerator "github.com/skycoin/cx/cx/generator"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // adaptSolution removes the main function from the main
@@ -39,7 +39,7 @@ func adaptSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction) {
 	}
 
 	// The size of main function will depend on the number of inputs and outputs.
-	mainSize := 0
+	var mainSize types.Pointer = 0
 
 	// Adding inputs to call to solution in main function.
 	for _, inp := range sol.Inputs {

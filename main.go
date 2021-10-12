@@ -14,6 +14,7 @@ import (
 	cxtasks "github.com/skycoin/cx-evolves/tasks"
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	cxactions "github.com/skycoin/cx/cxparser/actions"
 	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 )
@@ -87,14 +88,23 @@ func InitialProgram() *cxast.CXProgram {
 
 	// Adding input signature to function to evolve (`FunctionToEvolve`).
 	for _, inpType := range inputSignature {
-		inp := cxast.MakeArgument(cxactions.MakeGenSym("evo_inp"), "", -1).AddType(inpType)
+		var dataType types.Code
+		if inpType == "i32" {
+			dataType = types.I32
+		}
+
+		inp := cxast.MakeArgument(cxactions.MakeGenSym("evo_inp"), "", -1).AddType(dataType)
 		inp.AddPackage(mainPkg)
 		toEvolveFn.AddInput(inp)
 	}
 
 	// Adding output signature to function to evolve (`FunctionToEvolve`).
 	for _, outType := range outputSignature {
-		out := cxast.MakeArgument(cxactions.MakeGenSym("evo_out"), "", -1).AddType(outType)
+		var dataType types.Code
+		if outType == "i32" {
+			dataType = types.I32
+		}
+		out := cxast.MakeArgument(cxactions.MakeGenSym("evo_out"), "", -1).AddType(dataType)
 		out.AddPackage(mainPkg)
 		toEvolveFn.AddOutput(out)
 	}

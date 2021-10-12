@@ -11,6 +11,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxastapi "github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
@@ -163,12 +164,12 @@ func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiter
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToFunction(cxProgram, pkgName, fnName, "inputOne", cxconstants.TYPE_I32)
+	err = cxastapi.AddNativeInputToFunction(cxProgram, pkgName, fnName, "inputOne", types.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeOutputToFunction(cxProgram, pkgName, fnName, "outputOne", cxconstants.TYPE_I16)
+	err = cxastapi.AddNativeOutputToFunction(cxProgram, pkgName, fnName, "outputOne", types.I16)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -178,17 +179,17 @@ func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiter
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", cxconstants.TYPE_I16, 0)
+	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", types.I16, 0)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "y", cxconstants.TYPE_I16, 0)
+	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "y", types.I16, 0)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", cxconstants.TYPE_I16, 0)
+	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", types.I16, 0)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -198,17 +199,17 @@ func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiter
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", cxconstants.TYPE_I16, 1)
+	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", types.I16, 1)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "y", cxconstants.TYPE_I16, 1)
+	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "y", types.I16, 1)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", cxconstants.TYPE_I16, 1)
+	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", types.I16, 1)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -218,7 +219,7 @@ func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiter
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", cxconstants.TYPE_I32, 2)
+	err = cxastapi.AddNativeInputToExpression(cxProgram, pkgName, fnName, "x", types.I32, 2)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -227,13 +228,13 @@ func generateSampleStaticProgram(t *testing.T, pkgName, fnName string, withLiter
 		buf := new(bytes.Buffer)
 		var num int32 = 6
 		binary.Write(buf, binary.LittleEndian, num)
-		err = cxastapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
+		err = cxastapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	}
 
-	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", cxconstants.TYPE_I32, 2)
+	err = cxastapi.AddNativeOutputToExpression(cxProgram, pkgName, fnName, "z", types.I32, 2)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}

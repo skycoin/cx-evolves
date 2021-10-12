@@ -5,6 +5,7 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // GenerateRandomBytes to generate random bytes with uniform length []byte of 4 output.
@@ -42,26 +43,26 @@ func GetAllMutationOperatorFunctionSet() (fns []MutationHandler) {
 }
 
 // This function writes those bytes to cxprogram.Data
-func WriteLiteralArg(cxprogram *cxast.CXProgram, typ int, byts []byte, isGlobal bool) []*cxast.CXExpression {
+func WriteLiteralArg(cxprogram *cxast.CXProgram, typ types.Code, byts []byte, isGlobal bool) []*cxast.CXExpression {
 	pkg, err := cxprogram.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
 	arg := cxast.MakeArgument("", "", 0)
-	arg.AddType(constants.TypeNames[typ])
+	arg.AddType(typ)
 	arg.ArgDetails.Package = pkg
 
 	var size = len(byts)
 
-	arg.Size = constants.GetArgSize(typ)
-	arg.TotalSize = size
+	arg.Size = types.Code(typ).Size()
+	arg.TotalSize = types.Pointer(size)
 	arg.Offset = cxprogram.DataSegmentSize + cxprogram.DataSegmentStartsAt
 
-	if arg.Type == constants.TYPE_STR || arg.Type == constants.TYPE_AFF {
+	if arg.Type == types.STR || arg.Type == types.AFF {
 		arg.PassBy = constants.PASSBY_REFERENCE
-		arg.Size = constants.TYPE_POINTER_SIZE
-		arg.TotalSize = constants.TYPE_POINTER_SIZE
+		arg.Size = types.POINTER_SIZE
+		arg.TotalSize = types.POINTER_SIZE
 	}
 
 	// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
@@ -70,21 +71,21 @@ func WriteLiteralArg(cxprogram *cxast.CXProgram, typ int, byts []byte, isGlobal 
 	// we'll start appending the bytes to AST.Memory.
 	// After compilation, we calculate how many bytes we need to add to have a heap segment
 	// equal to `minHeapSize()` that is allocated after the data segment.
-	if (size + cxprogram.DataSegmentSize + cxprogram.DataSegmentStartsAt) > len(cxprogram.Memory) {
+	if (size + int(cxprogram.DataSegmentSize) + int(cxprogram.DataSegmentStartsAt)) > len(cxprogram.Memory) {
 		var i int
 		// First we need to fill the remaining free bytes in
 		// the current `AST.Memory` slice.
-		for i = 0; i < len(cxprogram.Memory)-cxprogram.DataSegmentSize+cxprogram.DataSegmentStartsAt; i++ {
-			cxprogram.Memory[cxprogram.DataSegmentSize+cxprogram.DataSegmentStartsAt+i] = byts[i]
+		for i = 0; i < len(cxprogram.Memory)-int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt); i++ {
+			cxprogram.Memory[int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt)+i] = byts[i]
 		}
 		// Then we append the bytes that didn't fit.
 		cxprogram.Memory = append(cxprogram.Memory, byts[i:]...)
 	} else {
 		for i, byt := range byts {
-			cxprogram.Memory[cxprogram.DataSegmentSize+cxprogram.DataSegmentStartsAt+i] = byt
+			cxprogram.Memory[int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt)+i] = byt
 		}
 	}
-	cxprogram.DataSegmentSize += size
+	cxprogram.DataSegmentSize += types.Pointer(size)
 
 	expr := cxast.MakeExpression(nil, "", 0)
 	expr.Package = pkg
