@@ -69,7 +69,7 @@ func adaptSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction) {
 	}
 
 	mainFn.AddExpression(expr)
-	mainFn.Length = 1
+	mainFn.LineCount = 1
 	mainFn.Size = mainSize
 }
 
@@ -81,18 +81,8 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 
 	var newPkg cxast.CXPackage
 	copier.Copy(&newPkg, *pkg)
-	pkgs := make([]*cxast.CXPackage, len(prgrm.Packages))
-	for i := range pkgs {
-		pkgs[i] = prgrm.Packages[i]
-	}
-	prgrm.Packages = pkgs
 
-	for i, pkg := range prgrm.Packages {
-		if pkg.Name == cxconstants.MAIN_PKG {
-			prgrm.Packages[i] = &newPkg
-			break
-		}
-	}
+	prgrm.Packages[cxconstants.MAIN_PKG] = &newPkg
 
 	fn, err := prgrm.GetFunction(fnToEvolve.Name, cxconstants.MAIN_PKG)
 	if err != nil {
@@ -106,19 +96,7 @@ func initSolution(prgrm *cxast.CXProgram, fnToEvolve *cxast.CXFunction, fns []*c
 	newFn.Package = fn.Package
 
 	solutionName := fn.Name
-
-	tmpFns := make([]*cxast.CXFunction, len(newPkg.Functions))
-	for i := range tmpFns {
-		tmpFns[i] = newPkg.Functions[i]
-	}
-	newPkg.Functions = tmpFns
-
-	for i, fn := range newPkg.Functions {
-		if fn.Name == solutionName {
-			newPkg.Functions[i] = &newFn
-			break
-		}
-	}
+	newPkg.Functions[solutionName] = &newFn
 
 	cxgenerator.GenerateRandomExpressions(&newFn, &newPkg, fns, numExprs)
 }
@@ -131,7 +109,7 @@ func resetPrgrm(prgrm *cxast.CXProgram) {
 	prgrm.Memory = mem
 
 	prgrm.CallCounter = 0
-	prgrm.StackPointer = 0
+	prgrm.Stack.Pointer = 0
 	prgrm.CallStack = make([]cxast.CXCall, cxconstants.CALLSTACK_SIZE)
 	prgrm.Terminated = false
 	// minHeapSize := minHeapSize()
