@@ -57,7 +57,7 @@ func WriteLiteralArg(cxprogram *cxast.CXProgram, typ types.Code, byts []byte, is
 
 	arg.Size = types.Code(typ).Size()
 	arg.TotalSize = types.Pointer(size)
-	arg.Offset = cxprogram.DataSegmentSize + cxprogram.DataSegmentStartsAt
+	arg.Offset = cxprogram.Data.Size + cxprogram.Data.StartsAt
 
 	if arg.Type == types.STR || arg.Type == types.AFF {
 		arg.PassBy = constants.PASSBY_REFERENCE
@@ -71,21 +71,21 @@ func WriteLiteralArg(cxprogram *cxast.CXProgram, typ types.Code, byts []byte, is
 	// we'll start appending the bytes to AST.Memory.
 	// After compilation, we calculate how many bytes we need to add to have a heap segment
 	// equal to `minHeapSize()` that is allocated after the data segment.
-	if (size + int(cxprogram.DataSegmentSize) + int(cxprogram.DataSegmentStartsAt)) > len(cxprogram.Memory) {
+	if (size + int(cxprogram.Data.Size) + int(cxprogram.Data.StartsAt)) > len(cxprogram.Memory) {
 		var i int
 		// First we need to fill the remaining free bytes in
 		// the current `AST.Memory` slice.
-		for i = 0; i < len(cxprogram.Memory)-int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt); i++ {
-			cxprogram.Memory[int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt)+i] = byts[i]
+		for i = 0; i < len(cxprogram.Memory)-int(cxprogram.Data.Size)+int(cxprogram.Data.StartsAt); i++ {
+			cxprogram.Memory[int(cxprogram.Data.Size)+int(cxprogram.Data.StartsAt)+i] = byts[i]
 		}
 		// Then we append the bytes that didn't fit.
 		cxprogram.Memory = append(cxprogram.Memory, byts[i:]...)
 	} else {
 		for i, byt := range byts {
-			cxprogram.Memory[int(cxprogram.DataSegmentSize)+int(cxprogram.DataSegmentStartsAt)+i] = byt
+			cxprogram.Memory[int(cxprogram.Data.Size)+int(cxprogram.Data.StartsAt)+i] = byt
 		}
 	}
-	cxprogram.DataSegmentSize += types.Pointer(size)
+	cxprogram.Data.Size += types.Pointer(size)
 
 	expr := cxast.MakeExpression(nil, "", 0)
 	expr.Package = pkg
